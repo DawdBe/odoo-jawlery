@@ -26,3 +26,6 @@ odoo-core/
 
 # Graphify knowledge graph output
 graphify-out/
+
+# OpenCode AI tooling (config, skills, plugins - regenerable)
+.opencode/
