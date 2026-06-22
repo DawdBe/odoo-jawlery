@@ -23,3 +23,6 @@ Thumbs.db
 
 # Odoo core (clone target, not committed)
 odoo-core/
+
+# Graphify knowledge graph output
+graphify-out/
