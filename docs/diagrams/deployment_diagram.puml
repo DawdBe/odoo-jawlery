@@ -1,0 +1,56 @@
+@startuml
+!theme plain
+title "Diagramme de Déploiement — Odoo Bijouterie"
+
+actor "Admin\n(Propriétaire)" as ADMIN
+actor "Vendeur\n(Employé Poste)" as VENDEUR
+actor "Cassier" as CASSIER
+
+node "Client Web" {
+  [Navigateur Desktop]
+  [Tablette POS]
+  [Mobile]
+}
+
+node "Serveur Odoo 17" {
+  [Serveur Web Odoo\n(Python 3.10)]
+  database "PostgreSQL 15\n(Bijouterie DB)" as DB
+
+  node "Modules Personnalisés (4)" {
+    [jewelry_core]
+    [jewelry_transactions]
+    [jewelry_accounting]
+    [jewelry_dashboard]
+  }
+
+  node "Modules Standard" {
+    [stock]
+    [account]
+    [purchase]
+    [product]
+  }
+}
+
+node "Services Externes" {
+  [API Bourse\n(Gold Price)] as API
+  [Imprimante\nThermique] as PRINTER
+  [Scanner\nCode-barres] as SCANNER
+}
+
+ADMIN --> [Serveur Web Odoo] : Dashboard + Rapports
+VENDEUR --> [Serveur Web Odoo] : POS + Ventes
+CASSIER --> [Serveur Web Odoo] : Caisse
+
+[Serveur Web Odoo] --> DB
+[Serveur Web Odoo] --> API : Cours or (manuel/auto)
+[Serveur Web Odoo] --> PRINTER : Reçus/Bons
+[Serveur Web Odoo] --> SCANNER : Scan codes-barres
+
+node "Docker Host" {
+  [Nginx Proxy\n(port 8069)]
+  [Odoo App\n(container)]
+  [PostgreSQL\n(container)]
+  [Volumes:\n./addons/\n./config/\n./data/]
+}
+
+@enduml

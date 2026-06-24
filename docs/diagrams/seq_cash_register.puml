@@ -1,0 +1,60 @@
+@startuml
+!theme plain
+title "Séquence 6: Cycle de Caisse Quotidien (Ouverture → Clôture)"
+
+actor "Cassier" as CA
+participant "Caisse\n(daily.cash.register)" as REG
+participant "Bon Unifié\n(jewelry.ticket)" as TICKET
+' Caisse voyage: via is_travel_cash sur cash.register.line
+database "BDD" as DB
+participant "Comptabilité" as ACC
+
+== Ouverture ==
+CA -> REG: Ouvre la caisse du jour
+REG -> DB: Enregistre ouverture\nsolde initial: 200,000 DZD
+note right DB: state = open\nopening_balance = 200,000
+DB --> REG: Caisse #C-2024-06-15 ouverte
+
+CA -> REG: Comptage initial\n2000×20 + 1000×30 + 500×40...
+REG -> DB: Enregistre décompte\nouverture: 200,000 DZD
+
+== Transactions du jour ==
+loop Chaque opération
+  CA -> TICKET: Traite un bon unifié\n(vente/achat/service/versé)
+  TICKET -> DB: Lignes: vente 15000 DZD, achat -3000 DZD
+  TICKET -> REG: Ligne caisse: entrée 12000 DZD
+  REG -> DB: cash_register_line ajoutée\n(type: entrée, montant: 12000)
+end
+
+== Alimentation caisse voyage ==
+CA -> REG: Alimenter caisse voyage\n50,000 DZD (is_travel_cash=True)
+REG -> DB: cash.register.line:\n-50,000 DZD (sortie caisse)\n+50,000 DZD (travel, journal voyage)
+note right DB: Caisse voyage via is_travel_cash\nsur cash.register.line
+
+== Clôture ==
+CA -> REG: Lance la clôture de caisse
+REG -> DB: Calcule solde attendu\nouverture 200,000 + entrées 185,000\n- sorties 73,000 = 312,000 DZD
+
+CA -> CA: Compte physique des billets\n2000×45 + 1000×55 + 500×40\n+ 200×30 + 100×20 + 50×10\n+ 20×5 + 10×15 = 310,000 DZD
+
+CA -> REG: Saisit décompte physique\n310,000 DZD
+REG -> REG: Calcule écart\nattendu 312,000 - physique 310,000 = -2,000 DZD
+note right REG: Écart de -2,000 DZD\n(manque en caisse)
+
+alt Écart == 0
+  REG -> DB: state = closed\ndifference = 0
+else Écart justifiable
+  CA -> REG: Ajoute note: "Rendu monnaie erroné"
+  REG -> DB: state = closed\njustification ajoutée
+else Écart non-justifié
+  REG -> ACC: Crée écriture d'écart\n(-2,000 DZD en perte)
+  REG -> DB: state = verified\npending_admin_approval
+  CA -> CA: Notifie Admin
+end
+
+CA -> REG: Imprime rapport de clôture
+REG --> CA: Rapport:\n- Ouverture: 200,000 DZD\n- Total entrées: 185,000 DZD\n- Total sorties: 73,000 DZD\n- Attendu: 312,000 DZD\n- Physique: 310,000 DZD\n- Écart: -2,000 DZD\n- Caisse voyage: 50,000 DZD
+
+note over CA,REG: Signature caissier + témoin\nRapport archivé
+
+@enduml

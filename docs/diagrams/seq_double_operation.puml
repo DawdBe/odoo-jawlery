@@ -1,0 +1,49 @@
+@startuml
+!theme plain
+title "Séquence 1: Double Opération (Vente + Rachat avec solde)"
+
+actor "Client" as C
+actor "Employé de Poste" as V
+participant "Bon Unifié\n(jewelry.ticket)" as TICKET
+database "Base de Données\nOdoo" as DB
+participant "Module\nComptabilité" as ACC
+participant "Module\nInventaire" as INV
+
+C -> V: Arrive avec un vieux bijou\net veut acheter un nouveau
+V -> TICKET: Ouvre un nouveau bon unifié
+TICKET -> DB: Crée bon vide (état: brouillon)
+DB --> TICKET: Bon #B-2024-001 créé
+
+V -> TICKET: Pèse le vieux bijou\n(saisit poids + carat + type casse)
+TICKET -> DB: Ajoute ligne achat client\n(Casse18, 8.5g, 21k, 5000 DZD)
+DB --> TICKET: Ligne achat ajoutée
+
+V -> TICKET: Scanne le nouveau bijou\n(ex: bague massif 12g 21k)
+TICKET -> DB: Vérifie stock + prix\n(calcul: poids × cours marché + main d'oeuvre)
+DB --> TICKET: Stock OK, prix = 12000 DZD
+V -> TICKET: Ajoute ligne vente au même bon
+TICKET -> DB: Ajoute ligne vente\n(type: massif, poids: 12g, 12000 DZD)
+DB --> TICKET: Ligne vente ajoutée
+
+TICKET -> TICKET: Calcule la balance\n12000 - 5000 = 7000 DZD (client doit)
+TICKET --> V: Balance: Client doit 7000 DZD
+
+C -> V: Paie 3000 DZD maintenant\n(versé), le reste plus tard
+V -> TICKET: Ajoute ligne versé (3000 DZD)
+TICKET -> DB: Enregistre versement\n+ solde impayé: 4000 DZD
+DB --> TICKET: payment_status = partiel
+
+TICKET -> INV: Déduit nouveau bijou\ndu stock (12g 21k massif)
+TICKET -> INV: Ajoute vieux bijou\na stock refonte (Casse18, 8.5g)
+TICKET -> ACC: Crée écriture comptable\n(vente 12000 + achat 5000\n+ caisse 3000 + créance 4000)
+
+TICKET --> V: Bon imprimé avec toutes\nles lignes + solde
+V -> C: Remet le nouveau bijou\n+ bon d'achat du vieux
+
+note over V, C: Semaine suivante...
+C -> V: Vient payer le solde (4000 DZD)
+V -> TICKET: Ajoute ligne solde (4000 DZD)
+TICKET -> DB: Marque le bon\npayment_status = payé
+TICKET --> V: Reçu du solde imprimé
+V -> C: Remet le reçu
+@enduml

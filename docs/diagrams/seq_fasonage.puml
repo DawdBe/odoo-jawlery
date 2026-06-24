@@ -1,0 +1,54 @@
+@startuml
+!theme plain
+title "Séquence 2: Fasonage (Service Atelier via Table de Prix)"
+
+actor "Client" as C2
+actor "Employé de Poste" as V2
+participant "Service Atelier\n(service.order)" as SRV
+database "Base de Données\nOdoo" as DB2
+participant "Atelier\n(Façonneur - AT)" as AT
+participant "Inventaire" as INV2
+participant "Comptabilité" as ACC2
+
+C2 -> V2: Apporte 20g d'or 21k\n(Casse21) pour faire une bague
+V2 -> SRV: Crée un ordre de service fasonage
+SRV -> DB2: Enregistre le client,\nl'or reçu (20g, Casse21, 21k)
+note right DB2: Poids brut: 20g\nType: Casse21\nKarat: 21k
+DB2 --> SRV: Ordre #SVC-001 créé (état: reçu)
+
+V2 -> SRV: Saisit le style\n(style: massif, modèle bague)
+SRV -> DB2: Consulte table de prix atelier\nmassif = 600 DZD/g (fourni par AT)
+note right DB2: atelier.price.table:\nAtelier B1, style massif\n600 DZD/g, valide depuis 01/2024
+DB2 --> SRV: Prix atelier: 600 DZD/g\nCoût estimé: 18.5g × 600 = 11,100 DZD
+
+V2 -> SRV: Envoie l'or à l'atelier
+SRV -> INV2: Déduit 20g Casse21 du stock magasin
+SRV -> INV2: Ajoute 20g Casse21 au stock atelier (transfert)
+SRV -> DB2: Met à jour statut: "En cours de fasonage"
+
+AT -> SRV: Confirme réception de l'or (20g Casse21 reçus)
+SRV -> DB2: Log de transfert + date de réception atelier
+
+note over SRV, AT: Quelques jours plus tard...
+
+AT -> SRV: Marque comme "Prêt"\n(bague: 18.5g fini, 1.5g déchet)
+SRV -> DB2: Enregistre poids fini (18.5g)\n+ déchet (1.5g = 7.5%)
+note right DB2: Poids fini: 18.5g\nDéchet: 1.5g\nCoût: 18.5×600=11,100 DZD
+DB2 --> SRV: Statut: "Prêt à récupérer"
+
+SRV -> V2: Notification: bague prête
+V2 -> C2: Appelle le client
+
+C2 -> V2: Vient récupérer la bague
+V2 -> SRV: Affiche l'ordre #SVC-001
+SRV --> V2: Détail: 20g Casse21 → 18.5g bague\n+ 1.5g déchet + 11,100 DZD service
+
+C2 -> V2: Paie le service (11,100 DZD)\n+ récupère son bijou
+V2 -> SRV: Enregistre le paiement\n+ crée bon unifié lié
+SRV -> ACC2: Crée facture de service\n+ écriture comptable
+SRV -> INV2: Ajoute 1.5g déchet Casse21\ndans le stock magasin (notre gain)
+SRV -> DB2: Met à jour statut: "Livré au client"
+
+V2 -> C2: Remet la bague + facture service
+note right V2: Le déchet (1.5g) reste\ndans notre stock = profit
+@enduml

@@ -1,0 +1,77 @@
+@startuml
+!theme plain
+title "Séquence 7: Crédit Double Fournisseur/Atelier (Poids + Cash)"
+
+actor "Fournisseur\n(FRS)" as FRS
+actor "Atelier\n(AT)" as AT
+actor "Employé" as V
+participant "Compte Fournisseur\n(supplier.account)" as ACC
+database "BDD" as DB
+participant "Achat\n(purchase.order)" as PO
+participant "Caisse\n(cash.register.line)" as REG
+
+== Scénario 1: FRS livre de l'or (consignation) ==
+FRS -> V: Livre 100g d'or Casse21 en consignation
+V -> PO: Crée ordre d'achat consignation
+PO -> DB: purchase_order créé\n(FRS C21, 100g, is_consignment=True)
+
+V -> ACC: Enregistre sur le compte FRS
+ACC -> DB: supplier.account mis à jour\nweight_balance = +100g\ncash_balance = 0 DZD
+note right DB: Solde FRS: 100g dû\n(le magasin lui doit 100g d'or)
+DB --> V: FRS: poids +100g, cash 0 DZD
+
+== Scénario 2: FRS vend des produits finis ==
+FRS -> V: Livre 3 bagues massif (45g total)
+V -> PO: Crée ordre d'achat standard
+V -> ACC: Cash dû au FRS
+ACC -> DB: supplier.account:\nweight_balance = +100g (inchangé)\ncash_balance = -135,000 DZD
+note right DB: cash_balance négatif =\nle magasin doit de l'argent au FRS
+DB --> V: FRS: poids 100g, cash -135,000 DZD
+
+== Scénario 3: Règlement en or (poids) ==
+V -> ACC: Décide de rendre 50g d'or au FRS
+ACC -> DB: supplier.account:\nweight_balance = +100g → +50g\nréduction de 50g
+DB --> V: FRS: poids 50g, cash -135,000 DZD
+
+V -> REG: Prend 50g Casse21\n(is_travel_cash si déplacement)
+REG -> DB: cash.register.line: sortie 50g\n(paiement FRS en or)
+V -> FRS: Remet 50g d'or Casse21
+
+== Scénario 4: Règlement en cash ==
+V -> ACC: Paie le solde cash au FRS
+ACC -> DB: supplier.account:\ncash_balance = -135,000 → 0 DZD
+DB --> V: FRS: poids 50g, cash 0 DZD
+
+V -> REG: Prend 135,000 DZD\n(is_travel_cash si déplacement)
+REG -> DB: cash.register.line: sortie 135,000 DZD
+V -> FRS: Remet 135,000 DZD en cash
+
+note over FRS, V: Le compte est soldé\n(poids et cash)
+
+== Scénario 5: Atelier (AT) fasonage ==
+AT -> V: Demande 20g Casse21 pour fasoner
+V -> ACC: Vérifie solde AT
+ACC --> V: AT: poids 0g, cash -50,000 DZD
+(AT doit de l'argent au magasin)
+
+V -> ACC: Enregistre retrait d'or\n(le magasin donne 20g à l'atelier)
+ACC -> DB: supplier.account AT:\nweight_balance = +20g\n(AT nous doit 20g d'or)
+note right DB: weight_balance positif =\nl'atelier nous doit du poids
+
+AT -> V: Livre les produits finis (18g)\n+ déchet 2g
+V -> ACC: Enregistre le retour\nweight_balance = +20g → +2g
+ACC -> DB: weight_balance après retour:\n+2g (AT doit encore 2g)
+DB --> V: AT: poids 2g, cash -50,000 DZD
+
+V -> ACC: Facture le fasonage\n1g × 600 DZD = 10,800 DZD
+ACC -> DB: supplier.account:\ncash_balance = -50,000 → -60,800 DZD
+
+note bottom of V
+  **Résumé du dual credit:**
+  weight_balance positif = le partenaire nous doit de l'or
+  weight_balance négatif = nous devons de l'or au partenaire
+  cash_balance positif = le partenaire nous doit de l'argent
+  cash_balance négatif = nous devons de l'argent au partenaire
+end note
+
+@enduml

@@ -1,0 +1,372 @@
+@startuml
+!theme plain
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam backgroundColor #FEFEFE
+
+title "Diagramme Entité-Relation — Base de Données Bijouterie"
+
+' === CORE ===
+entity "metal.type" as metal_type {
+  * id : integer <<generated>>
+  --
+  * name : varchar
+  * code : varchar
+  * purity_percentage : float
+  * karat_value : float
+  * is_casse : boolean
+  * active : boolean
+}
+
+entity "product.template" as product_template {
+  * id : integer <<generated>>
+  --
+  * name : varchar
+  * metal_type_id : integer <<FK>>
+  * metal_karat : float
+  * jewelry_category : varchar
+  * casse_category : varchar
+  * gross_weight : float
+  * stone_weight : float
+  * net_weight : float
+  * labor_cost : numeric
+  * wastage_percentage : float
+  * has_weight : boolean
+  * static_price : boolean
+  * profit_percentage : float
+  * barcode : varchar
+  * style : varchar
+  * margin_category_id : integer <<FK>>
+  * product_category_id : integer <<FK>>
+}
+
+entity "product.product" as product_product {
+  * id : integer <<generated>>
+  --
+  * product_tmpl_id : integer <<FK>>
+  * serial_number : varchar
+  * certificate_number : varchar
+  * current_weight : float
+  * location_id : integer <<FK>>
+}
+
+entity "gold.rate.history" as gold_rate_history {
+  * id : integer <<generated>>
+  --
+  * metal_type_id : integer <<FK>>
+  * bursa_rate : numeric
+  * market_rate : numeric
+  * market_spread : numeric
+  * is_active : boolean
+  * currency_id : integer <<FK>>
+  * source : varchar
+  * effective_date : date
+  * created_by : integer <<FK>>
+  * notes : text
+}
+
+entity "margin.category" as margin_category {
+  * id : integer <<generated>>
+  --
+  * name : varchar
+  * profit_percentage : float
+  * applicable_on : varchar
+}
+
+entity "atelier.price.table" as atelier_price_table {
+  * id : integer <<generated>>
+  --
+  * atelier_id : integer <<FK>>
+  * style : varchar
+  * metal_type_id : integer <<FK>>
+  * karat : float
+  * cost_per_gram : numeric
+  * valid_from : date
+  * valid_to : date
+  * notes : text
+}
+
+entity "res.partner" as res_partner {
+  * id : integer <<generated>>
+  --
+  * name : varchar
+  * client_code : varchar
+  * partner_type : varchar
+  * is_supplier : boolean
+  * is_atelier : boolean
+  * is_associated : boolean
+  * phone : varchar
+  * notes : text
+}
+
+' === TICKET ===
+entity "jewelry.ticket" as jewelry_ticket {
+  * id : integer <<generated>>
+  --
+  * name : varchar
+  * partner_id : integer <<FK>>
+  * date : datetime
+  * cashier_id : integer <<FK>>
+  * seller_id : integer <<FK>>
+  * payment_status : varchar
+  * product_status : varchar
+  * notes : text
+}
+
+entity "jewelry.ticket.line" as jewelry_ticket_line {
+  * id : integer <<generated>>
+  --
+  * ticket_id : integer <<FK>>
+  * line_type : varchar
+  * product_id : integer <<FK>>
+  * weight : float
+  * metal_type_id : integer <<FK>>
+  * karat : float
+  * casse_category : varchar
+  * description : varchar
+  * price_unit : numeric
+  * price_subtotal : numeric
+  * notes : text
+}
+
+' === PURCHASE ===
+entity "purchase.order" as purchase_order {
+  * id : integer <<generated>>
+  --
+  * name : varchar
+  * partner_id : integer <<FK>>
+  * date_order : datetime
+  * is_consignment : boolean
+  * gold_weight_in : float
+  * gold_weight_out : float
+  * gold_metal_type : integer <<FK>>
+  * gold_karat : float
+  * partner_type : varchar
+}
+
+entity "purchase.order.line" as purchase_order_line {
+  * id : integer <<generated>>
+  --
+  * order_id : integer <<FK>>
+  * product_id : integer <<FK>>
+  * weight : float
+  * metal_type_id : integer <<FK>>
+  * karat : float
+  * is_raw_gold : boolean
+  * unit_price_per_gram : numeric
+  * line_type : varchar
+}
+
+entity "supplier.account" as supplier_account {
+  * id : integer <<generated>>
+  --
+  * partner_id : integer <<FK>>
+  * partner_type : varchar
+  * weight_balance : float
+  * cash_balance : numeric
+  * last_rate_used : numeric
+  * last_transaction_date : datetime
+}
+
+' === CASH REGISTER ===
+entity "daily.cash.register" as daily_cash_register {
+  * id : integer <<generated>>
+  --
+  * name : varchar
+  * opening_balance : numeric
+  * closing_balance : numeric
+  * cashier_id : integer <<FK>>
+  * date : date
+  * state : varchar
+  * breakdown_2000 : integer
+  * breakdown_1000 : integer
+  * breakdown_500 : integer
+  * breakdown_200 : integer
+  * breakdown_100 : integer
+  * breakdown_50 : integer
+  * breakdown_20 : integer
+  * breakdown_10 : integer
+}
+
+entity "cash.register.line" as cash_register_line {
+  * id : integer <<generated>>
+  --
+  * register_id : integer <<FK>>
+  * ticket_id : integer <<FK>>
+  * amount : numeric
+  * type : varchar
+  * is_travel_cash : boolean (caisse voyage)
+  * journal_id : integer <<FK>>
+  * partner_id : integer <<FK>>
+  * weight : float
+  * reference : varchar
+  * description : varchar
+}
+
+' (Caisse de voyage simplifiée: champ is_travel_cash sur cash.register_line + journal dédié)
+
+' === SERVICE ===
+entity "service.order" as service_order {
+  * id : integer <<generated>>
+  --
+  * name : varchar
+  * partner_id : integer <<FK>>
+  * atelier_id : integer <<FK>>
+  * ticket_id : integer <<FK>>
+  * service_type : varchar
+  * style : varchar
+  * raw_gold_weight : float
+  * raw_gold_metal : integer <<FK>>
+  * raw_gold_karat : float
+  * finished_weight : float
+  * wastage_weight : float
+  * wastage_percentage : float
+  * status : varchar
+  * payment_status : varchar
+  * received_date : datetime
+  * estimated_ready_date : date
+  * notes : text
+}
+
+' === ACCOUNTING ===
+entity "account.move" as account_move {
+  * id : integer <<generated>>
+  --
+  * name : varchar
+  * date : date
+  ' double comptabilité reportée
+  * jewelry_operation_type : varchar
+  * weight_total : float
+  * casse_category : varchar
+  * partner_id : integer <<FK>>
+}
+
+entity "account.move.line" as account_move_line {
+  * id : integer <<generated>>
+  --
+  * move_id : integer <<FK>>
+  * account_id : integer <<FK>>
+  * partner_id : integer <<FK>>
+  * weight : float
+  * metal_type_id : integer <<FK>>
+  * karat : float
+  * quantity : float
+  * price_unit : numeric
+  * balance : numeric
+}
+
+' === INVENTORY ===
+entity "stock.quant" as stock_quant {
+  * id : integer <<generated>>
+  --
+  * product_id : integer <<FK>>
+  * location_id : integer <<FK>>
+  * quantity : float
+  * weight_total : float
+  * metal_type_id : integer <<FK>>
+  * karat : float
+  * casse_category : varchar
+}
+
+entity "stock.move" as stock_move {
+  * id : integer <<generated>>
+  --
+  * product_id : integer <<FK>>
+  * location_id : integer <<FK>>
+  * location_dest_id : integer <<FK>>
+  * product_uom_qty : float
+  * weight_total : float
+  * metal_type_id : integer <<FK>>
+  * karat : float
+  * move_type : varchar
+}
+
+entity "stock.inventory.weight" as stock_inventory_weight {
+  * id : integer <<generated>>
+  --
+  * name : varchar
+  * date : date
+  * state : varchar
+  * total_weight_before_casse18 : float
+  * total_weight_after_casse18 : float
+  * total_weight_before_casse21 : float
+  * total_weight_after_casse21 : float
+  * total_weight_before_casse22 : float
+  * total_weight_after_casse22 : float
+  * total_weight_before_casse14 : float
+  * total_weight_after_casse14 : float
+  * total_weight_before_argent : float
+  * total_weight_after_argent : float
+}
+
+entity "stock.inventory.weight.line" as stock_inventory_weight_line {
+  * id : integer <<generated>>
+  --
+  * inventory_id : integer <<FK>>
+  * product_id : integer <<FK>>
+  * casse_category : varchar
+  * weight_before : float
+  * weight_after : float
+  * notes : text
+}
+
+' === PRODUCT CATEGORY & DASHBOARD ===
+entity "product.category" as product_category {
+  * id : integer <<generated>>
+  --
+  * name : varchar
+  * default_profit_margin : float
+  * is_jewelry : boolean
+  * casse_type : varchar
+}
+
+' === RELATIONS ===
+metal_type ||--o{ product_template : classifies
+metal_type ||--o{ gold_rate_history : prices_by_date
+metal_type ||--o{ atelier_price_table : prices
+product_template ||--o{ product_product : has_variants
+product_category ||--o{ product_template : categorized_by
+margin_category ||--o{ product_template : priced_by
+res_partner ||--o{ atelier_price_table : provides
+
+res_partner ||--o{ jewelry_ticket : creates
+jewelry_ticket ||--|| jewelry_ticket_line : contains
+jewelry_ticket_line }o--|| product_product : references
+
+res_partner ||--o{ purchase_order : orders
+purchase_order ||--|| purchase_order_line : contains
+res_partner ||--|| supplier_account : has_account
+supplier_account ||--o{ purchase_order : tracks
+
+res_partner ||--o{ daily_cash_register : cashier
+daily_cash_register ||--|| cash_register_line : contains
+jewelry_ticket ||--|| cash_register_line : references
+' caisse voyage via is_travel_cash sur cash_register_line
+
+res_partner ||--o{ service_order : requests
+res_partner ||--o{ service_order : atelier
+jewelry_ticket ||--|| service_order : linked_to
+metal_type ||--o{ service_order : raw_metal
+atelier_price_table ||--o{ service_order : priced_by
+
+res_partner ||--o{ account_move : partner
+account_move ||--|| account_move_line : lines
+' pas de dual entry - reporté
+
+product_product ||--o{ stock_quant : quantity_in
+product_product ||--o{ stock_move : moved_by
+stock_inventory_weight ||--|| stock_inventory_weight_line : lines
+product_product ||--o{ stock_inventory_weight_line : counts
+
+legend bottom
+  **Légende:**
+  * id = Clé primaire (PK)
+  <<FK>> = Clé étrangère
+  ||--|| = Relation 1:1
+  ||--o{ = Relation 1:N
+  }o--|| = Relation N:1
+  ---
+  Modèles Odoo avec champs réels du projet
+endlegend
+
+@enduml

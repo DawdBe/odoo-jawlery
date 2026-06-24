@@ -1,0 +1,357 @@
+@startuml
+!theme plain
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+' ============================================
+' PACKAGE: jewelry_core (Socle)
+' Fusionne base + pricing + inventaire
+' ============================================
+package "jewelry_core" as CORE {
+  class "metal.type" as MetalType {
+    - name : Char (required)
+    - code : Char (AU, AG, PT)
+    - purity_percentage : Float
+    - karat_value : Float
+    - active : Boolean
+    - is_casse : Boolean (or de récup)
+    -- Méthodes --
+    + get_current_rate(rate_type) : Float
+  }
+
+  class "gold.rate.history" as GoldRate {
+    - metal_type_id : Many2one(metal.type)
+    - bursa_rate : Monetary (cours bourse)
+    - market_rate : Monetary (cours marché réel)
+    - market_spread : Monetary (écart bourse/marché)
+    - is_active : Boolean
+    - currency_id : Many2one(res.currency)
+    - source : Selection (API / Manuel)
+    - effective_date : Date
+    - created_by : Many2one(res.users)
+    - notes : Text
+  }
+
+  class "product.template" as ProductTemplate {
+    - metal_type_id : Many2one(metal.type)
+    - metal_karat : Float (18/21/22/14/24)
+    - jewelry_category : Selection (fini/brut/pierre/fourniture)
+    - casse_category : Selection (casse18/casse21/casse22/casse14/argent_casse/or_article/or_fin/or_750)
+    - gross_weight : Float (g)
+    - stone_weight : Float (g)
+    - net_weight : Float (g) [compute]
+    - labor_cost : Monetary
+    - wastage_percentage : Float
+    - has_weight : Boolean
+    - static_price : Boolean
+    - profit_percentage : Float
+    - barcode : Char (casse+karat+poids+ref+style)
+    - margin_category_id : Many2one(margin.category)
+    - style : Selection (massif/massif_lux/bataille/massif_controlé/mesaise)
+    -- Méthodes --
+    + compute_price() : Monetary
+  }
+
+  class "product.product" as ProductProduct {
+    - serial_number : Char
+    - certificate_number : Char
+    - current_weight : Float (g)
+    - location_id : Many2one(stock.location)
+  }
+
+  class "product.category" as ProductCategory {
+    - default_profit_margin : Float
+    - is_jewelry : Boolean
+    - casse_type : Selection
+  }
+
+  class "margin.category" as MarginCategory {
+    - name : Char
+    - profit_percentage : Float
+    - applicable_on : Selection (all/product/category/style)
+  }
+
+  class "stock.quant" as StockQuant {
+    - product_id : Many2one(product.product)
+    - location_id : Many2one(stock.location)
+    - quantity : Float
+    - weight_total : Float (g)
+    - metal_type_id : Many2one(metal.type)
+    - karat : Float
+    - casse_category : Selection
+    - estimated_value : Monetary [compute]
+  }
+
+  class "stock.move" as StockMove {
+    - product_id : Many2one(product.product)
+    - location_id : Many2one(stock.location)
+    - location_dest_id : Many2one(stock.location)
+    - product_uom_qty : Float
+    - weight_total : Float (g)
+    - metal_type_id : Many2one(metal.type)
+    - karat : Float
+    - move_type : Selection (achat/vente/transfert/fasonage)
+  }
+
+  class "stock.inventory.weight" as WeightInventory {
+    - name : Char
+    - date : Date
+    - state : Selection (draft/in_progress/done)
+    - total_weight_before_casse18/21/22/14/argent : Float
+    - total_weight_after_casse18/21/22/14/argent : Float
+    - difference_weight : Float [compute]
+    -- Méthodes --
+    + reconcile_weights() : void
+  }
+
+  class "stock.inventory.weight.line" as WeightInventoryLine {
+    - inventory_id : Many2one(stock.inventory.weight)
+    - product_id : Many2one(product.product)
+    - casse_category : Selection
+    - weight_before : Float
+    - weight_after : Float
+    - weight_difference : Float [compute]
+    - notes : Text
+  }
+
+  class "res.partner" as ResPartner {
+    - client_code : Char
+    - partner_type : Selection (client/FRS/atelier/associé)
+    - is_supplier : Boolean
+    - is_atelier : Boolean
+    - is_associated : Boolean
+    - phone : Char
+    - notes : Text
+  }
+
+  MetalType "1" -- "0..*" GoldRate : rates
+  MetalType "1" -- "0..*" ProductTemplate : classifies
+  ProductTemplate "1" -- "0..*" ProductProduct : has_variants
+  ProductCategory "1" -- "0..*" ProductTemplate : categorized_by
+  MarginCategory "1" -- "0..*" ProductTemplate : priced_by
+  ProductProduct --> StockQuant : quantity_in
+  ProductProduct --> StockMove : moved_by
+  WeightInventory "1" -- "0..*" WeightInventoryLine : lines
+  WeightInventoryLine --> ProductProduct : counts
+}
+
+' ============================================
+' PACKAGE: jewelry_transactions (Cœur Métier)
+' Fusionne ticket + purchase + service + cash_register
+' ============================================
+package "jewelry_transactions" as TRANS {
+
+  class "jewelry.ticket" as JewelryTicket {
+    - name : Char (bon #)
+    - partner_id : Many2one(res.partner)
+    - date : Datetime
+    - cashier_id : Many2one(res.users)
+    - seller_id : Many2one(res.users)
+    - payment_status : Selection (impaye/partiel/paye)
+    - product_status : Selection (en_stock/en_fasonage/termine/donne_au_client)
+    - total_cash_in : Monetary [compute]
+    - total_cash_out : Monetary [compute]
+    - balance : Monetary [compute]
+    - notes : Text
+    -- Méthodes --
+    + compute_balance() : Monetary
+    + register_payment(amount) : void
+  }
+
+  class "jewelry.ticket.line" as TicketLine {
+    - ticket_id : Many2one(jewelry.ticket)
+    - line_type : Selection (vente/achat/service/fasonage/versé/solde/remise)
+    - product_id : Many2one(product.product)
+    - weight : Float (g)
+    - metal_type_id : Many2one(metal.type)
+    - karat : Float
+    - casse_category : Selection
+    - description : Char
+    - price_unit : Monetary
+    - price_subtotal : Monetary
+    - notes : Text
+  }
+
+  class "purchase.order" as PurchaseOrder {
+    - name : Char
+    - partner_id : Many2one(res.partner)
+    - date_order : Datetime
+    - is_consignment : Boolean
+    - gold_weight_in : Float
+    - gold_weight_out : Float
+    - gold_metal_type : Many2one(metal.type)
+    - gold_karat : Float
+    - partner_type : Selection (fournisseur/atelier)
+    -- Méthodes --
+    + settle_gold_trade() : void
+  }
+
+  class "purchase.order.line" as PurchaseOrderLine {
+    - product_id : Many2one(product.product)
+    - weight : Float (g)
+    - metal_type_id : Many2one(metal.type)
+    - karat : Float
+    - is_raw_gold : Boolean
+    - unit_price_per_gram : Monetary
+    - line_type : Selection (achat/transfert/consignation)
+  }
+
+  class "supplier.account" as SupplierAccount {
+    - partner_id : Many2one(res.partner)
+    - partner_type : Selection (fournisseur/atelier)
+    - weight_balance : Float (g) (poids dû)
+    - cash_balance : Monetary (argent dû)
+    - last_rate_used : Monetary
+    - last_transaction_date : Datetime
+    -- Méthodes --
+    + compute_weight_value(current_rate) : Monetary
+    + record_sale(weight, cash) : void
+    + record_return(weight) : void
+    + record_cash_payment(amount) : void
+  }
+
+  class "service.order" as ServiceOrder {
+    - name : Char
+    - partner_id : Many2one(res.partner)
+    - atelier_id : Many2one(res.partner)
+    - ticket_id : Many2one(jewelry.ticket)
+    - service_type : Selection (fasonage/reparation/dorure/argenture/gravure/goupelle)
+    - style : Selection (massif/massif_lux/bataille/massif_controlé/mesaise/or_750)
+    - raw_gold_weight : Float (g)
+    - raw_gold_metal : Many2one(metal.type)
+    - raw_gold_karat : Float
+    - finished_weight : Float (g)
+    - wastage_weight : Float (g) [compute]
+    - wastage_percentage : Float
+    - status : Selection (received/in_progress/ready/delivered)
+    - payment_status : Selection (impaye/partiel/paye)
+    - price_from_table : Monetary [compute]
+    - received_date : Datetime
+    - estimated_ready_date : Date
+    - notes : Text
+    -- Méthodes --
+    + compute_wastage() : Float
+    + lookup_price_from_table() : Monetary
+  }
+
+  class "atelier.price.table" as AtelierPriceTable {
+    - atelier_id : Many2one(res.partner)
+    - style : Selection (massif/massif_lux/bataille/massif_controlé/mesaise/or_750)
+    - metal_type_id : Many2one(metal.type)
+    - karat : Float
+    - cost_per_gram : Monetary
+    - valid_from : Date
+    - valid_to : Date
+    - notes : Text
+  }
+
+  class "daily.cash.register" as DailyCash {
+    - name : Char
+    - opening_balance : Monetary
+    - closing_balance : Monetary
+    - expected_balance : Monetary [compute]
+    - difference : Monetary [compute]
+    - cashier_id : Many2one(res.users)
+    - date : Date
+    - state : Selection (open/closed/verified)
+    - breakdown_2000/1000/500/200/100/50/20/10 : Integer
+    -- Méthodes --
+    + compute_difference() : Monetary
+    + close_register() : void
+  }
+
+  class "cash.register.line" as CashLine {
+    - register_id : Many2one(daily.cash.register)
+    - ticket_id : Many2one(jewelry.ticket)
+    - amount : Monetary
+    - type : Selection (entrée/sortie)
+    - is_travel_cash : Boolean (caisse de voyage)
+    - journal_id : Many2one(account.journal)
+    - partner_id : Many2one(res.partner)
+    - weight : Float (g)
+    - description : Char
+    - reference : Char
+  }
+
+  JewelryTicket "1" -- "0..*" TicketLine : contains
+  ResPartner "1" -- "0..*" JewelryTicket : participates
+  PurchaseOrder "1" -- "0..*" PurchaseOrderLine : contains
+  SupplierAccount "1" -- "0..*" PurchaseOrder : tracks
+  ResPartner "1" -- "0..*" PurchaseOrder : orders
+  ResPartner "1" -- "1" SupplierAccount : has_account
+  DailyCash "1" -- "0..*" CashLine : contains
+  CashLine --> JewelryTicket : references
+  ServiceOrder --> JewelryTicket : linked_to
+  ServiceOrder --> AtelierPriceTable : priced_by
+  ResPartner "1" -- "0..*" AtelierPriceTable : provides
+  TRANS --> CORE : uses metal.type,\nproduct, stock
+}
+
+' ============================================
+' PACKAGE: jewelry_accounting (Rapports)
+' ============================================
+package "jewelry_accounting" as ACCOUNTING {
+  class "account.move" as AccountMove {
+    - name : Char
+    - date : Date
+    - jewelry_operation_type : Selection (vente/achat/fasonage/service/frais/associé/personnel/invest/transfert/versé/solde/remise)
+    - weight_total : Float
+    - casse_category : Selection
+    - partner_id : Many2one(res.partner)
+    -- Méthodes --
+    + generate_legal_report() : void
+  }
+
+  class "account.move.line" as AccountMoveLine {
+    - account_id : Many2one(account.account)
+    - partner_id : Many2one(res.partner)
+    - weight : Float
+    - metal_type_id : Many2one(metal.type)
+    - karat : Float
+    - quantity : Float
+    - price_unit : Monetary
+    - balance : Monetary
+  }
+}
+
+' ============================================
+' PACKAGE: jewelry_dashboard (UI)
+' ============================================
+package "jewelry_dashboard" as DASHBOARD {
+  class "dashboard.360" as Dashboard360 {
+    - total_cash : Monetary
+    - weight_casse18/21/22/14/argent : Float
+    - today_sales : Monetary
+    - today_profit : Monetary
+    - pending_payments : Monetary
+    - pending_fasonages : Integer
+    - gold_rate_21k_bursa/market : Monetary
+    - gold_rate_18k_bursa/market : Monetary
+    - silver_rate : Monetary
+    - last_update : Datetime
+  }
+}
+
+' ============================================
+' RELATIONS INTER-PACKAGES
+' ============================================
+JewelryTicket --> StockMove : generates_moves
+JewelryTicket --> AccountMove : generates_invoice
+PurchaseOrder --> StockMove : generates
+ServiceOrder --> StockMove : from_raw_to_finished
+DailyCash --> ResPartner : cashier
+CashLine --> SupplierAccount : impacts_balance
+SupplierAccount --> ResPartner : fournisseur/atelier
+AccountMove --> ResPartner : partner
+
+legend bottom
+  **4 modules custom:**
+  jewelry_core = Socle (métaux, cours, produits, inventaire)
+  jewelry_transactions = Métier (ticket, achats, services, caisse)
+  jewelry_accounting = Rapports (écritures, bilans)
+  jewelry_dashboard = UI (vue 360°)
+  ---
+  Caisse voyage = champ is_travel_cash sur cash.register.line
+endlegend
+
+@enduml

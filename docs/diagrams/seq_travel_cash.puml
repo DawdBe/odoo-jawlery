@@ -1,0 +1,66 @@
+@startuml
+!theme plain
+title "Séquence 8: Caisse de Voyage (via is_travel_cash sur cash.register.line)"
+
+actor "Responsable\nVoyage" as RV
+participant "Caisse\n(daily.cash.register)" as REG
+database "BDD" as DB
+participant "Fournisseur\n(FRS/AT)" as SUP
+participant "Compte Fournisseur\n(supplier.account)" as SACC
+
+note over RV, REG
+  La caisse de voyage n'est PAS un modèle séparé.
+  C'est un champ is_travel_cash=True sur cash.register.line
+  + un account.journal dédié "Caisse Voyage".
+end note
+
+== Alimentation ==
+RV -> REG: Alimenter caisse voyage\n200,000 DZD depuis caisse magasin
+REG -> DB: cash.register.line:\n+200,000 DZD\nis_travel_cash=True\njournal = "Caisse Voyage"
+note right DB: Caisse voyage: 200,000 DZD
+
+== Dépense 1: Achat or chez FRS ==
+RV -> SUP: Achète 50g Casse21\nchez FRS Ahmed (460,000 DZD)
+
+RV -> REG: Payer FRS Ahmed\n(460,000 DZD)
+REG -> DB: cash.register.line:\n-460,000 DZD\nis_travel_cash=True\npartner = FRS Ahmed
+note right DB: Caisse voyage: 200,000 - 460,000 = -260,000 DZD\n(avance personnelle du responsable)
+
+REG -> SACC: Met à jour compte FRS\ncash_balance = -460,000 DZD
+
+== Dépense 2: Paiement atelier ==
+RV -> SUP: Paie AT B1 pour fasonage (45,000 DZD)
+RV -> REG: Dépense 45,000 DZD
+REG -> DB: cash.register.line:\n-45,000 DZD\nis_travel_cash=True\npartner = AT B1
+
+REG -> SACC: Met à jour compte AT B1\ncash_balance = -45,000 DZD
+
+== Dépense 3: Frais de voyage ==
+RV -> REG: Frais déplacement\n(mazot 5,000 + repas 3,000 + péage 1,000)
+REG -> DB: cash.register.line:\n-9,000 DZD\nis_travel_cash=True\ndescription = frais voyage
+
+== Rapatriement ==
+RV -> RV: Retour au magasin
+
+alt Solde positif
+  REG -> DB: cash.register.line:\nrapatriement +X DZD\n(is_travel_cash, cible = caisse magasin)
+else Solde négatif (avance personnelle)
+  note right RV: Avance personnelle: 314,000 DZD\n(à rembourser au responsable)
+  REG -> RV: Rembourse l'avance\n314,000 DZD depuis caisse magasin
+end
+
+RV -> REG: Fermer enregistrements voyage
+REG -> DB: is_travel_cash lines clôturées
+
+note over REG
+  Résumé du voyage:
+  - Alimentation: +200,000 DZD
+  - Achat or FRS: -460,000 DZD
+  - Fasonage AT: -45,000 DZD
+  - Frais voyage: -9,000 DZD
+  - Total: -314,000 DZD (avance)
+  (Tout est dans cash.register.line
+   avec is_travel_cash=True)
+end note
+
+@enduml

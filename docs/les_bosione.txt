@@ -1,0 +1,28 @@
+		The principele needs from the software for jawlery shop 
+
+* make an easy globaly billant ... ( you can have details about how it work on the file "billant magasin" )
+* a 360 dashboard .. that show the curent cash the magasin have and the curent weights they have for diffrent type of goald ..
+	for gold types we have ( 28k , 21k , 18k (750 , 720 , 710 , 705 ), and there is argent )
+* an inventory for diffrent articel .. ( there is some article we need to get there weights and there some we don't need )
+	in the inventory we can see the cost of the product .. like the working cost , the gold weight cost ..ect , and we can see the profit .. and decide the persentage of the profit for each article type alone . so it affect to all product .. 
+* get the gold price from the api from the bource and transfare it to the algerian dinnare based on the parellel price like the apps ( changeDa , gold price live )
+* a codebare for each product exist 
+* the gemstones dosen't count alone .. they be weithed with the ring and stuff 
+* the client need tow software .. one that run in real ... like on the leagal agriment and factuers taxs .. ect .. for goverment show .. and the other one that count the real balance .. 
+* from the excel "caisse magasine "get all the vocabulary to use and the logice and the diffrent types . 
+* fasonage is the effect of transfer gold to products .. and this job have a table for each product how much it cost . and this change from time to time .. so make sure to let the user enter them in a specific way so it count from there the cost of the new items 
+* ofc track all clients history .. so in any time i can acess to any client and see all the trasaction with him for any date given or date range .. and can print it as a report . clinet or fornisure or even an atulier 
+* there is some products that don't need a wegiht have a static price . 
+* all operations can be printed . 
+* and a bon can have multible operations on it .. exmple ( a clinet come and sell a ring and bouth another ring , then he add the diffrence or we give hime the diffrence it depance ) and a bon can not be payed all .. maybe just versed .. and the client will give the rest later 
+* look for the vurnabelities that are possible in this system and sugest soulustions for them 
+* client transactions : . can buy a product normally 
+			. can sella his product and buy a new product from us and add or give hime the diffrence .. (like the example bellow )
+			. can sell a product 
+			. can give a raw cold to transfare it to a new product ( fasonage ) + pay for the fasonage ofc 
+		in summary (achat , vent , double_opiration ( sell and buy in the same time ))
+
+* fourniceour and atl : . give hime gold to from it 
+			. they give me gold to from it 
+			. credit of money between us 
+			. and the service and that stuff discount from the credit between us  

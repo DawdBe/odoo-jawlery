@@ -1,0 +1,46 @@
+@startuml
+!theme plain
+title "Activité: Clôture de Caisse"
+
+start
+:Ouverture caisse;
+:Comptage initial\n(2000×N + 1000×N + 500×N\n+ 200×N + 100×N + 50×N\n+ 20×N + 10×N);
+
+repeat
+  :Enregistrer transaction;
+  :Vente / Achat / Service\n/ Versé / Solde / Frais;
+repeat while (Encore des opérations?) is (Oui)
+->Non;
+
+:Calculer solde attendu caisse magasin\n(ouverture + ventes - dépenses);
+
+:Compter caisse physique\n(décompte par billet);
+
+if (Écart entre solde attendu\net caisse physique?) then (== 0)
+  :Caisse magasin OK;
+else (≠ 0)
+  :Analyser écart;
+  if (Écart justifiable?) then (Oui)
+    :Ajouter note explicative;
+    :Valider avec approbation admin;
+  else (Non)
+    :Marquer écart (pending investigation);
+    :Notifier Admin;
+  endif
+endif
+
+:Rapprocher caisse de voyage;
+:Vérifier solde caisse voyage\nvs. opérations enregistrées;
+
+if (Écart caisse voyage?) then (== 0)
+  :Caisse voyage OK;
+else (≠ 0)
+  :Analyser écart caisse voyage;
+  :Ajuster ou notifier;
+endif
+
+:Imprimer rapport de clôture\n(magasin + voyage);
+:Signer clôture\n(caissier + témoin);
+
+stop
+@enduml

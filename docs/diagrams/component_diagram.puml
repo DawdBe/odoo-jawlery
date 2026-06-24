@@ -1,0 +1,66 @@
+@startuml
+!theme plain
+skinparam componentStyle rectangle
+skinparam backgroundColor #FEFEFE
+
+title "Diagramme de Composants — Modules Odoo Bijouterie"
+
+package "<color:blue>Modules Personnalisés (4)</color>" as CUSTOM {
+  [jewelry_core] as CORE
+  [jewelry_transactions] as TRANS
+  [jewelry_accounting] as ACCTG
+  [jewelry_dashboard] as DASH
+}
+
+package "<color:green>Modules Odoo Standard</color>" as ODOO {
+  [product] as PROD
+  [stock] as STOCK
+  [account] as ACCT
+  [purchase] as PURCHASE
+  [res.partner] as PARTNER
+  [uom] as UOM
+}
+
+package "<color:orange>Services Externes</color>" as EXT {
+  (API Bourse) as API
+  (Scanner Code-barres) as SCAN
+  (Imprimante) as PRINTER
+}
+
+' === Dépendances ===
+CORE --> PROD : extends product.template
+CORE --> STOCK : extends stock.quant, stock.move
+CORE --> UOM : uses uom
+CORE --> PARTNER : uses res.partner
+
+TRANS --> CORE : uses metal.type, gold.rate,\nproduct, stock
+TRANS --> ACCT : posts account.move
+TRANS --> PURCHASE : extends purchase.order
+TRANS --> PARTNER : uses res.partner
+
+ACCTG --> TRANS : reads tickets, cash registers
+ACCTG --> CORE : reads stock, products
+ACCTG --> ACCT : extends account.move
+
+DASH --> ACCTG : aggregates reports
+DASH --> CORE : reads gold rates, stock weights
+DASH --> TRANS : reads ticket status
+
+' === Services externes ===
+CORE --> API : fetches gold rate
+TRANS --> SCAN : reads barcodes
+TRANS --> PRINTER : prints receipts, tickets
+TRANS --> PRINTER : prints closure reports
+
+legend bottom
+  **Légende:**
+  Modules personnalisés (créés de zéro)
+  Modules Odoo standard (hérités/étendus)
+  Services externes
+  ---
+  Flèche = dépendance (le module source dépend de la cible)
+  extends = héritage Odoo (classe python _inherit/_name)
+  uses = dépend fonctionnelle
+endlegend
+
+@enduml

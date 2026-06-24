@@ -1,0 +1,88 @@
+@startuml
+!theme plain
+skinparam packageStyle rectangle
+skinparam backgroundColor #FEFEFE
+skinparam defaultTextAlignment center
+
+title "Vue d'Ensemble — Architecture Bijouterie (4 Modules)"
+
+package "jewelry_core" as CORE <<Socle>> {
+  [metal.type] as MT
+  [gold.rate.history] as GRH
+  [margin.category] as MC
+  [pricing.rule] as PR
+  [product.template] as PT
+  [stock.quant] as SQ
+  [stock.move] as SM
+  [stock.inventory.weight] as SIW
+  [stock.inventory.weight.line] as SIWL
+  [barcode.generate.wizard] as BGW
+}
+
+package "jewelry_transactions" as TRANS <<Cœur Métier>> {
+  [jewelry.ticket] as JT
+  [jewelry.ticket.line] as JTL
+  [supplier.account] as SA
+  [service.order] as SO
+  [atelier.price.table] as APT
+  [daily.cash.register] as DCR
+  [cash.register.line] as CRL
+  [purchase.order] as PO
+}
+
+package "jewelry_accounting" as ACCTG <<Rapports>> {
+  [account.move] as AM
+  [account.move.line] as AML
+  [report.global.balance] as RGB
+  [report.profit.margin] as RPM
+  [report.weights.summary] as RWS
+}
+
+package "jewelry_dashboard" as DASH <<UI>> {
+  (Dashboard 360°) as D360
+}
+
+' === Core → Transactions ===
+CORE --> TRANS : fournit métaux, cours,\nproduits, marges
+
+' === Relations intra-Core ===
+MT --> GRH : rates
+MT --> PT : classifies
+MC --> PT : margin
+PT --> SQ : quantity_in
+PT --> SM : moved_by
+SQ --> SM : updates
+SIW "1" --> "0..*" SIWL : lines
+
+' === Relations intra-Transactions ===
+JT "1" --> "0..*" JTL : contains
+DCR "1" --> "0..*" CRL : lines
+CRL --> JT : references
+JT "1" --> "0..*" SO : linked_to
+SO --> APT : priced_by
+SA --> PO : tracks
+SA --> JT : linked
+PO --> SM : generates
+JT --> SM : generates_moves
+
+' === Core + Transactions → Accounting ===
+JT --> AM : generates_invoice
+AM "1" --> "0..*" AML : lines
+TRANS --> ACCTG : fournit tickets
+CORE --> ACCTG : fournit poids, stock
+
+' === Accounting → Dashboard ===
+ACCTG --> DASH : donnees agregees
+CORE --> DASH : cours, stocks
+
+' === Legend ===
+legend bottom
+  **Légende:**
+  [Modèle Odoo] = Table PostgreSQL
+  (Composant UI) = Vue / Action Odoo
+  ---> = Flux de données (lecture)
+  --> = Relation directe (FK)
+  1 --> 0..* = Un-à-plusieurs
+endlegend
+
+@enduml

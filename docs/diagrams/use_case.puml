@@ -1,0 +1,143 @@
+@startuml
+!theme plain
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+
+actor "Admin\n(Propriétaire)" as Admin
+actor "Cassier" as Cassier
+actor "Employé de Poste\n(Vendeur)" as Vendeur
+actor "Client" as Client
+actor "Fournisseur\n(FRS)" as Fournisseur
+actor "Atelier\n(Façonneur / AT)" as Atelier
+
+rectangle "Système de Gestion\nBijouterie - Odoo 17" as System {
+
+  ' === ADMIN ===
+  usecase "UC01" as UC01_1
+  usecase "Gérer les produits\n(CRUD + catégories + poids)" as UC01
+  usecase "Gérer les types\nde métaux et casse\n(18k,21k,22k,14k,Arg.)" as UC02
+  usecase "Mettre à jour le cours\n(Bourse + Marché avec écart)" as UC03
+  usecase "Configurer l'écart\nBourse/Marché" as UC03b
+  usecase "Configurer les marges\npar catégorie (ex: massif,\nmesaise, bataille, lux)" as UC04
+  usecase "Dashboard 360°\n(caisse + poids par casse\n+ profits du jour/mois)" as UC05
+  usecase "Bilan global" as UC06
+  usecase "Rapports financiers\n(CA, marges inventaire)" as UC07
+  usecase "Gérer utilisateurs\net rôles" as UC08
+  usecase "Gérer fournisseurs\net ateliers (solde poids\n+ solde financier)" as UC10
+  usecase "Recalcul prix\naprès changement cours" as UC11
+  usecase "Inventaire physique\n(comparaison poids)" as UC12
+
+  ' === CASHIER ===
+  usecase "Encaisser paiements\n(espèces/carte)" as UC13
+  usecase "Paiement partiel\n(versé + solde)" as UC14
+  usecase "Clôturer caisse\n(comptage 2000/1000/500/200/\n100/50/20/10 DZD)" as UC15
+  usecase "Imprimer reçus\net factures" as UC16
+  usecase "Gérer bons unifiés\n(toutes opérations)" as UC17
+  usecase "Gérer caisse de voyage\n(caisse séparée)" as UC18
+
+  ' === VENDEUR ===
+  usecase "Vente simple\n(produit fini, poids, prix)" as UC19
+  usecase "Achat client / rachat\n(or, argent, bijou)" as UC20
+  usecase "Double opération\n(vente + rachat simultané)" as UC21
+  usecase "Enregistrer fasonage\n(via table de prix atelier)" as UC22
+  usecase "Scan code-barres\n(attributs produit)" as UC24
+  usecase "Devis / quote" as UC25
+  usecase "Consulter inventaire\n(stock, poids, casse)" as UC26
+  usecase "Imprimer documents\n(bon, facture, historique)" as UC27
+  usecase "Enregistrer service\n(réparation, dorure,\ngravure, argenture)" as UC28
+
+  ' === CLIENT ===
+  usecase "Acheter produit" as UC29
+  usecase "Vendre or/bijou" as UC30
+  usecase "Échanger\n(vend + achète)" as UC31
+  usecase "Fasonage\n(or brut → produit)" as UC32
+  usecase "Paiement échelonné\n(versé + solde)" as UC33
+
+  ' === FOURNISSEUR ===
+  usecase "Livrer or/produits" as UC34
+  usecase "Recevoir produits" as UC35
+  usecase "Régler crédits\n(argent ou or)" as UC36
+  usecase "Transfert de casse" as UC37
+
+  ' === ATELIER ===
+  usecase "Recevoir or à\nfaçonner" as UC38
+  usecase "Livrer produits\nfaçonnés" as UC39
+  usecase "Facturer fasonage" as UC40
+  usecase "Gérer déchets\n(poids perdu)" as UC41
+}
+
+Admin --> UC01
+Admin --> UC02
+Admin --> UC03
+Admin --> UC03b
+Admin --> UC04
+Admin --> UC05
+Admin --> UC06
+Admin --> UC07
+Admin --> UC08
+Admin --> UC10
+Admin --> UC11
+Admin --> UC12
+
+Cassier --> UC13
+Cassier --> UC14
+Cassier --> UC15
+Cassier --> UC16
+Cassier --> UC17
+Cassier --> UC18
+
+Vendeur --> UC19
+Vendeur --> UC20
+Vendeur --> UC21
+Vendeur --> UC22
+Vendeur --> UC24
+Vendeur --> UC25
+Vendeur --> UC26
+Vendeur --> UC27
+Vendeur --> UC28
+
+Client --> UC29
+Client --> UC30
+Client --> UC31
+Client --> UC32
+Client --> UC33
+
+Fournisseur --> UC34
+Fournisseur --> UC35
+Fournisseur --> UC36
+Fournisseur --> UC37
+
+Atelier --> UC38
+Atelier --> UC39
+Atelier --> UC40
+Atelier --> UC41
+
+' === INCLUDE RELATIONS ===
+UC21 ..> UC19 : <<include>>
+UC21 ..> UC20 : <<include>>
+UC21 ..> UC13 : <<include>>
+UC17 ..> UC19 : <<include>>
+UC17 ..> UC20 : <<include>>
+UC17 ..> UC14 : <<include>>
+UC31 ..> UC29 : <<include>>
+UC31 ..> UC30 : <<include>>
+UC22 ..> UC38 : <<include>>
+UC22 ..> UC39 : <<include>>
+UC25 ..> UC19 : <<extend>>
+
+legend right
+  **Vocabulaire métier (Excel):**
+  ---
+  Casse = Or de récupération
+  Casse18/21/22/14 = Karat
+  FRS = Fournisseur (solde poids + financier)
+  AT = Atelier / Façonneur
+  Versé = Acompte / Dépôt
+  Solde = Règlement / Paiement
+  Transfert = Mouvement d'or
+  Fasonage = Façonnage via table prix atelier
+  Bon unifié = Toute opération sur 1 ticket
+endlegend
+
+@enduml

@@ -1,0 +1,66 @@
+@startuml
+!theme plain
+title "Diagramme d'État: Cycle de Vie d'un Bon (Unifié)"
+
+state "Brouillon\n(Draft)" as DRAFT
+state "Confirmé\n(Confirmed)" as CONFIRMED
+state "Encaissement\nPartiel" as PARTIAL
+state "Payé\n(Paid)" as PAID
+state "Annulé\n(Canceled)" as CANCELED
+state "Archivé" as ARCHIVED
+
+[*] --> DRAFT : Création bon
+DRAFT --> CONFIRMED : Validation vendeur
+DRAFT --> CANCELED : Annulation
+
+CONFIRMED --> PARTIAL : Paiement partiel (versé)
+CONFIRMED --> PAID : Paiement complet
+
+PARTIAL --> PARTIAL : Versement supplémentaire
+PARTIAL --> PAID : Solde final
+
+PAID --> ARCHIVED : Archivage automatique (90 jours)
+CANCELED --> ARCHIVED : Archivage
+
+note right of DRAFT
+  Bon vide
+  Pas de mouvement stock
+end note
+
+note right of CONFIRMED
+  En attente paiement
+  Stock réservé
+end note
+
+note right of PARTIAL
+  Versé enregistré
+  Créance active
+  Relance possible
+end note
+
+note right of PAID
+  Transaction terminée
+  Stock déduit
+  Écritures comptables
+end note
+
+state "Statut Produit\n(Suivi physique)" as PROD_STATUS {
+  state "En stock" as IN_STOCK
+  state "En fasonage" as IN_FASONAGE
+  state "Terminé" as DONE
+  state "Donné au client" as GIVEN
+}
+
+state "Statut Paiement" as PAY_STATUS {
+  state "Impayé" as UNPAID
+  state "Partiel" as PART
+  state "Payé" as PAID2
+}
+
+IN_STOCK --> IN_FASONAGE : Envoyé à l'atelier
+IN_FASONAGE --> DONE : Fasonage terminé
+DONE --> GIVEN : Remis au client
+
+UNPAID --> PART : Versé encaissé
+PART --> PAID2 : Solde final
+@enduml

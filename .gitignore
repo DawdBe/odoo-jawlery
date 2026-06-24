@@ -29,3 +29,6 @@ graphify-out/
 
 # OpenCode AI tooling (config, skills, plugins - regenerable)
 .opencode/
+
+# Session summaries (AI-generated, not project code)
+SESSION_SUMMARY.md

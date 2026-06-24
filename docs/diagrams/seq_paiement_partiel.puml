@@ -1,0 +1,44 @@
+@startuml
+!theme plain
+title "Séquence 3: Paiement Échelonné (Versé + Solde)"
+
+actor "Client" as C3
+actor "Cassier" as CA
+participant "Bon Unifié\n(jewelry.ticket)" as TICKET
+database "BDD" as DB3
+participant "Comptabilité" as ACC3
+
+C3 -> CA: Achète un collier\n(35000 DZD) - veut payer en 3 fois
+CA -> TICKET: Crée le bon unifié\navec ligne vente + paiement échelonné
+TICKET -> DB3: Crée bon (35000 DZD,\npayment_status: impaye)
+note right DB3: Bon unifié\nLigne vente: 35000 DZD\npayment_status: impaye
+DB3 --> TICKET: Bon #B-2024-050 créé
+
+C3 -> CA: Paie 1er versement: 15000 DZD (versé)
+CA -> TICKET: Ajoute ligne versé (15000 DZD)
+TICKET -> DB3: Ajoute ligne versé\nsolde restant: 20000 DZD
+note right DB3: payment_status: partiel\nVersé: 15000 DZD\nSolde: 20000 DZD
+TICKET -> ACC3: Écriture comptable\n(15000 caisse / 20000 créance)
+DB3 --> TICKET: Ligne versé enregistrée
+TICKET --> CA: Reçu du versement imprimé
+CA -> C3: Donne le reçu + le collier
+
+note over CA, C3: 15 jours plus tard...
+
+C3 -> CA: Paie 2ème versement: 10000 DZD
+CA -> TICKET: Ajoute ligne versé (10000 DZD)
+TICKET -> DB3: Met à jour solde: 10000 DZD restants
+note right DB3: Versé total: 25000 DZD\nSolde: 10000 DZD
+TICKET --> CA: Nouveau reçu
+CA -> C3: Reçu du 2ème versement
+
+note over CA, C3: 30 jours plus tard...
+
+C3 -> CA: Paie le solde: 10000 DZD
+CA -> TICKET: Ajoute ligne solde (10000 DZD)
+TICKET -> DB3: payment_status = payé\nSolde = 0 DZD
+note right DB3: Total: 35000 DZD\npayment_status: payé
+TICKET -> ACC3: Écriture comptable finale (clôture créance)
+TICKET --> CA: Reçu "Solde Final"
+CA -> C3: Reçu final - transaction terminée
+@enduml
