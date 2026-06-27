@@ -29,17 +29,7 @@ else (≠ 0)
   endif
 endif
 
-:Rapprocher caisse de voyage;
-:Vérifier solde caisse voyage\nvs. opérations enregistrées;
-
-if (Écart caisse voyage?) then (== 0)
-  :Caisse voyage OK;
-else (≠ 0)
-  :Analyser écart caisse voyage;
-  :Ajuster ou notifier;
-endif
-
-:Imprimer rapport de clôture\n(magasin + voyage);
+:Imprimer rapport de clôture\n(avec détail voyage si présent);
 :Signer clôture\n(caissier + témoin);
 
 stop

@@ -11,62 +11,52 @@ participant "Achat\n(purchase.order)" as PO
 participant "Caisse\n(cash.register.line)" as REG
 
 == Scénario 1: FRS livre de l'or (consignation) ==
-FRS -> V: Livre 100g d'or Casse21 en consignation
+FRS -> V: Livre 100g d'or Casse en consignation
 V -> PO: Crée ordre d'achat consignation
-PO -> DB: purchase_order créé\n(FRS C21, 100g, is_consignment=True)
+PO -> DB: purchase_order créé\n(FRS, 100g Casse, is_consignment=True)
 
-V -> ACC: Enregistre sur le compte FRS
-ACC -> DB: supplier.account mis à jour\nweight_balance = +100g\ncash_balance = 0 DZD
-note right DB: Solde FRS: 100g dû\n(le magasin lui doit 100g d'or)
-DB --> V: FRS: poids +100g, cash 0 DZD
+V -> PO: Valide l'ordre d'achat consignation
+PO -> DB: purchase_order validé\n(FRS, 100g Casse, is_consignment=True)\n→ [compute store] weight_balance recalcule
+note right DB: weight_balance = Σ(poids entré) - Σ(poids sorti)\n= +100g (calculé automatiquement)
+PO --> V: FRS: weight_balance = 100g
 
 == Scénario 2: FRS vend des produits finis ==
 FRS -> V: Livre 3 bagues massif (45g total)
-V -> PO: Crée ordre d'achat standard
-V -> ACC: Cash dû au FRS
-ACC -> DB: supplier.account:\nweight_balance = +100g (inchangé)\ncash_balance = -135,000 DZD
-note right DB: cash_balance négatif =\nle magasin doit de l'argent au FRS
-DB --> V: FRS: poids 100g, cash -135,000 DZD
+V -> PO: Crée ordre d'achat standard (135,000 DZD)
+PO -> DB: purchase_order validé\n→ [compute store] cash_balance recalcule
+note right DB: cash_balance = Σ(achats) - Σ(paiements)\n= -135,000 DZD (calculé)
+PO --> V: FRS: weight_balance 100g, cash -135,000 DZD
 
 == Scénario 3: Règlement en or (poids) ==
-V -> ACC: Décide de rendre 50g d'or au FRS
-ACC -> DB: supplier.account:\nweight_balance = +100g → +50g\nréduction de 50g
-DB --> V: FRS: poids 50g, cash -135,000 DZD
-
-V -> REG: Prend 50g Casse21\n(is_travel_cash si déplacement)
-REG -> DB: cash.register.line: sortie 50g\n(paiement FRS en or)
-V -> FRS: Remet 50g d'or Casse21
+V -> REG: Sortie 50g Casse vers FRS\n(retour d'or en paiement du poids dû)
+REG -> DB: cash.register.line:\nsortie 50g, partner_id=FRS\n→ [compute store] weight_balance recalcule
+note right DB: weight_balance = 100g - 50g = 50g\n(calculé automatiquement)
+V -> FRS: Remet 50g d'or Casse
 
 == Scénario 4: Règlement en cash ==
-V -> ACC: Paie le solde cash au FRS
-ACC -> DB: supplier.account:\ncash_balance = -135,000 → 0 DZD
-DB --> V: FRS: poids 50g, cash 0 DZD
-
-V -> REG: Prend 135,000 DZD\n(is_travel_cash si déplacement)
-REG -> DB: cash.register.line: sortie 135,000 DZD
+V -> REG: Sortie 135,000 DZD vers FRS\n(paiement du solde cash)
+REG -> DB: cash.register.line:\nsortie 135,000 DZD, partner_id=FRS\n→ [compute store] cash_balance recalcule
+note right DB: cash_balance = -135,000 + 135,000 = 0\n(calculé automatiquement)
 V -> FRS: Remet 135,000 DZD en cash
 
 note over FRS, V: Le compte est soldé\n(poids et cash)
 
 == Scénario 5: Atelier (AT) fasonage ==
-AT -> V: Demande 20g Casse21 pour fasoner
-V -> ACC: Vérifie solde AT
-ACC --> V: AT: poids 0g, cash -50,000 DZD
-(AT doit de l'argent au magasin)
-
-V -> ACC: Enregistre retrait d'or\n(le magasin donne 20g à l'atelier)
-ACC -> DB: supplier.account AT:\nweight_balance = +20g\n(AT nous doit 20g d'or)
-note right DB: weight_balance positif =\nl'atelier nous doit du poids
+AT -> V: Demande 20g Casse pour fasoner
+V -> REG: Sortie 20g Casse vers AT\n(remise d'or à l'atelier)
+REG -> DB: cash.register.line:\nsortie 20g, partner_id=AT\n→ [compute store] weight_balance recalcule
+note right DB: weight_balance AT = +20g\n(l'atelier doit 20g d'or — calculé)
 
 AT -> V: Livre les produits finis (18g)\n+ déchet 2g
-V -> ACC: Enregistre le retour\nweight_balance = +20g → +2g
-ACC -> DB: weight_balance après retour:\n+2g (AT doit encore 2g)
-DB --> V: AT: poids 2g, cash -50,000 DZD
+V -> PO: Crée ordre retour atelier (18g finis, 2g déchet)
+PO -> DB: purchase_order retour validé\n→ [compute store] weight_balance recalcule
+note right DB: weight_balance = 20g - 18g = +2g\n(AT doit encore 2g — calculé)
 
-V -> ACC: Facture le fasonage\n1g × 600 DZD = 10,800 DZD
-ACC -> DB: supplier.account:\ncash_balance = -50,000 → -60,800 DZD
+V -> PO: Facture le fasonage\n18g × 600 DZD/g = 10,800 DZD
+PO -> DB: purchase_order frais validé\n→ [compute store] cash_balance recalcule
+note right DB: cash_balance = 0 - 10,800 = -10,800 DZD\n(AT doit 10,800 DZD — calculé)
 
-note bottom of V
+note over V
   **Résumé du dual credit:**
   weight_balance positif = le partenaire nous doit de l'or
   weight_balance négatif = nous devons de l'or au partenaire

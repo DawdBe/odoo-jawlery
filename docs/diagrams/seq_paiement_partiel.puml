@@ -6,7 +6,7 @@ actor "Client" as C3
 actor "Cassier" as CA
 participant "Bon Unifié\n(jewelry.ticket)" as TICKET
 database "BDD" as DB3
-participant "Comptabilité" as ACC3
+participant "jewelry_accounting\n(Écritures)" as ACC3
 
 C3 -> CA: Achète un collier\n(35000 DZD) - veut payer en 3 fois
 CA -> TICKET: Crée le bon unifié\navec ligne vente + paiement échelonné

@@ -9,20 +9,22 @@ title "Vue d'Ensemble — Architecture Bijouterie (4 Modules)"
 package "jewelry_core" as CORE <<Socle>> {
   [metal.type] as MT
   [gold.rate.history] as GRH
-  [margin.category] as MC
-  [pricing.rule] as PR
   [product.template] as PT
   [stock.quant] as SQ
   [stock.move] as SM
   [stock.inventory.weight] as SIW
   [stock.inventory.weight.line] as SIWL
-  [barcode.generate.wizard] as BGW
 }
 
 package "jewelry_transactions" as TRANS <<Cœur Métier>> {
   [jewelry.ticket] as JT
   [jewelry.ticket.line] as JTL
+  [product.promotion] as PP
+  [associate.account] as AA
+  [associate.transaction] as AT
   [supplier.account] as SA
+  [casse.melting] as CM
+  [casse.melting.line] as CML
   [service.order] as SO
   [atelier.price.table] as APT
   [daily.cash.register] as DCR
@@ -33,9 +35,6 @@ package "jewelry_transactions" as TRANS <<Cœur Métier>> {
 package "jewelry_accounting" as ACCTG <<Rapports>> {
   [account.move] as AM
   [account.move.line] as AML
-  [report.global.balance] as RGB
-  [report.profit.margin] as RPM
-  [report.weights.summary] as RWS
 }
 
 package "jewelry_dashboard" as DASH <<UI>> {
@@ -43,12 +42,11 @@ package "jewelry_dashboard" as DASH <<UI>> {
 }
 
 ' === Core → Transactions ===
-CORE --> TRANS : fournit métaux, cours,\nproduits, marges
+CORE --> TRANS : fournit métaux, cours,\nproduits
 
 ' === Relations intra-Core ===
 MT --> GRH : rates
 MT --> PT : classifies
-MC --> PT : margin
 PT --> SQ : quantity_in
 PT --> SM : moved_by
 SQ --> SM : updates
@@ -62,6 +60,9 @@ JT "1" --> "0..*" SO : linked_to
 SO --> APT : priced_by
 SA --> PO : tracks
 SA --> JT : linked
+CM "1" --> "0..*" CML : lines
+CM --> MT : produces
+CML --> JTL : sourced_from
 PO --> SM : generates
 JT --> SM : generates_moves
 

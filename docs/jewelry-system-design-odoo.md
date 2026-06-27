@@ -227,26 +227,21 @@ Fusionne les anciens modules `jewelry_base` + `jewelry_pricing` + `jewelry_inven
 
 **Modèles créés**:
 - `metal.type` — Types: Casse18, Casse21, Casse22, Casse14, Or 750, Or Article, Or fin, Argent casse, Argent Mar., Plaqué or, Perles
-- `gold.rate.history` — Historique des cours (bursa + market) avec date d'effet, source
-- `margin.category` — Catégories de marge avec % de profit par défaut (massif, mesaise, etc.)
-- `pricing.rule` — Règles de prix par type de métal + karat + style
-- `stock.inventory.weight` — Inventaire physique avec pesée par type de casse
-- `stock.inventory.weight.line` — Ligne d'inventaire: produit, type casse, poids avant/après
-- `barcode.generate.wizard` — Assistant génération code-barres par lot
-- `res.config.settings` — Extension: API key pour cours de l'or
+- `gold.rate.history` — Historique des cours (bursa + market) avec date d'effet + spread configurable
+- `stock.inventory.weight` — Inventaire physique avec pesée par type de métal
+- `stock.inventory.weight.line` — Ligne d'inventaire: produit, type métal, poids avant/après
 
 **Héritages Odoo**:
-- `product.template`: `metal_type_id`, `metal_karat`, `gross_weight`, `net_weight`, `stone_weight`, `labor_cost`, `wastage_percentage`, `jewelry_category`, `casse_category`, `has_weight`, `static_price`, `profit_percentage`, `style`
-- `stock.quant`: `weight_total`, `metal_type_id`, `casse_category`, `karat`, `estimated_value`
+- `product.template`: `metal_type_id`, `jewelry_category`, `gross_weight`, `stone_weight`, `net_weight` [compute], `barcode`, `style`
+- `stock.quant`: `weight_total`, `metal_type_id`, `estimated_value` [compute]
+- `stock.move`: `weight_total`, `metal_type_id`, `move_type`
 
 **Formule de prix**:
 ```
-Prix final = (Poids Net × Cours Marché × Facteur Pureté)
-           + Coût Main d'Oeuvre
-           + (Poids Net × Cours Marché × Déchet% / 100)
-           + Marge (%) configurée
+Prix vente = Poids net × Cours Marché du métal (au moment de la vente)
+Prix achat = Évaluation visuelle (saisi manuellement)
+Pas de prix stocké sur product.template — snapshot sur ticket.line.price_unit
 ```
-Déclencheur: changement de cours → recalcul automatique (sauf `static_price = True`).
 
 ### 5.2 `jewelry_transactions` — Cœur Métier
 
@@ -261,6 +256,7 @@ vente, achat, service, fasonage, versé, solde, remise. Pas de modèles séparé
 **Modèles créés**:
 - `jewelry.ticket` — Bon unifié pour TOUTES les opérations
 - `jewelry.ticket.line` — Ligne de bon avec `line_type` (vente/achat/service/fasonage/versé/solde/remise)
+- `product.promotion` — Règles de remise (percentage/fixed_price) par produit, style, catégorie ou métal
 - Pas de modèle `double.operation` ni `client.history` — le ticket lui-même sert d'historique
 
 **Statuts**:
@@ -269,8 +265,8 @@ vente, achat, service, fasonage, versé, solde, remise. Pas de modèles séparé
 
 #### 5.2.2 Fournisseurs & Dual Credit
 
-- `supplier.account` — Compte fournisseur/atelier: `weight_balance` (poids dû) + `cash_balance` (argent dû)
-- `gold.trade` — Échange or-pour-or avec solde en cash
+- `supplier.account` — Compte fournisseur/atelier: `weight_balance` [compute store] (poids dû) + `cash_balance` [compute store] (argent dû)
+  - Soldes auto-recalculés depuis `purchase.order` + `cash.register.line` via `@api.depends`
 
 #### 5.2.3 Services & Fasonage
 
@@ -284,23 +280,34 @@ vente, achat, service, fasonage, versé, solde, remise. Pas de modèles séparé
 - Caisse de voyage: via champ `is_travel_cash` sur `cash.register.line` + `account.journal` dédié
   (pas de modèle `travel.cash` séparé — trop de complexité pour un besoin niche)
 
+#### 5.2.5 Fonte de Casse (`casse.melting`)
+
+- `casse.melting` — Opération de fonte: `weight_before`, `weight_after`, `wastage_weight` [compute store], `refined_value`, `profit`
+- `casse.melting.line` — Lignes de fonte liées aux `jewelry.ticket.line`
+
+#### 5.2.6 Comptes Associés
+
+- `associate.account` — Compte par associé: `capital_balance` [compute store], `advance_balance` [compute store]
+- `associate.transaction` — Lignes de transaction: capital, avance, distribution profit, zakat
+
 ### 5.3 `jewelry_accounting` — Comptabilité & Rapports
 
 **Rôle**: Rapports financiers et bilans. Comptabilité simple uniquement.
 
-**Modèles créés** (vues SQL, pas de tables stockées):
-- `report.global.balance` — Bilan global avec poids par casse (vue SQL)
-- `report.profit.margin` — Rapport de marge par produit/style/catégorie (vue SQL)
-- `report.weights.summary` — Résumé des poids par type de casse (vue SQL)
-- `report.difference.analysis` — Analyse d'écarts (vue SQL)
+**Héritages Odoo**:
+- `account.move`: `jewelry_operation_type`, `weight_total`, `partner_id`
+- `account.move.line`: `weight`, `metal_type_id`
 
 **Particularités**:
 - Pas de module audit dédié — les logs natifs Odoo + `jewelry.ticket` suffisent
 - Pas de double comptabilité — le design reste en comptabilité simple
+- Les rapports (bilan global, marges, poids) sont construits via des vues Odoo standard, pas des modèles SQL dédiés
 
 ### 5.4 `jewelry_dashboard` — Dashboard 360°
 
-**Rôle**: UI séparée pour la vue d'ensemble en temps réel. Module de vues uniquement, pas de modèles.
+**Rôle**: UI séparée pour la vue d'ensemble en temps réel.
+
+**Modèle**: `dashboard.360` (`TransientModel` — pas de données persistées, tous les champs sont `[compute]`)
 
 **Indicateurs clés** (lectures seules depuis les autres modules):
 - 💰 Trésorerie: Caisse actuelle, créances
@@ -317,9 +324,9 @@ vente, achat, service, fasonage, versé, solde, remise. Pas de modèles séparé
 ### 6.1 `product` 🔧
 
 Étendu depuis `jewelry_core`:
-- `product.template`: métal, poids, karat, type casse, style
-- `product.product`: numéro de série, certificat
-- `product.category`: marge par défaut, type de casse associé
+- `product.template`: `metal_type_id`, `jewelry_category`, `gross_weight`, `stone_weight`, `net_weight` [compute], `barcode`, `style`
+- `product.product`: `serial_number`, `certificate_number`, `weight`, `location_id`
+- `product.category`: `has_weight`, `is_jewelry`
 
 ### 6.2 `stock` 🔧
 
@@ -353,17 +360,23 @@ docs/
 ├── Caisse magasin 2024-2025-2.xlsx            ← Données réelles caisse
 ├── Bilan magasin 2023-2024.xlsx               ← Bilan réel du magasin
 ├── diagrams/
+│   ├── architecture_overview.puml              ← Architecture 4 modules
 │   ├── use_case.puml                           ← Cas d'utilisation
 │   ├── class_diagram.puml                      ← Classes (modèles Odoo)
-│   ├── sequence_diagram.puml                   ← 5 séquences combinées
+│   ├── component_diagram.puml                  ← Dépendances entre modules
+│   ├── er_diagram.puml                         ← Entité-Relation (tables + clés)
+│   ├── sequence_diagram.puml                   ← 8 séquences combinées
 │   ├── seq_double_operation.puml               ← S1: Double opération
 │   ├── seq_fasonage.puml                       ← S2: Fasonage
 │   ├── seq_paiement_partiel.puml               ← S3: Paiement échelonné
 │   ├── seq_cours_or.puml                       ← S4: Cours de l'or
 │   ├── seq_bilan_global.puml                   ← S5: Bilan global
+│   ├── seq_cash_register.puml                  ← S6: Cycle de caisse
+│   ├── seq_supplier_dual_credit.puml           ← S7: Crédit fournisseur
+│   ├── seq_travel_cash.puml                    ← S8: Caisse voyage
 │   ├── activity_cloture_caisse.puml            ← Activité: clôture caisse
 │   ├── state_bon_lifecycle.puml                ← État: cycle de vie bon
-│   └── deployment_diagram.puml                 ← Déploiement Odoo
+│   ├── deployment_diagram.puml                 ← Déploiement Odoo
 
 addons/
 ├── jewelry_core/                               ← 🆕 Socle (base + pricing + inventaire)
@@ -384,15 +397,15 @@ addons/
 | `class_diagram.puml` | Classes | Tous les modèles Odoo avec champs réels |
 | `component_diagram.puml` | Composants | Dépendances entre modules custom, Odoo et services externes |
 | `er_diagram.puml` | Entité-Relation | Tables PostgreSQL avec PK/FK et cardinalités |
-| `sequence_diagram.puml` | Séquence (×5) | Tous les scénarios combinés |
+| `sequence_diagram.puml` | Séquence (×8) | Tous les scénarios combinés |
 | `seq_double_operation.puml` | Séquence 1 | Double opération (vente+achat) |
 | `seq_fasonage.puml` | Séquence 2 | Fasonage avec déchets |
 | `seq_paiement_partiel.puml` | Séquence 3 | Paiement échelonné |
 | `seq_cours_or.puml` | Séquence 4 | Mise à jour cours or |
 | `seq_bilan_global.puml` | Séquence 5 | Bilan global |
-| `seq_cash_register.puml` | Séquence 6 | Cycle de caisse quotidien |
+| `seq_cash_register.puml` | Séquence 6 | Cycle de caisse quotidien (ouverture → clôture) |
 | `seq_supplier_dual_credit.puml` | Séquence 7 | Crédit double (poids + cash) FRS/AT |
-| `seq_travel_cash.puml` | Séquence 8 | Caisse de voyage |
+| `seq_travel_cash.puml` | Séquence 8 | Caisse de voyage via `is_travel_cash` |
 | `activity_cloture_caisse.puml` | Activité | Clôture de caisse |
 | `state_bon_lifecycle.puml` | État | Cycle de vie d'un bon (product + payment) |
 | `deployment_diagram.puml` | Déploiement | Architecture Odoo Docker |
@@ -660,20 +673,20 @@ docs/
 ├── Caisse magasin 2024-2025-2.xlsx        ← Données caisse 2024-2025 (19280 lignes)
 ├── Bilan magasin 2023-2024.xlsx           ← Bilan 2023-2024 (26000+ lignes)
 └── diagrams/
-    ├── architecture_overview.puml          ← Architecture simplifiée (4 modules)
+    ├── architecture_overview.puml          ← Architecture 4 modules
     ├── use_case.puml                       ← Cas d'utilisation
     ├── class_diagram.puml                  ← Modèles Odoo (classes détaillées)
     ├── component_diagram.puml              ← Dépendances entre modules
     ├── er_diagram.puml                     ← Entité-Relation (tables + clés)
     ├── sequence_diagram.puml               ← 8 séquences combinées
-    ├── seq_double_operation.puml           ← Double opération
-    ├── seq_fasonage.puml                   ← Fasonage
-    ├── seq_paiement_partiel.puml           ← Paiement échelonné
-    ├── seq_cours_or.puml                   ← Cours de l'or
-    ├── seq_bilan_global.puml               ← Bilan global
-    ├── seq_cash_register.puml              ← Cycle caisse
-    ├── seq_supplier_dual_credit.puml       ← Crédit fournisseur
-    ├── seq_travel_cash.puml                ← Caisse voyage
+    ├── seq_double_operation.puml           ← S1: Double opération
+    ├── seq_fasonage.puml                   ← S2: Fasonage
+    ├── seq_paiement_partiel.puml           ← S3: Paiement échelonné
+    ├── seq_cours_or.puml                   ← S4: Cours de l'or
+    ├── seq_bilan_global.puml               ← S5: Bilan global
+    ├── seq_cash_register.puml              ← S6: Cycle caisse
+    ├── seq_supplier_dual_credit.puml       ← S7: Crédit fournisseur
+    ├── seq_travel_cash.puml                ← S8: Caisse voyage
     ├── activity_cloture_caisse.puml        ← Clôture caisse
     ├── state_bon_lifecycle.puml            ← Cycle de vie bon
     └── deployment_diagram.puml             ← Déploiement Docker
@@ -681,5 +694,5 @@ docs/
 
 ---
 
-*Document généré le 2026-06-24 — Mise à jour avec vocabulaire métier des fichiers Excel*
+*Document généré le 2026-06-27 — Mise à jour: synced with diagrams, removed deleted models, added missing models*
 *Pour Odoo 17.0 — Modules: 4 (jewelry_core, jewelry_transactions, jewelry_accounting, jewelry_dashboard) + extensions Odoo*

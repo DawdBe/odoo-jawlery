@@ -12,53 +12,27 @@ note over RV, REG
   La caisse de voyage n'est PAS un modèle séparé.
   C'est un champ is_travel_cash=True sur cash.register.line
   + un account.journal dédié "Caisse Voyage".
+  Pas d'alimentation ni d'avance — on trace juste les dépenses du voyage.
 end note
 
-== Alimentation ==
-RV -> REG: Alimenter caisse voyage\n200,000 DZD depuis caisse magasin
-REG -> DB: cash.register.line:\n+200,000 DZD\nis_travel_cash=True\njournal = "Caisse Voyage"
-note right DB: Caisse voyage: 200,000 DZD
-
 == Dépense 1: Achat or chez FRS ==
-RV -> SUP: Achète 50g Casse21\nchez FRS Ahmed (460,000 DZD)
-
-RV -> REG: Payer FRS Ahmed\n(460,000 DZD)
-REG -> DB: cash.register.line:\n-460,000 DZD\nis_travel_cash=True\npartner = FRS Ahmed
-note right DB: Caisse voyage: 200,000 - 460,000 = -260,000 DZD\n(avance personnelle du responsable)
-
-REG -> SACC: Met à jour compte FRS\ncash_balance = -460,000 DZD
+RV -> SUP: Achète 50g Casse\nchez FRS Ahmed (460,000 DZD)
+RV -> REG: Enregistre la dépense\n460,000 DZD
+REG -> DB: cash.register.line:\n-460,000 DZD\nis_travel_cash=True\npartner_id = FRS Ahmed
+note right SACC: cash_balance FRS = -460,000 DZD [compute store]
 
 == Dépense 2: Paiement atelier ==
 RV -> SUP: Paie AT B1 pour fasonage (45,000 DZD)
-RV -> REG: Dépense 45,000 DZD
-REG -> DB: cash.register.line:\n-45,000 DZD\nis_travel_cash=True\npartner = AT B1
-
-REG -> SACC: Met à jour compte AT B1\ncash_balance = -45,000 DZD
+RV -> REG: Enregistre la dépense\n45,000 DZD
+REG -> DB: cash.register.line:\n-45,000 DZD\nis_travel_cash=True\npartner_id = AT B1
+note right SACC: cash_balance AT B1 = -45,000 DZD [compute store]
 
 == Dépense 3: Frais de voyage ==
 RV -> REG: Frais déplacement\n(mazot 5,000 + repas 3,000 + péage 1,000)
 REG -> DB: cash.register.line:\n-9,000 DZD\nis_travel_cash=True\ndescription = frais voyage
 
-== Rapatriement ==
-RV -> RV: Retour au magasin
-
-alt Solde positif
-  REG -> DB: cash.register.line:\nrapatriement +X DZD\n(is_travel_cash, cible = caisse magasin)
-else Solde négatif (avance personnelle)
-  note right RV: Avance personnelle: 314,000 DZD\n(à rembourser au responsable)
-  REG -> RV: Rembourse l'avance\n314,000 DZD depuis caisse magasin
-end
-
-RV -> REG: Fermer enregistrements voyage
-REG -> DB: is_travel_cash lines clôturées
-
 note over REG
-  Résumé du voyage:
-  - Alimentation: +200,000 DZD
-  - Achat or FRS: -460,000 DZD
-  - Fasonage AT: -45,000 DZD
-  - Frais voyage: -9,000 DZD
-  - Total: -314,000 DZD (avance)
+  Total dépenses voyage: 460,000 + 45,000 + 9,000 = 514,000 DZD
   (Tout est dans cash.register.line
    avec is_travel_cash=True)
 end note

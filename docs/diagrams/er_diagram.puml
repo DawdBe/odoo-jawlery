@@ -14,7 +14,7 @@ entity "metal.type" as metal_type {
   * code : varchar
   * purity_percentage : float
   * karat_value : float
-  * is_casse : boolean
+  * category : varchar
   * active : boolean
 }
 
@@ -23,20 +23,12 @@ entity "product.template" as product_template {
   --
   * name : varchar
   * metal_type_id : integer <<FK>>
-  * metal_karat : float
   * jewelry_category : varchar
-  * casse_category : varchar
   * gross_weight : float
   * stone_weight : float
-  * net_weight : float
-  * labor_cost : numeric
-  * wastage_percentage : float
-  * has_weight : boolean
-  * static_price : boolean
-  * profit_percentage : float
+  * net_weight : float  [compute]
   * barcode : varchar
   * style : varchar
-  * margin_category_id : integer <<FK>>
   * product_category_id : integer <<FK>>
 }
 
@@ -46,7 +38,7 @@ entity "product.product" as product_product {
   * product_tmpl_id : integer <<FK>>
   * serial_number : varchar
   * certificate_number : varchar
-  * current_weight : float
+  * weight : float
   * location_id : integer <<FK>>
 }
 
@@ -59,18 +51,9 @@ entity "gold.rate.history" as gold_rate_history {
   * market_spread : numeric
   * is_active : boolean
   * currency_id : integer <<FK>>
-  * source : varchar
   * effective_date : date
   * created_by : integer <<FK>>
   * notes : text
-}
-
-entity "margin.category" as margin_category {
-  * id : integer <<generated>>
-  --
-  * name : varchar
-  * profit_percentage : float
-  * applicable_on : varchar
 }
 
 entity "atelier.price.table" as atelier_price_table {
@@ -79,10 +62,7 @@ entity "atelier.price.table" as atelier_price_table {
   * atelier_id : integer <<FK>>
   * style : varchar
   * metal_type_id : integer <<FK>>
-  * karat : float
   * cost_per_gram : numeric
-  * valid_from : date
-  * valid_to : date
   * notes : text
 }
 
@@ -110,6 +90,10 @@ entity "jewelry.ticket" as jewelry_ticket {
   * seller_id : integer <<FK>>
   * payment_status : varchar
   * product_status : varchar
+  * total_cash_in : numeric  [compute]
+  * total_cash_out : numeric  [compute]
+  * balance : numeric  [compute]
+  * total_remise : numeric  [compute]
   * notes : text
 }
 
@@ -121,11 +105,12 @@ entity "jewelry.ticket.line" as jewelry_ticket_line {
   * product_id : integer <<FK>>
   * weight : float
   * metal_type_id : integer <<FK>>
-  * karat : float
-  * casse_category : varchar
   * description : varchar
   * price_unit : numeric
   * price_subtotal : numeric
+  * remise_type : varchar
+  * remise_value : float
+  * remise_amount : numeric  [compute]
   * notes : text
 }
 
@@ -140,7 +125,6 @@ entity "purchase.order" as purchase_order {
   * gold_weight_in : float
   * gold_weight_out : float
   * gold_metal_type : integer <<FK>>
-  * gold_karat : float
   * partner_type : varchar
 }
 
@@ -151,7 +135,6 @@ entity "purchase.order.line" as purchase_order_line {
   * product_id : integer <<FK>>
   * weight : float
   * metal_type_id : integer <<FK>>
-  * karat : float
   * is_raw_gold : boolean
   * unit_price_per_gram : numeric
   * line_type : varchar
@@ -162,10 +145,77 @@ entity "supplier.account" as supplier_account {
   --
   * partner_id : integer <<FK>>
   * partner_type : varchar
-  * weight_balance : float
-  * cash_balance : numeric
+  * weight_balance : float  [compute]
+  * cash_balance : numeric  [compute]
   * last_rate_used : numeric
   * last_transaction_date : datetime
+}
+
+' === CASSE MELTING ===
+entity "casse.melting" as casse_melting {
+  * id : integer <<generated>>
+  --
+  * name : varchar
+  * date : date
+  * metal_type_result : integer <<FK>>
+  * karat_result : float
+  * weight_before : float
+  * weight_after : float
+  * wastage_weight : float  [compute]
+  * total_cost : numeric
+  * refined_value : numeric  [compute]
+  * profit : numeric  [compute]
+  * state : varchar
+  * notes : text
+}
+
+entity "casse.melting.line" as casse_melting_line {
+  * id : integer <<generated>>
+  --
+  * melting_id : integer <<FK>>
+  * ticket_line_id : integer <<FK>>
+  * weight : float
+  * cost : numeric
+}
+
+' === ASSOCIATE ===
+entity "associate.account" as associate_account {
+  * id : integer <<generated>>
+  --
+  * partner_id : integer <<FK>>
+  * capital_balance : numeric  [compute]
+  * advance_balance : numeric  [compute]
+  * last_transaction_date : datetime
+}
+
+entity "associate.transaction" as associate_transaction {
+  * id : integer <<generated>>
+  --
+  * partner_id : integer <<FK>>
+  * transaction_type : varchar
+  * amount : numeric
+  * date : datetime
+  * fiscal_year : varchar
+  * ticket_id : integer <<FK>>
+  * notes : text
+}
+
+' === PROMOTION ===
+entity "product.promotion" as product_promotion {
+  * id : integer <<generated>>
+  --
+  * name : varchar
+  * active : boolean
+  * promotion_type : varchar
+  * value : float
+  * applicable_on : varchar
+  * metal_type_id : integer <<FK>>
+  * product_category_id : integer <<FK>>
+  * style : varchar
+  * product_id : integer <<FK>>
+  * date_start : date
+  * date_end : date
+  * notes : text
 }
 
 ' === CASH REGISTER ===
@@ -175,6 +225,8 @@ entity "daily.cash.register" as daily_cash_register {
   * name : varchar
   * opening_balance : numeric
   * closing_balance : numeric
+  * expected_balance : numeric  [compute]
+  * difference : numeric  [compute]
   * cashier_id : integer <<FK>>
   * date : date
   * state : varchar
@@ -203,8 +255,6 @@ entity "cash.register.line" as cash_register_line {
   * description : varchar
 }
 
-' (Caisse de voyage simplifiée: champ is_travel_cash sur cash.register_line + journal dédié)
-
 ' === SERVICE ===
 entity "service.order" as service_order {
   * id : integer <<generated>>
@@ -217,12 +267,13 @@ entity "service.order" as service_order {
   * style : varchar
   * raw_gold_weight : float
   * raw_gold_metal : integer <<FK>>
-  * raw_gold_karat : float
   * finished_weight : float
   * wastage_weight : float
   * wastage_percentage : float
   * status : varchar
   * payment_status : varchar
+  * min_profit_percentage : float
+  * price_from_table : numeric  [compute]
   * received_date : datetime
   * estimated_ready_date : date
   * notes : text
@@ -234,10 +285,8 @@ entity "account.move" as account_move {
   --
   * name : varchar
   * date : date
-  ' double comptabilité reportée
   * jewelry_operation_type : varchar
   * weight_total : float
-  * casse_category : varchar
   * partner_id : integer <<FK>>
 }
 
@@ -249,7 +298,6 @@ entity "account.move.line" as account_move_line {
   * partner_id : integer <<FK>>
   * weight : float
   * metal_type_id : integer <<FK>>
-  * karat : float
   * quantity : float
   * price_unit : numeric
   * balance : numeric
@@ -263,9 +311,8 @@ entity "stock.quant" as stock_quant {
   * location_id : integer <<FK>>
   * quantity : float
   * weight_total : float
+  * estimated_value : numeric  [compute]
   * metal_type_id : integer <<FK>>
-  * karat : float
-  * casse_category : varchar
 }
 
 entity "stock.move" as stock_move {
@@ -277,7 +324,6 @@ entity "stock.move" as stock_move {
   * product_uom_qty : float
   * weight_total : float
   * metal_type_id : integer <<FK>>
-  * karat : float
   * move_type : varchar
 }
 
@@ -287,16 +333,10 @@ entity "stock.inventory.weight" as stock_inventory_weight {
   * name : varchar
   * date : date
   * state : varchar
-  * total_weight_before_casse18 : float
-  * total_weight_after_casse18 : float
-  * total_weight_before_casse21 : float
-  * total_weight_after_casse21 : float
-  * total_weight_before_casse22 : float
-  * total_weight_after_casse22 : float
-  * total_weight_before_casse14 : float
-  * total_weight_after_casse14 : float
-  * total_weight_before_argent : float
-  * total_weight_after_argent : float
+  * metal_type_id : integer <<FK>>
+  * expected_weight : float
+  * actual_weight : float
+  * difference_weight : float  [compute]
 }
 
 entity "stock.inventory.weight.line" as stock_inventory_weight_line {
@@ -304,20 +344,19 @@ entity "stock.inventory.weight.line" as stock_inventory_weight_line {
   --
   * inventory_id : integer <<FK>>
   * product_id : integer <<FK>>
-  * casse_category : varchar
   * weight_before : float
   * weight_after : float
+  * weight_difference : float  [compute]
   * notes : text
 }
 
-' === PRODUCT CATEGORY & DASHBOARD ===
+' === PRODUCT CATEGORY ===
 entity "product.category" as product_category {
   * id : integer <<generated>>
   --
   * name : varchar
-  * default_profit_margin : float
+  * has_weight : boolean
   * is_jewelry : boolean
-  * casse_type : varchar
 }
 
 ' === RELATIONS ===
@@ -326,8 +365,15 @@ metal_type ||--o{ gold_rate_history : prices_by_date
 metal_type ||--o{ atelier_price_table : prices
 product_template ||--o{ product_product : has_variants
 product_category ||--o{ product_template : categorized_by
-margin_category ||--o{ product_template : priced_by
 res_partner ||--o{ atelier_price_table : provides
+
+res_partner ||--|| associate_account : has_account
+associate_account ||--o{ associate_transaction : contains
+associate_transaction }o--|| jewelry_ticket : linked_ticket
+
+product_promotion }o--|| metal_type : on_metal
+product_promotion }o--|| product_category : on_category
+product_promotion }o--|| product_product : on_product
 
 res_partner ||--o{ jewelry_ticket : creates
 jewelry_ticket ||--|| jewelry_ticket_line : contains
@@ -341,7 +387,6 @@ supplier_account ||--o{ purchase_order : tracks
 res_partner ||--o{ daily_cash_register : cashier
 daily_cash_register ||--|| cash_register_line : contains
 jewelry_ticket ||--|| cash_register_line : references
-' caisse voyage via is_travel_cash sur cash_register_line
 
 res_partner ||--o{ service_order : requests
 res_partner ||--o{ service_order : atelier
@@ -351,12 +396,16 @@ atelier_price_table ||--o{ service_order : priced_by
 
 res_partner ||--o{ account_move : partner
 account_move ||--|| account_move_line : lines
-' pas de dual entry - reporté
+
+metal_type ||--o{ casse_melting : result_metal
+casse_melting ||--|| casse_melting_line : lines
+jewelry_ticket_line }o--|| casse_melting_line : sourced_from
 
 product_product ||--o{ stock_quant : quantity_in
 product_product ||--o{ stock_move : moved_by
 stock_inventory_weight ||--|| stock_inventory_weight_line : lines
 product_product ||--o{ stock_inventory_weight_line : counts
+metal_type ||--o{ stock_inventory_weight : by_metal
 
 legend bottom
   **Légende:**

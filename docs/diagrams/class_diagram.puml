@@ -5,28 +5,27 @@ skinparam linetype ortho
 
 ' ============================================
 ' PACKAGE: jewelry_core (Socle)
-' Fusionne base + pricing + inventaire
 ' ============================================
 package "jewelry_core" as CORE {
+
   class "metal.type" as MetalType {
     - name : Char (required)
     - code : Char (AU, AG, PT)
     - purity_percentage : Float
     - karat_value : Float
     - active : Boolean
-    - is_casse : Boolean (or de récup)
+    - category : Selection (or/argent/casse/plaque/perle/devise)
     -- Méthodes --
     + get_current_rate(rate_type) : Float
   }
 
   class "gold.rate.history" as GoldRate {
     - metal_type_id : Many2one(metal.type)
-    - bursa_rate : Monetary (cours bourse)
-    - market_rate : Monetary (cours marché réel)
-    - market_spread : Monetary (écart bourse/marché)
+    - bursa_rate : Monetary (cours bourse, référence)
+    - market_rate : Monetary (cours marché réel, utilisé pour transactions)
+    - market_spread : Monetary (écart bourse→marché, configurable)
     - is_active : Boolean
     - currency_id : Many2one(res.currency)
-    - source : Selection (API / Manuel)
     - effective_date : Date
     - created_by : Many2one(res.users)
     - notes : Text
@@ -34,41 +33,24 @@ package "jewelry_core" as CORE {
 
   class "product.template" as ProductTemplate {
     - metal_type_id : Many2one(metal.type)
-    - metal_karat : Float (18/21/22/14/24)
     - jewelry_category : Selection (fini/brut/pierre/fourniture)
-    - casse_category : Selection (casse18/casse21/casse22/casse14/argent_casse/or_article/or_fin/or_750)
     - gross_weight : Float (g)
     - stone_weight : Float (g)
     - net_weight : Float (g) [compute]
-    - labor_cost : Monetary
-    - wastage_percentage : Float
-    - has_weight : Boolean
-    - static_price : Boolean
-    - profit_percentage : Float
-    - barcode : Char (casse+karat+poids+ref+style)
-    - margin_category_id : Many2one(margin.category)
-    - style : Selection (massif/massif_lux/bataille/massif_controlé/mesaise)
-    -- Méthodes --
-    + compute_price() : Monetary
+    - barcode : Char (encode attributs produit)
+    - style : Selection (massif/massif_lux/bataille/massif_controlé/mesaise/or_750)
   }
 
   class "product.product" as ProductProduct {
     - serial_number : Char
     - certificate_number : Char
-    - current_weight : Float (g)
+    - weight : Float (g)
     - location_id : Many2one(stock.location)
   }
 
   class "product.category" as ProductCategory {
-    - default_profit_margin : Float
+    - has_weight : Boolean (True = vendu au poids, False = prix fixe)
     - is_jewelry : Boolean
-    - casse_type : Selection
-  }
-
-  class "margin.category" as MarginCategory {
-    - name : Char
-    - profit_percentage : Float
-    - applicable_on : Selection (all/product/category/style)
   }
 
   class "stock.quant" as StockQuant {
@@ -77,8 +59,6 @@ package "jewelry_core" as CORE {
     - quantity : Float
     - weight_total : Float (g)
     - metal_type_id : Many2one(metal.type)
-    - karat : Float
-    - casse_category : Selection
     - estimated_value : Monetary [compute]
   }
 
@@ -89,17 +69,17 @@ package "jewelry_core" as CORE {
     - product_uom_qty : Float
     - weight_total : Float (g)
     - metal_type_id : Many2one(metal.type)
-    - karat : Float
-    - move_type : Selection (achat/vente/transfert/fasonage)
+    - move_type : Selection (achat/vente/transfert/fasonage/fonte)
   }
 
   class "stock.inventory.weight" as WeightInventory {
     - name : Char
     - date : Date
     - state : Selection (draft/in_progress/done)
-    - total_weight_before_casse18/21/22/14/argent : Float
-    - total_weight_after_casse18/21/22/14/argent : Float
-    - difference_weight : Float [compute]
+    - metal_type_id : Many2one(metal.type)
+    - expected_weight : Float (poids attendu selon stock)
+    - actual_weight : Float (poids pesé physiquement)
+    - difference_weight : Float (g) [compute]
     -- Méthodes --
     + reconcile_weights() : void
   }
@@ -107,10 +87,9 @@ package "jewelry_core" as CORE {
   class "stock.inventory.weight.line" as WeightInventoryLine {
     - inventory_id : Many2one(stock.inventory.weight)
     - product_id : Many2one(product.product)
-    - casse_category : Selection
     - weight_before : Float
     - weight_after : Float
-    - weight_difference : Float [compute]
+    - weight_difference : Float (g) [compute]
     - notes : Text
   }
 
@@ -128,16 +107,15 @@ package "jewelry_core" as CORE {
   MetalType "1" -- "0..*" ProductTemplate : classifies
   ProductTemplate "1" -- "0..*" ProductProduct : has_variants
   ProductCategory "1" -- "0..*" ProductTemplate : categorized_by
-  MarginCategory "1" -- "0..*" ProductTemplate : priced_by
   ProductProduct --> StockQuant : quantity_in
   ProductProduct --> StockMove : moved_by
   WeightInventory "1" -- "0..*" WeightInventoryLine : lines
   WeightInventoryLine --> ProductProduct : counts
+  WeightInventory --> MetalType : tracks
 }
 
 ' ============================================
 ' PACKAGE: jewelry_transactions (Cœur Métier)
-' Fusionne ticket + purchase + service + cash_register
 ' ============================================
 package "jewelry_transactions" as TRANS {
 
@@ -149,9 +127,10 @@ package "jewelry_transactions" as TRANS {
     - seller_id : Many2one(res.users)
     - payment_status : Selection (impaye/partiel/paye)
     - product_status : Selection (en_stock/en_fasonage/termine/donne_au_client)
-    - total_cash_in : Monetary [compute]
-    - total_cash_out : Monetary [compute]
-    - balance : Monetary [compute]
+    - total_cash_in : Monetary [compute store]
+    - total_cash_out : Monetary [compute store]
+    - balance : Monetary [compute store]
+    - total_remise : Monetary [compute store] (somme des remises)
     - notes : Text
     -- Méthodes --
     + compute_balance() : Monetary
@@ -160,15 +139,16 @@ package "jewelry_transactions" as TRANS {
 
   class "jewelry.ticket.line" as TicketLine {
     - ticket_id : Many2one(jewelry.ticket)
-    - line_type : Selection (vente/achat/service/fasonage/versé/solde/remise)
+    - line_type : Selection (vente/achat_casse/achat/service/fasonage/versé/solde/remise)
     - product_id : Many2one(product.product)
     - weight : Float (g)
     - metal_type_id : Many2one(metal.type)
-    - karat : Float
-    - casse_category : Selection
     - description : Char
-    - price_unit : Monetary
+    - price_unit : Monetary (prix final après remise)
     - price_subtotal : Monetary
+    - remise_type : Selection (none/percentage/fixed)
+    - remise_value : Float (% ou montant selon type)
+    - remise_amount : Monetary [compute] (montant de la remise)
     - notes : Text
   }
 
@@ -180,7 +160,6 @@ package "jewelry_transactions" as TRANS {
     - gold_weight_in : Float
     - gold_weight_out : Float
     - gold_metal_type : Many2one(metal.type)
-    - gold_karat : Float
     - partner_type : Selection (fournisseur/atelier)
     -- Méthodes --
     + settle_gold_trade() : void
@@ -190,7 +169,6 @@ package "jewelry_transactions" as TRANS {
     - product_id : Many2one(product.product)
     - weight : Float (g)
     - metal_type_id : Many2one(metal.type)
-    - karat : Float
     - is_raw_gold : Boolean
     - unit_price_per_gram : Monetary
     - line_type : Selection (achat/transfert/consignation)
@@ -199,8 +177,8 @@ package "jewelry_transactions" as TRANS {
   class "supplier.account" as SupplierAccount {
     - partner_id : Many2one(res.partner)
     - partner_type : Selection (fournisseur/atelier)
-    - weight_balance : Float (g) (poids dû)
-    - cash_balance : Monetary (argent dû)
+    - weight_balance : Float (g) (poids dû) [compute store]
+    - cash_balance : Monetary (argent dû) [compute store]
     - last_rate_used : Monetary
     - last_transaction_date : Datetime
     -- Méthodes --
@@ -208,6 +186,30 @@ package "jewelry_transactions" as TRANS {
     + record_sale(weight, cash) : void
     + record_return(weight) : void
     + record_cash_payment(amount) : void
+  }
+
+  class "casse.melting.line" as CasseMeltingLine {
+    - melting_id : Many2one(casse.melting)
+    - ticket_line_id : Many2one(jewelry.ticket.line)
+    - weight : Float (g)
+    - cost : Monetary
+  }
+
+  class "casse.melting" as CasseMelting {
+    - name : Char
+    - date : Date
+    - metal_type_result : Many2one(metal.type) (résultat après fonte)
+    - karat_result : Float (pureté mesurée après fonte)
+    - weight_before : Float (g) (poids total des déchets fondus)
+    - weight_after : Float (g) (poids or raffiné obtenu)
+    - wastage_weight : Float (g) [compute store]
+    - total_cost : Monetary (total payé pour le lot de casse)
+    - refined_value : Monetary [compute store] (weight_after × market_rate)
+    - profit : Monetary [compute store] (refined_value - total_cost)
+    - state : Selection (draft/done)
+    - notes : Text
+    -- Méthodes --
+    + compute_profit() : Monetary
   }
 
   class "service.order" as ServiceOrder {
@@ -219,29 +221,27 @@ package "jewelry_transactions" as TRANS {
     - style : Selection (massif/massif_lux/bataille/massif_controlé/mesaise/or_750)
     - raw_gold_weight : Float (g)
     - raw_gold_metal : Many2one(metal.type)
-    - raw_gold_karat : Float
     - finished_weight : Float (g)
     - wastage_weight : Float (g) [compute]
     - wastage_percentage : Float
     - status : Selection (received/in_progress/ready/delivered)
     - payment_status : Selection (impaye/partiel/paye)
     - price_from_table : Monetary [compute]
+    - min_profit_percentage : Float (% marge souhaitée)
     - received_date : Datetime
     - estimated_ready_date : Date
     - notes : Text
     -- Méthodes --
     + compute_wastage() : Float
     + lookup_price_from_table() : Monetary
+    + validate_selling_price(proposed_price) : Boolean
   }
 
   class "atelier.price.table" as AtelierPriceTable {
     - atelier_id : Many2one(res.partner)
     - style : Selection (massif/massif_lux/bataille/massif_controlé/mesaise/or_750)
     - metal_type_id : Many2one(metal.type)
-    - karat : Float
     - cost_per_gram : Monetary
-    - valid_from : Date
-    - valid_to : Date
     - notes : Text
   }
 
@@ -249,8 +249,8 @@ package "jewelry_transactions" as TRANS {
     - name : Char
     - opening_balance : Monetary
     - closing_balance : Monetary
-    - expected_balance : Monetary [compute]
-    - difference : Monetary [compute]
+    - expected_balance : Monetary [compute store]
+    - difference : Monetary [compute store]
     - cashier_id : Many2one(res.users)
     - date : Date
     - state : Selection (open/closed/verified)
@@ -273,17 +273,65 @@ package "jewelry_transactions" as TRANS {
     - reference : Char
   }
 
+  class "associate.account" as AssociateAccount {
+    - partner_id : Many2one(res.partner)
+    - capital_balance : Monetary (capital actuel) [compute store]
+    - advance_balance : Monetary (avances sur profits) [compute store]
+    - last_transaction_date : Datetime
+    -- Méthodes --
+    + compute_balances() : void
+    + record_transaction(type, amount, notes) : void
+  }
+
+  class "associate.transaction" as AssociateTransaction {
+    - partner_id : Many2one(res.partner)
+    - transaction_type : Selection (capital_deposit/capital_withdrawal/advance_profit/profit_distribution/profit_effort/zakat)
+    - amount : Monetary
+    - date : Datetime
+    - fiscal_year : Char
+    - ticket_id : Many2one(jewelry.ticket)
+    - notes : Text
+  }
+
+  class "product.promotion" as ProductPromotion {
+    - name : Char
+    - active : Boolean
+    - promotion_type : Selection (percentage/fixed_price)
+    - value : Float (% ou prix fixe)
+    - applicable_on : Selection (all/category/style/metal_type/product)
+    - metal_type_id : Many2one(metal.type)
+    - product_category_id : Many2one(product.category)
+    - style : Selection (massif/massif_lux/bataille/massif_controlé/mesaise/or_750)
+    - product_id : Many2one(product.product)
+    - date_start : Date
+    - date_end : Date
+    - notes : Text
+    -- Méthodes --
+    + get_applicable_price(product, metal_type, style) : Monetary
+  }
+
   JewelryTicket "1" -- "0..*" TicketLine : contains
   ResPartner "1" -- "0..*" JewelryTicket : participates
   PurchaseOrder "1" -- "0..*" PurchaseOrderLine : contains
   SupplierAccount "1" -- "0..*" PurchaseOrder : tracks
   ResPartner "1" -- "0..*" PurchaseOrder : orders
   ResPartner "1" -- "1" SupplierAccount : has_account
+  ProductPromotion --> ProductTemplate : applies_to
+  ProductPromotion --> ProductCategory : on_category
+  ProductPromotion --> MetalType : on_metal
+  ResPartner "1" -- "1" AssociateAccount : has_account
+  AssociateAccount "1" -- "0..*" AssociateTransaction : contains
+  AssociateTransaction --> ResPartner : partner
+  AssociateTransaction --> JewelryTicket : linked_ticket
   DailyCash "1" -- "0..*" CashLine : contains
   CashLine --> JewelryTicket : references
   ServiceOrder --> JewelryTicket : linked_to
   ServiceOrder --> AtelierPriceTable : priced_by
   ResPartner "1" -- "0..*" AtelierPriceTable : provides
+  CashLine --> SupplierAccount : impacts_balance
+  CasseMelting "1" -- "0..*" CasseMeltingLine : contains
+  CasseMeltingLine --> TicketLine : sourced_from
+  CasseMelting --> MetalType : produces
   TRANS --> CORE : uses metal.type,\nproduct, stock
 }
 
@@ -296,7 +344,6 @@ package "jewelry_accounting" as ACCOUNTING {
     - date : Date
     - jewelry_operation_type : Selection (vente/achat/fasonage/service/frais/associé/personnel/invest/transfert/versé/solde/remise)
     - weight_total : Float
-    - casse_category : Selection
     - partner_id : Many2one(res.partner)
     -- Méthodes --
     + generate_legal_report() : void
@@ -307,7 +354,6 @@ package "jewelry_accounting" as ACCOUNTING {
     - partner_id : Many2one(res.partner)
     - weight : Float
     - metal_type_id : Many2one(metal.type)
-    - karat : Float
     - quantity : Float
     - price_unit : Monetary
     - balance : Monetary
@@ -318,17 +364,17 @@ package "jewelry_accounting" as ACCOUNTING {
 ' PACKAGE: jewelry_dashboard (UI)
 ' ============================================
 package "jewelry_dashboard" as DASHBOARD {
-  class "dashboard.360" as Dashboard360 {
-    - total_cash : Monetary
-    - weight_casse18/21/22/14/argent : Float
-    - today_sales : Monetary
-    - today_profit : Monetary
-    - pending_payments : Monetary
-    - pending_fasonages : Integer
-    - gold_rate_21k_bursa/market : Monetary
-    - gold_rate_18k_bursa/market : Monetary
-    - silver_rate : Monetary
-    - last_update : Datetime
+  class "dashboard.360" as Dashboard360 <<TransientModel>> {
+    - total_cash : Monetary [compute]
+    - weight_by_metal_type : Text [compute] (poids par type de métal)
+    - today_sales : Monetary [compute]
+    - today_profit : Monetary [compute]
+    - today_remise : Monetary [compute] (total remises du jour)
+    - pending_payments : Monetary [compute]
+    - pending_fasonages : Integer [compute]
+    - gold_rate_bursa/market : Monetary [compute]
+    - silver_rate : Monetary [compute]
+    - last_update : Datetime [compute]
   }
 }
 
@@ -340,18 +386,20 @@ JewelryTicket --> AccountMove : generates_invoice
 PurchaseOrder --> StockMove : generates
 ServiceOrder --> StockMove : from_raw_to_finished
 DailyCash --> ResPartner : cashier
-CashLine --> SupplierAccount : impacts_balance
 SupplierAccount --> ResPartner : fournisseur/atelier
 AccountMove --> ResPartner : partner
 
 legend bottom
   **4 modules custom:**
   jewelry_core = Socle (métaux, cours, produits, inventaire)
-  jewelry_transactions = Métier (ticket, achats, services, caisse)
+  jewelry_transactions = Métier (ticket, achats, services, caisse, fonte casse)
   jewelry_accounting = Rapports (écritures, bilans)
   jewelry_dashboard = UI (vue 360°)
   ---
   Caisse voyage = champ is_travel_cash sur cash.register.line
+  Casse = pas de sous-types — un seul type "Casse" dans metal.type
+  Prix achat casse = saisi manuellement (évaluation visuelle)
+  Karat depuis metal.type — pas de champ karat redondant
 endlegend
 
 @enduml

@@ -26,10 +26,10 @@ loop Chaque opération
   REG -> DB: cash_register_line ajoutée\n(type: entrée, montant: 12000)
 end
 
-== Alimentation caisse voyage ==
-CA -> REG: Alimenter caisse voyage\n50,000 DZD (is_travel_cash=True)
-REG -> DB: cash.register.line:\n-50,000 DZD (sortie caisse)\n+50,000 DZD (travel, journal voyage)
-note right DB: Caisse voyage via is_travel_cash\nsur cash.register.line
+== Dépense voyage ==
+CA -> REG: Enregistre dépense voyage\n50,000 DZD (is_travel_cash=True)
+REG -> DB: cash.register.line:\n-50,000 DZD\nis_travel_cash=True\njournal_id = "Caisse Voyage"
+note right DB: Dépense voyage taguée via is_travel_cash\nsur cash.register.line
 
 == Clôture ==
 CA -> REG: Lance la clôture de caisse
@@ -53,7 +53,7 @@ else Écart non-justifié
 end
 
 CA -> REG: Imprime rapport de clôture
-REG --> CA: Rapport:\n- Ouverture: 200,000 DZD\n- Total entrées: 185,000 DZD\n- Total sorties: 73,000 DZD\n- Attendu: 312,000 DZD\n- Physique: 310,000 DZD\n- Écart: -2,000 DZD\n- Caisse voyage: 50,000 DZD
+REG --> CA: Rapport:\n- Ouverture: 200,000 DZD\n- Total entrées: 185,000 DZD\n- Total sorties: 73,000 DZD (dont voyage: 50,000)\n- Attendu: 312,000 DZD\n- Physique: 310,000 DZD\n- Écart: -2,000 DZD
 
 note over CA,REG: Signature caissier + témoin\nRapport archivé
 

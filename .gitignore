@@ -32,3 +32,9 @@ graphify-out/
 
 # Session summaries (AI-generated, not project code)
 SESSION_SUMMARY.md
+
+# OpenCode agent instructions (local context, not project code)
+AGENTS.md
+
+# Obsidian vault configuration (local editor config)
+docs/.obsidian/

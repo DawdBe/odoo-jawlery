@@ -12,6 +12,7 @@ state "Archivé" as ARCHIVED
 [*] --> DRAFT : Création bon
 DRAFT --> CONFIRMED : Validation vendeur
 DRAFT --> CANCELED : Annulation
+DRAFT --> [*] : Suppression (brouillon uniquement)
 
 CONFIRMED --> PARTIAL : Paiement partiel (versé)
 CONFIRMED --> PAID : Paiement complet
@@ -25,6 +26,7 @@ CANCELED --> ARCHIVED : Archivage
 note right of DRAFT
   Bon vide
   Pas de mouvement stock
+  Supprimable (aucun impact)
 end note
 
 note right of CONFIRMED

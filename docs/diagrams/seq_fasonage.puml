@@ -10,23 +10,24 @@ participant "Atelier\n(Façonneur - AT)" as AT
 participant "Inventaire" as INV2
 participant "Comptabilité" as ACC2
 
-C2 -> V2: Apporte 20g d'or 21k\n(Casse21) pour faire une bague
+C2 -> V2: Apporte 20g d'or 21k\n(Casse) pour faire une bague
 V2 -> SRV: Crée un ordre de service fasonage
-SRV -> DB2: Enregistre le client,\nl'or reçu (20g, Casse21, 21k)
-note right DB2: Poids brut: 20g\nType: Casse21\nKarat: 21k
+SRV -> DB2: Enregistre le client,\nl'or reçu (20g, Casse, 21k)
+note right DB2: Poids brut: 20g\nMétal: Casse\nKarat: 21k (évaluation visuelle)
 DB2 --> SRV: Ordre #SVC-001 créé (état: reçu)
 
-V2 -> SRV: Saisit le style\n(style: massif, modèle bague)
+V2 -> SRV: Saisit le style\n(style: massif, modèle bague)\n+ marge bénéf. souhaitée (ex: 30%)
 SRV -> DB2: Consulte table de prix atelier\nmassif = 600 DZD/g (fourni par AT)
 note right DB2: atelier.price.table:\nAtelier B1, style massif\n600 DZD/g, valide depuis 01/2024
 DB2 --> SRV: Prix atelier: 600 DZD/g\nCoût estimé: 18.5g × 600 = 11,100 DZD
+note right V2: min_profit_percentage = 30%\nPrix mini vente = 11,100 × 1.3 = 14,430 DZD
 
 V2 -> SRV: Envoie l'or à l'atelier
-SRV -> INV2: Déduit 20g Casse21 du stock magasin
-SRV -> INV2: Ajoute 20g Casse21 au stock atelier (transfert)
+SRV -> INV2: Déduit 20g Casse du stock magasin
+SRV -> INV2: Ajoute 20g Casse au stock atelier (transfert)
 SRV -> DB2: Met à jour statut: "En cours de fasonage"
 
-AT -> SRV: Confirme réception de l'or (20g Casse21 reçus)
+AT -> SRV: Confirme réception de l'or (20g Casse reçus)
 SRV -> DB2: Log de transfert + date de réception atelier
 
 note over SRV, AT: Quelques jours plus tard...
@@ -41,12 +42,16 @@ V2 -> C2: Appelle le client
 
 C2 -> V2: Vient récupérer la bague
 V2 -> SRV: Affiche l'ordre #SVC-001
-SRV --> V2: Détail: 20g Casse21 → 18.5g bague\n+ 1.5g déchet + 11,100 DZD service
+SRV --> V2: Détail: 20g Casse → 18.5g bague\n+ 1.5g déchet\nCoût atelier: 11,100 DZD\nPrix mini (marge 30%): 14,430 DZD
 
-C2 -> V2: Paie le service (11,100 DZD)\n+ récupère son bijou
-V2 -> SRV: Enregistre le paiement\n+ crée bon unifié lié
+V2 -> V2: Fixe le prix de vente\n(ex: 15,000 DZD)
+V2 -> SRV: Valide le prix\nvalidate_selling_price(15000)
+SRV --> V2: ✅ Profit = (15000 - 11100)/11100 = 35%\n≥ min 30% → OK
+
+C2 -> V2: Paie 15,000 DZD\n+ récupère son bijou
+V2 -> SRV: Enregistre le paiement\n+ crée bon unifié avec price_unit = 15000
 SRV -> ACC2: Crée facture de service\n+ écriture comptable
-SRV -> INV2: Ajoute 1.5g déchet Casse21\ndans le stock magasin (notre gain)
+SRV -> INV2: Ajoute 1.5g déchet Casse\ndans le stock magasin (notre gain)
 SRV -> DB2: Met à jour statut: "Livré au client"
 
 V2 -> C2: Remet la bague + facture service

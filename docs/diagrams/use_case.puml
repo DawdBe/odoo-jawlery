@@ -5,8 +5,7 @@ skinparam packageStyle rectangle
 skinparam actorStyle awesome
 
 actor "Admin\n(Propriétaire)" as Admin
-actor "Cassier" as Cassier
-actor "Employé de Poste\n(Vendeur)" as Vendeur
+actor "Employé de Poste\n(Vendeur / Cassier)" as Vendeur
 actor "Client" as Client
 actor "Fournisseur\n(FRS)" as Fournisseur
 actor "Atelier\n(Façonneur / AT)" as Atelier
@@ -28,23 +27,20 @@ rectangle "Système de Gestion\nBijouterie - Odoo 17" as System {
   usecase "Recalcul prix\naprès changement cours" as UC11
   usecase "Inventaire physique\n(comparaison poids)" as UC12
 
-  ' === CASHIER ===
-  usecase "Encaisser paiements\n(espèces/carte)" as UC13
-  usecase "Paiement partiel\n(versé + solde)" as UC14
-  usecase "Clôturer caisse\n(comptage 2000/1000/500/200/\n100/50/20/10 DZD)" as UC15
-  usecase "Imprimer reçus\net factures" as UC16
-  usecase "Gérer bons unifiés\n(toutes opérations)" as UC17
-  usecase "Gérer caisse de voyage\n(caisse séparée)" as UC18
-
-  ' === VENDEUR ===
+  ' === EMPLOYÉ (VENDEUR / CASSIER) ===
   usecase "Vente simple\n(produit fini, poids, prix)" as UC19
   usecase "Achat client / rachat\n(or, argent, bijou)" as UC20
   usecase "Double opération\n(vente + rachat simultané)" as UC21
+  usecase "Encaisser paiements\n(espèces/carte)" as UC13
+  usecase "Paiement partiel\n(versé + solde)" as UC14
+  usecase "Clôturer caisse\n(comptage 2000/1000/500/200/\n100/50/20/10 DZD)" as UC15
+  usecase "Gérer bons unifiés\n(toutes opérations)" as UC17
+  usecase "Taguer dépenses\ncaisse voyage" as UC18
   usecase "Enregistrer fasonage\n(via table de prix atelier)" as UC22
   usecase "Scan code-barres\n(attributs produit)" as UC24
   usecase "Devis / quote" as UC25
   usecase "Consulter inventaire\n(stock, poids, casse)" as UC26
-  usecase "Imprimer documents\n(bon, facture, historique)" as UC27
+  usecase "Imprimer reçus, bons\net factures" as UC16
   usecase "Enregistrer service\n(réparation, dorure,\ngravure, argenture)" as UC28
 
   ' === CLIENT ===
@@ -80,21 +76,19 @@ Admin --> UC10
 Admin --> UC11
 Admin --> UC12
 
-Cassier --> UC13
-Cassier --> UC14
-Cassier --> UC15
-Cassier --> UC16
-Cassier --> UC17
-Cassier --> UC18
-
 Vendeur --> UC19
 Vendeur --> UC20
 Vendeur --> UC21
+Vendeur --> UC13
+Vendeur --> UC14
+Vendeur --> UC15
+Vendeur --> UC17
+Vendeur --> UC18
 Vendeur --> UC22
 Vendeur --> UC24
 Vendeur --> UC25
 Vendeur --> UC26
-Vendeur --> UC27
+Vendeur --> UC16
 Vendeur --> UC28
 
 Client --> UC29
@@ -129,8 +123,8 @@ UC25 ..> UC19 : <<extend>>
 legend right
   **Vocabulaire métier (Excel):**
   ---
-  Casse = Or de récupération
-  Casse18/21/22/14 = Karat
+  Casse = Or de récupération (metal.type category="casse")
+  Karat = Depuis metal.type (pas de sous-catégories)
   FRS = Fournisseur (solde poids + financier)
   AT = Atelier / Façonneur
   Versé = Acompte / Dépôt

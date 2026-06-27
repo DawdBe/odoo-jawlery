@@ -5,7 +5,7 @@ title "Séquence 5: Génération du Bilan Global"
 actor "Admin" as A5
 participant "Module Comptabilité" as ACC
 database "BDD\n(Transactions)" as DB5
-participant "Module Inventaire\n(Poids par casse)" as INVT
+participant "Module Inventaire\n(Poids par métal)" as INVT
 participant "Module Fournisseurs\n(Solde dual)" as FRS
 
 A5 -> ACC: Générer le bilan global
@@ -13,8 +13,8 @@ ACC -> DB5: Récupère toutes les\nécritures comptables
 note right ACC: Toutes les transactions:\nventes, achats, services, etc.
 DB5 --> ACC: Chiffre d'affaires: 3,200,000 DZD
 
-ACC -> INVT: Récupère le poids réel\n(stock physique par casse)
-INVT --> ACC: Poids:\n- Casse18: 120g\n- Casse21: 200g\n- Casse22: 45g\n- Casse14: 15g\n- Argent: 120g\n- Déchets: 12g
+ACC -> INVT: Récupère le poids réel\n(stock physique par metal.type)
+INVT --> ACC: Poids par métal:\n- Or 21k: 200g\n- Or 18k: 120g\n- Casse: 60g\n- Argent: 120g\n- Déchets: 12g
 
 ACC -> FRS: Récupère les soldes\nfournisseurs (dual balance)
 FRS --> ACC: Soldes FRS/AT:\n- FRS Ahmed: poids -50g, cash +120,000 DZD\n- AT B1: poids -20g, cash 0 DZD
@@ -22,8 +22,8 @@ FRS --> ACC: Soldes FRS/AT:\n- FRS Ahmed: poids -50g, cash +120,000 DZD\n- AT B1
 ACC -> DB5: Récupère résumé\nstatuts des bons
 DB5 --> ACC: Bons en cours:\n- 5 produits en fasonage\n- 3 bons payment_status = partiel\n- 2 produits donne_au_client non payés
 
-ACC --> A5: Bilan global:\n- CA: 3,200,000 DZD\n- Trésorerie: 1,670,000 DZD\n- Créances clients: 340,000 DZD\n- Stock par casse: 380g total\n- Déchets valorisables: 12g\n- Marge brute: 28.5%\n- Solde FRS (poids): -85g\n- Solde FRS (cash): +165,000 DZD
+ACC --> A5: Bilan global:\n- CA: 3,200,000 DZD\n- Trésorerie: 1,670,000 DZD\n- Créances clients: 340,000 DZD\n- Stock par métal: 380g total\n- Déchets valorisables: 12g\n- Marge brute: 28.5%\n- Solde FRS (poids): -85g\n- Solde FRS (cash): +165,000 DZD
 
-A5 -> A5: Décisions stratégiques:\n- Ajuster les marges par style\n- Réapprovisionner types de casse\n- Suivre soldes fournisseurs
+A5 -> A5: Décisions stratégiques:\n- Ajuster les marges par style\n- Réapprovisionner métaux\n- Suivre soldes fournisseurs
 
 @enduml

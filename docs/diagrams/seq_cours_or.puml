@@ -1,42 +1,32 @@
 @startuml
 !theme plain
-title "Séquence 4: Mise à Jour du Cours (Bourse + Marché)"
+title "Séquence 4: Mise à Jour du Cours Or"
 
 actor "Admin" as A
 participant "Dashboard\nCours Or" as DASH
-participant "Module\nPricing" as PRICE
 database "BDD" as DB4
 
-A -> DASH: Ouvre l'interface du cours de l'or
-DASH --> A: Affiche cours actuel:\n21k Bourse = 8500 DZD/g\n21k Marché = 8650 DZD/g (écart +150)\n18k Bourse = 7200 DZD/g\n18k Marché = 7350 DZD/g
+== Récupération automatique du cours Bourse ==
 
-A -> DASH: Met à jour le cours Bourse\n(manuel ou via API)
-note right A: Source: ChangeDZ / Gold Price Live\nConversion USD → DZD parallèle
-DASH -> DB4: Enregistre nouveau cours Bourse\n21k = 9200 DZD/g (date: 15/06)
+DASH -> DB4: gold.rate.history:\nmetal_type = or 21k\nbursa_rate = 8500
+note right DASH: API (ChangeDZ) récupère\nle cours bourse automatiquement\n(simple référence pour l'admin)
 
-A -> DASH: Configure l'écart Bourse/Marché\n(ex: +150 DZD/g)
-DASH -> DB4: Enregistre l'écart\n+150 DZD/g pour Casse21
-DB4 --> DASH: Écart configuré
-DASH -> DASH: Calcule automatiquement\nCours Marché = Bourse + Écart\n21k Marché = 9350 DZD/g
+== Configuration du taux Marché ==
 
-A -> DASH: Ajuste manuellement\nle cours Marché si besoin
-note right A: Le marché réel peut différer\nde la formule simple
-DASH -> DB4: Surcharge cours Marché\n21k Marché = 9400 DZD/g
+A -> DASH: Option A: Fixe un écart (spread)\nBourse→Marché, ex: +150 DZD/g
+DASH -> DB4: gold.rate.history:\nmarket_spread = +150\nmarket_rate = 8500 + 150 = 8650
 
-DB4 --> DASH: Cours mis à jour (Bourse + Marché)
+note right DB4: L'écart peut être modifié\nou supprimé à tout moment
 
-DASH -> PRICE: Déclenche le recalcul\ndes prix des produits
-PRICE -> DB4: Pour chaque produit:\nNouveau prix = (Poids net × Cours Marché)\n+ Coût main d'oeuvre + Déchet%\n+ Marge configurée
-note right PRICE: Formule:\nPrix = (Net_Weight × Market_Rate)\n+ Labor_Cost\n+ (Net_Weight × Rate × Wastage%)\n× (1 + Margin%)
-DB4 --> PRICE: Produits recalculés
+A -> DASH: Option B: Saisit le cours\nMarché directement, ex: 9400 DZD/g
+DASH -> DB4: gold.rate.history:\nmarket_rate = 9400\n(le spread est ignoré)
 
-PRICE --> DASH: Recalcul terminé:\n150 produits mis à jour
-DASH --> A: Confirmation:\n"Cours Bourse + Marché mis à jour.\n150 produits recalculés."
+note right DB4: Les deux options sont exclusives:\n- Spread = market_rate auto-calculé\n- Saisie directe = spread ignoré
 
-A -> DASH: Vérifie quelques produits
-DASH -> DB4: Récupère les nouveaux prix
-DB4 --> DASH: Affichage des prix recalculés
-DASH --> A: Ex: Bague massif or 21k (5g net)\nAncien: 47500 DZD / Nouveau: 51000 DZD
+== Utilisation du cours Marché ==
 
-note over A, DASH: Le cours Bourse sert de référence,\nle cours Marché est utilisé pour les transactions
+DB4 --> DASH: market_rate = valeur active
+
+DASH --> A: Cours Marché utilisé pour les transactions:\nPrix = Poids net × Cours Marché du métal\n(ex: 5g d'or 21k × 9400 = 47,000 DZD)
+note bottom: Un seul market_rate par metal.type.\nLes autres métaux ont leur propre taux.
 @enduml
