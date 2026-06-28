@@ -17,4 +17,7 @@
     'installable': True,
     'license': 'LGPL-3',
     'post_init_hook': 'apply_translations',
+    'demo': [
+        'demo/demo_data.xml',
+    ],
 }

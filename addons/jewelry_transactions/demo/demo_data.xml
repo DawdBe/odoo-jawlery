@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Atelier Price Table -->
+    <record id="atelier_price_massif_18k" model="atelier.price.table">
+        <field name="atelier_id" ref="jewelry_core.partner_atelier_el_djazaer"/>
+        <field name="style">massif</field>
+        <field name="metal_type_id" ref="jewelry_core.metal_or_18k"/>
+        <field name="cost_per_gram" eval="8.0"/>
+    </record>
+
+    <!-- Supplier Account -->
+    <record id="demo_supplier_account" model="supplier.account">
+        <field name="partner_id" ref="jewelry_core.partner_supplier_omar"/>
+    </record>
+
+    <!-- Associate Account -->
+    <record id="demo_associate_account" model="associate.account">
+        <field name="partner_id" ref="jewelry_core.partner_associe_karim"/>
+    </record>
+
+    <!-- Purchase Ticket (achat_casse from client) -->
+    <record id="demo_ticket_achat" model="jewelry.ticket">
+        <field name="name">TKT-2025-001</field>
+        <field name="partner_id" ref="jewelry_core.partner_client_ali"/>
+        <field name="date" eval="(datetime.now() - timedelta(days=3)).strftime('%Y-%m-%d %H:%M:%S')"/>
+        <field name="payment_status">paye</field>
+        <field name="product_status">termine</field>
+        <field name="notes">Achat de casse 18K — client régulier</field>
+    </record>
+
+    <record id="demo_ticket_achat_line_1" model="jewelry.ticket.line">
+        <field name="ticket_id" ref="demo_ticket_achat"/>
+        <field name="line_type">achat_casse</field>
+        <field name="metal_type_id" ref="jewelry_core.metal_casse_18k"/>
+        <field name="weight" eval="25.0"/>
+        <field name="price_unit" eval="37.0"/>
+        <field name="price_subtotal" eval="925.0"/>
+        <field name="quantity" eval="1.0"/>
+    </record>
+
+    <!-- Sales Ticket (vente of bracelet) -->
+    <record id="demo_ticket_vente" model="jewelry.ticket">
+        <field name="name">TKT-2025-002</field>
+        <field name="partner_id" ref="jewelry_core.partner_client_fatima"/>
+        <field name="date" eval="(datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')"/>
+        <field name="payment_status">impaye</field>
+        <field name="product_status">en_stock</field>
+    </record>
+
+    <record id="demo_ticket_vente_line_1" model="jewelry.ticket.line">
+        <field name="ticket_id" ref="demo_ticket_vente"/>
+        <field name="line_type">vente</field>
+        <field name="product_id" ref="jewelry_core.product_bracelet_or"/>
+        <field name="weight" eval="12.5"/>
+        <field name="price_unit" eval="3600.0"/>
+        <field name="price_subtotal" eval="45000.0"/>
+        <field name="quantity" eval="1.0"/>
+    </record>
+
+    <!-- Service Order (fasonage) -->
+    <record id="demo_service_order" model="service.order">
+        <field name="name">SRV-2025-001</field>
+        <field name="partner_id" ref="jewelry_core.partner_client_ali"/>
+        <field name="atelier_id" ref="jewelry_core.partner_atelier_el_djazaer"/>
+        <field name="ticket_id" ref="demo_ticket_achat"/>
+        <field name="service_type">fasonage</field>
+        <field name="style">massif</field>
+        <field name="raw_gold_weight" eval="25.0"/>
+        <field name="raw_gold_metal" ref="jewelry_core.metal_casse_18k"/>
+        <field name="finished_weight" eval="22.5"/>
+        <field name="received_date" eval="(datetime.now() - timedelta(days=3)).strftime('%Y-%m-%d %H:%M:%S')"/>
+    </record>
+
+    <!-- Casse Melting -->
+    <record id="demo_melting" model="casse.melting">
+        <field name="name">MLT-2025-001</field>
+        <field name="date" eval="(datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')"/>
+        <field name="metal_type_result" ref="jewelry_core.metal_or_18k"/>
+        <field name="weight_before" eval="100.0"/>
+        <field name="weight_after" eval="92.0"/>
+        <field name="state">done</field>
+    </record>
+
+    <!-- Daily Cash Register -->
+    <record id="demo_cash_register" model="daily.cash.register">
+        <field name="name">CAISSE-2025-06-28</field>
+        <field name="date" eval="datetime.now().strftime('%Y-%m-%d')"/>
+        <field name="opening_balance" eval="50000.0"/>
+        <field name="state">open</field>
+    </record>
+
+    <!-- Cash Register Line (from purchase ticket payment) -->
+    <record id="demo_cash_line" model="cash.register.line">
+        <field name="register_id" ref="demo_cash_register"/>
+        <field name="ticket_id" ref="demo_ticket_achat"/>
+        <field name="amount" eval="925.0"/>
+        <field name="type">sortie</field>
+        <field name="partner_id" ref="jewelry_core.partner_client_ali"/>
+        <field name="description">Paiement achat casse TKT-2025-001</field>
+    </record>
+
+    <!-- Associate Transaction -->
+    <record id="demo_associate_transaction" model="associate.transaction">
+        <field name="account_id" ref="demo_associate_account"/>
+        <field name="partner_id" ref="jewelry_core.partner_associe_karim"/>
+        <field name="transaction_type">capital_deposit</field>
+        <field name="amount" eval="1000000.0"/>
+        <field name="date" eval="(datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d')"/>
+        <field name="fiscal_year">2025</field>
+    </record>
+</odoo>

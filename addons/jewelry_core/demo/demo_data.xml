@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Metal Types -->
+    <record id="metal_or_18k" model="metal.type">
+        <field name="name">Or 18K</field>
+        <field name="code">OR18</field>
+        <field name="purity_percentage">75.0</field>
+        <field name="karat_value">18.0</field>
+        <field name="category">or</field>
+        <field name="sequence">10</field>
+    </record>
+
+    <record id="metal_or_21k" model="metal.type">
+        <field name="name">Or 21K</field>
+        <field name="code">OR21</field>
+        <field name="purity_percentage">87.5</field>
+        <field name="karat_value">21.0</field>
+        <field name="category">or</field>
+        <field name="sequence">20</field>
+    </record>
+
+    <record id="metal_argent_925" model="metal.type">
+        <field name="name">Argent 925</field>
+        <field name="code">ARG</field>
+        <field name="purity_percentage">92.5</field>
+        <field name="category">argent</field>
+        <field name="sequence">30</field>
+    </record>
+
+    <record id="metal_casse_18k" model="metal.type">
+        <field name="name">Casse 18K</field>
+        <field name="code">CS18</field>
+        <field name="category">casse</field>
+        <field name="sequence">40</field>
+    </record>
+
+    <record id="metal_plaque_or" model="metal.type">
+        <field name="name">Plaqué Or</field>
+        <field name="code">PLQ</field>
+        <field name="category">plaque</field>
+        <field name="sequence">50</field>
+    </record>
+
+    <!-- Gold Rate History -->
+    <record id="gold_rate_or18_1" model="gold.rate.history">
+        <field name="metal_type_id" ref="metal_or_18k"/>
+        <field name="bursa_rate" eval="45.0"/>
+        <field name="market_rate" eval="44.0"/>
+        <field name="effective_date" eval="(datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')"/>
+        <field name="is_active" eval="True"/>
+    </record>
+
+    <record id="gold_rate_or18_2" model="gold.rate.history">
+        <field name="metal_type_id" ref="metal_or_18k"/>
+        <field name="bursa_rate" eval="46.0"/>
+        <field name="market_rate" eval="45.0"/>
+        <field name="effective_date" eval="(datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')"/>
+        <field name="is_active" eval="False"/>
+    </record>
+
+    <record id="gold_rate_or21_1" model="gold.rate.history">
+        <field name="metal_type_id" ref="metal_or_21k"/>
+        <field name="bursa_rate" eval="52.0"/>
+        <field name="market_rate" eval="51.0"/>
+        <field name="effective_date" eval="datetime.now().strftime('%Y-%m-%d')"/>
+        <field name="is_active" eval="True"/>
+    </record>
+
+    <record id="gold_rate_argent_1" model="gold.rate.history">
+        <field name="metal_type_id" ref="metal_argent_925"/>
+        <field name="bursa_rate" eval="0.90"/>
+        <field name="market_rate" eval="0.85"/>
+        <field name="effective_date" eval="datetime.now().strftime('%Y-%m-%d')"/>
+        <field name="is_active" eval="True"/>
+    </record>
+
+    <record id="gold_rate_casse18_1" model="gold.rate.history">
+        <field name="metal_type_id" ref="metal_casse_18k"/>
+        <field name="bursa_rate" eval="38.0"/>
+        <field name="market_rate" eval="37.0"/>
+        <field name="effective_date" eval="datetime.now().strftime('%Y-%m-%d')"/>
+        <field name="is_active" eval="True"/>
+    </record>
+
+    <!-- Product Categories -->
+    <record id="product_category_jewelry_fini" model="product.category">
+        <field name="name">Bijouterie Fini</field>
+        <field name="parent_id" ref="product.product_category_all"/>
+        <field name="has_weight" eval="True"/>
+        <field name="is_jewelry" eval="True"/>
+    </record>
+
+    <record id="product_category_jewelry_brut" model="product.category">
+        <field name="name">Bijouterie Brut</field>
+        <field name="parent_id" ref="product.product_category_all"/>
+        <field name="has_weight" eval="True"/>
+        <field name="is_jewelry" eval="True"/>
+    </record>
+
+    <!-- Partners -->
+    <record id="partner_client_ali" model="res.partner">
+        <field name="name">Ali Bencheikh</field>
+        <field name="client_code">CL001</field>
+        <field name="partner_type">client</field>
+        <field name="is_company" eval="False"/>
+        <field name="phone">0555 12 34 56</field>
+        <field name="street">15 Rue des Bijoutiers</field>
+        <field name="city">Alger</field>
+    </record>
+
+    <record id="partner_client_fatima" model="res.partner">
+        <field name="name">Fatima Zohra</field>
+        <field name="client_code">CL002</field>
+        <field name="partner_type">client</field>
+        <field name="is_company" eval="False"/>
+    </record>
+
+    <record id="partner_supplier_omar" model="res.partner">
+        <field name="name">Omar Métaux Précieux</field>
+        <field name="partner_type">frs</field>
+        <field name="is_supplier" eval="True"/>
+        <field name="is_company" eval="True"/>
+    </record>
+
+    <record id="partner_atelier_el_djazaer" model="res.partner">
+        <field name="name">Atelier El Djazaïr</field>
+        <field name="partner_type">atelier</field>
+        <field name="is_atelier" eval="True"/>
+        <field name="is_company" eval="True"/>
+    </record>
+
+    <record id="partner_associe_karim" model="res.partner">
+        <field name="name">Karim Association</field>
+        <field name="partner_type">associe</field>
+        <field name="is_associated" eval="True"/>
+        <field name="is_company" eval="True"/>
+    </record>
+
+    <!-- Products -->
+    <record id="product_bracelet_or" model="product.product">
+        <field name="name">Bracelet Or 18K</field>
+        <field name="categ_id" ref="product_category_jewelry_fini"/>
+        <field name="metal_type_id" ref="metal_or_18k"/>
+        <field name="jewelry_category">fini</field>
+        <field name="gross_weight" eval="12.5"/>
+        <field name="stone_weight" eval="0.5"/>
+        <field name="style">massif</field>
+        <field name="list_price" eval="45000"/>
+        <field name="type">consu</field>
+    </record>
+
+    <record id="product_bague_or" model="product.product">
+        <field name="name">Bague Or 21K</field>
+        <field name="categ_id" ref="product_category_jewelry_fini"/>
+        <field name="metal_type_id" ref="metal_or_21k"/>
+        <field name="jewelry_category">fini</field>
+        <field name="gross_weight" eval="6.2"/>
+        <field name="style">massif_lux</field>
+        <field name="list_price" eval="28000"/>
+        <field name="type">consu</field>
+    </record>
+</odoo>
