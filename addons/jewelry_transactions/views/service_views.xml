@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_service_order_tree" model="ir.ui.view">
+        <field name="name">service.order.tree</field>
+        <field name="model">service.order</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="service_type"/>
+                <field name="status"/>
+                <field name="payment_status"/>
+                <field name="received_date"/>
+                <field name="estimated_ready_date"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_service_order_form" model="ir.ui.view">
+        <field name="name">service.order.form</field>
+        <field name="model">service.order</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="status" widget="statusbar"/>
+                    <field name="payment_status" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="partner_id"/>
+                            <field name="atelier_id"/>
+                            <field name="ticket_id"/>
+                        </group>
+                        <group>
+                            <field name="service_type"/>
+                            <field name="style"/>
+                            <field name="received_date"/>
+                            <field name="estimated_ready_date"/>
+                        </group>
+                    </group>
+                    <group string="Gold / Weight">
+                        <group>
+                            <field name="raw_gold_weight"/>
+                            <field name="raw_gold_metal"/>
+                            <field name="finished_weight"/>
+                        </group>
+                        <group>
+                            <field name="wastage_weight"/>
+                            <field name="wastage_percentage"/>
+                        </group>
+                    </group>
+                    <group string="Pricing">
+                        <group>
+                            <field name="price_from_table" widget="monetary"/>
+                            <field name="min_profit_percentage"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_service_order" model="ir.actions.act_window">
+        <field name="name">Service Orders</field>
+        <field name="res_model">service.order</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

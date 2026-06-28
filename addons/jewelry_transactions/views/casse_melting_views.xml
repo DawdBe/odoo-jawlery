@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_casse_melting_tree" model="ir.ui.view">
+        <field name="name">casse.melting.tree</field>
+        <field name="model">casse.melting</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="date"/>
+                <field name="metal_type_result"/>
+                <field name="weight_before"/>
+                <field name="weight_after"/>
+                <field name="wastage_weight"/>
+                <field name="profit" widget="monetary"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_casse_melting_form" model="ir.ui.view">
+        <field name="name">casse.melting.form</field>
+        <field name="model">casse.melting</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="date"/>
+                        </group>
+                        <group>
+                            <field name="metal_type_result"/>
+                            <field name="karat_result"/>
+                        </group>
+                    </group>
+                    <group string="Weights">
+                        <group>
+                            <field name="weight_before"/>
+                            <field name="weight_after"/>
+                            <field name="wastage_weight"/>
+                        </group>
+                        <group>
+                            <field name="total_cost" widget="monetary"/>
+                            <field name="refined_value" widget="monetary"/>
+                            <field name="profit" widget="monetary"/>
+                        </group>
+                    </group>
+                    <field name="line_ids">
+                        <tree editable="bottom">
+                            <field name="ticket_line_id"/>
+                            <field name="weight"/>
+                            <field name="cost" widget="monetary"/>
+                        </tree>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_casse_melting" model="ir.actions.act_window">
+        <field name="name">Casse Melting</field>
+        <field name="res_model">casse.melting</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

@@ -1,0 +1,8 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_metal_type_user,metal.type.user,model_metal_type,,1,0,0,0
+access_metal_type_admin,metal.type.admin,model_metal_type,base.group_system,1,1,1,1
+access_gold_rate_user,gold.rate.history.user,model_gold_rate_history,,1,0,0,0
+access_gold_rate_admin,gold.rate.history.admin,model_gold_rate_history,base.group_system,1,1,1,1
+access_stock_inventory_weight_user,stock.inventory.weight.user,model_stock_inventory_weight,stock.group_stock_user,1,1,1,0
+access_stock_inventory_weight_admin,stock.inventory.weight.admin,model_stock_inventory_weight,base.group_system,1,1,1,1
+access_stock_inventory_weight_line_user,stock.inventory.weight.line.user,model_stock_inventory_weight_line,stock.group_stock_user,1,1,1,1

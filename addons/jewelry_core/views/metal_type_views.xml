@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_metal_type_tree" model="ir.ui.view">
+        <field name="name">metal.type.tree</field>
+        <field name="model">metal.type</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="category"/>
+                <field name="karat_value"/>
+                <field name="purity_percentage"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_metal_type_form" model="ir.ui.view">
+        <field name="name">metal.type.form</field>
+        <field name="model">metal.type</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="category"/>
+                        </group>
+                        <group>
+                            <field name="karat_value"/>
+                            <field name="purity_percentage"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="rates" string="Gold Rates">
+                            <field name="gold_rate_ids">
+                                <tree>
+                                    <field name="effective_date"/>
+                                    <field name="bursa_rate"/>
+                                    <field name="market_rate"/>
+                                    <field name="is_active"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_metal_type_search" model="ir.ui.view">
+        <field name="name">metal.type.search</field>
+        <field name="model">metal.type</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="category"/>
+                <filter name="active" string="Active" domain="[('active','=',True)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_metal_type" model="ir.actions.act_window">
+        <field name="name">Metal Types</field>
+        <field name="res_model">metal.type</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

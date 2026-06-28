@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_jewelry_accounting" name="Accounting"
+               parent="jewelry_core.menu_jewelry_root" sequence="30"/>
+</odoo>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_jewelry_transactions" name="Transactions"
+               parent="jewelry_core.menu_jewelry_root" sequence="20"/>
+
+    <menuitem id="menu_jewelry_ticket" name="Tickets"
+              parent="menu_jewelry_transactions" action="action_jewelry_ticket" sequence="10"/>
+    <menuitem id="menu_service_order" name="Service Orders"
+              parent="menu_jewelry_transactions" action="action_service_order" sequence="20"/>
+    <menuitem id="menu_casse_melting" name="Casse Melting"
+              parent="menu_jewelry_transactions" action="action_casse_melting" sequence="30"/>
+    <menuitem id="menu_supplier_account" name="Supplier Accounts"
+              parent="menu_jewelry_transactions" action="action_supplier_account" sequence="40"/>
+    <menuitem id="menu_daily_cash_register" name="Cash Registers"
+              parent="menu_jewelry_transactions" action="action_daily_cash_register" sequence="50"/>
+    <menuitem id="menu_product_promotion" name="Promotions"
+              parent="menu_jewelry_transactions" action="action_product_promotion" sequence="60"/>
+</odoo>

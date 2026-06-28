@@ -90,10 +90,10 @@ entity "jewelry.ticket" as jewelry_ticket {
   * seller_id : integer <<FK>>
   * payment_status : varchar
   * product_status : varchar
-  * total_cash_in : numeric  [compute]
-  * total_cash_out : numeric  [compute]
-  * balance : numeric  [compute]
-  * total_remise : numeric  [compute]
+   * total_cash_in : numeric  [compute store]
+   * total_cash_out : numeric  [compute store]
+   * balance : numeric  [compute store]
+   * total_remise : numeric  [compute store]
   * notes : text
 }
 
@@ -145,8 +145,8 @@ entity "supplier.account" as supplier_account {
   --
   * partner_id : integer <<FK>>
   * partner_type : varchar
-  * weight_balance : float  [compute]
-  * cash_balance : numeric  [compute]
+   * weight_balance : float  [compute store]
+   * cash_balance : numeric  [compute store]
   * last_rate_used : numeric
   * last_transaction_date : datetime
 }
@@ -161,10 +161,10 @@ entity "casse.melting" as casse_melting {
   * karat_result : float
   * weight_before : float
   * weight_after : float
-  * wastage_weight : float  [compute]
-  * total_cost : numeric
-  * refined_value : numeric  [compute]
-  * profit : numeric  [compute]
+   * wastage_weight : float  [compute store]
+   * total_cost : numeric
+   * refined_value : numeric  [compute store]
+   * profit : numeric  [compute store]
   * state : varchar
   * notes : text
 }
@@ -183,8 +183,8 @@ entity "associate.account" as associate_account {
   * id : integer <<generated>>
   --
   * partner_id : integer <<FK>>
-  * capital_balance : numeric  [compute]
-  * advance_balance : numeric  [compute]
+   * capital_balance : numeric  [compute store]
+   * advance_balance : numeric  [compute store]
   * last_transaction_date : datetime
 }
 
@@ -225,8 +225,8 @@ entity "daily.cash.register" as daily_cash_register {
   * name : varchar
   * opening_balance : numeric
   * closing_balance : numeric
-  * expected_balance : numeric  [compute]
-  * difference : numeric  [compute]
+   * expected_balance : numeric  [compute store]
+   * difference : numeric  [compute store]
   * cashier_id : integer <<FK>>
   * date : date
   * state : varchar
@@ -267,9 +267,9 @@ entity "service.order" as service_order {
   * style : varchar
   * raw_gold_weight : float
   * raw_gold_metal : integer <<FK>>
-  * finished_weight : float
-  * wastage_weight : float
-  * wastage_percentage : float
+   * finished_weight : float
+   * wastage_weight : float  [compute]
+   * wastage_percentage : float
   * status : varchar
   * payment_status : varchar
   * min_profit_percentage : float

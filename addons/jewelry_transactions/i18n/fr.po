@@ -1,0 +1,461 @@
+# Translation of jewelry_transactions to French
+# Business vocabulary sourced from Excel files (Caisse magasin 2024-2025)
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: odoo\n"
+"Language: fr\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#. module: jewelry_transactions
+#: model:ir.model,name:jewelry_transactions.model_associate_account
+msgid "Associate Account"
+msgstr "Compte Associé"
+
+#. module: jewelry_transactions
+#: model:ir.model,name:jewelry_transactions.model_associate_transaction
+msgid "Associate Transaction"
+msgstr "Opération Associé"
+
+#. module: jewelry_transactions
+#: model:ir.model,name:jewelry_transactions.model_atelier_price_table
+msgid "Atelier Price Table"
+msgstr "Grille de Prix Atelier"
+
+#. module: jewelry_transactions
+#: model:ir.model,name:jewelry_transactions.model_cash_register_line
+msgid "Cash Register Line"
+msgstr "Ligne de Caisse"
+
+#. module: jewelry_transactions
+#: model:ir.model,name:jewelry_transactions.model_casse_melting
+msgid "Casse Melting"
+msgstr "Fonte Casse"
+
+#. module: jewelry_transactions
+#: model:ir.model,name:jewelry_transactions.model_casse_melting_line
+msgid "Casse Melting Line"
+msgstr "Ligne de Fonte Casse"
+
+#. module: jewelry_transactions
+#: model:ir.model,name:jewelry_transactions.model_daily_cash_register
+msgid "Daily Cash Register"
+msgstr "Caisse du Jour"
+
+#. module: jewelry_transactions
+#: model:ir.model,name:jewelry_transactions.model_jewelry_ticket
+msgid "Unified Jewelry Ticket"
+msgstr "Ticket de Bijouterie"
+
+#. module: jewelry_transactions
+#: model:ir.model,name:jewelry_transactions.model_jewelry_ticket_line
+msgid "Ticket Line"
+msgstr "Ligne de Ticket"
+
+#. module: jewelry_transactions
+#: model:ir.model,name:jewelry_transactions.model_product_promotion
+msgid "Product Promotion"
+msgstr "Promotion Article"
+
+#. module: jewelry_transactions
+#: model:ir.model,name:jewelry_transactions.model_purchase_order
+msgid "Purchase Order"
+msgstr "Bon d'Achat"
+
+#. module: jewelry_transactions
+#: model:ir.model,name:jewelry_transactions.model_purchase_order_line
+msgid "Purchase Order Line"
+msgstr "Ligne de Bon d'Achat"
+
+#. module: jewelry_transactions
+#: model:ir.model,name:jewelry_transactions.model_service_order
+msgid "Service Order (Fasonage / Repair)"
+msgstr "Bon de Service (Façonnage / Réparation)"
+
+#. module: jewelry_transactions
+#: model:ir.model,name:jewelry_transactions.model_supplier_account
+msgid "Supplier / Atelier Account"
+msgstr "Compte Fournisseur / Atelier"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_associate_account__advance_balance
+msgid "Advance Balance"
+msgstr "Solde Avance"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_associate_account__capital_balance
+msgid "Capital Balance"
+msgstr "Solde Capital"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_associate_account__currency_id
+msgid "Currency"
+msgstr "Devise"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_associate_account__last_transaction_date
+msgid "Last Transaction Date"
+msgstr "Dernière Opération"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_associate_account__partner_id
+msgid "Associate"
+msgstr "Associé"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_associate_account__transaction_ids
+msgid "Transactions"
+msgstr "Opérations"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_casse_melting__karat_result
+msgid "Result Karat"
+msgstr "Carat Résultat"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_casse_melting__line_ids
+msgid "Lines"
+msgstr "Lignes"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_casse_melting__metal_type_result
+msgid "Result Metal Type"
+msgstr "Type Métal Résultat"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_casse_melting__name
+msgid "Name"
+msgstr "Fonte N°"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_casse_melting__notes
+msgid "Notes"
+msgstr "Remarques"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_casse_melting__refined_value
+msgid "Refined Value"
+msgstr "Valeur Affinée"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_casse_melting__state
+msgid "State"
+msgstr "État"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_casse_melting__total_cost
+msgid "Total Cost"
+msgstr "Coût Total"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_casse_melting__wastage_weight
+msgid "Wastage (g)"
+msgstr "Déchet (g)"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_casse_melting__weight_after
+msgid "Weight After (g)"
+msgstr "Poids Après (g)"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_casse_melting__weight_before
+msgid "Weight Before (g)"
+msgstr "Poids Avant (g)"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_daily_cash_register__cashier_id
+msgid "Cashier"
+msgstr "Caissier"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_daily_cash_register__closing_balance
+msgid "Closing Balance (Physical Count)"
+msgstr "Solde Fermeture (Comptage Physique)"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_daily_cash_register__difference
+msgid "Difference"
+msgstr "Décalage"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_daily_cash_register__expected_balance
+msgid "Expected Balance"
+msgstr "Solde Attendu"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_daily_cash_register__line_ids
+msgid "Cash Lines"
+msgstr "Lignes Caisse"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_daily_cash_register__opening_balance
+msgid "Opening Balance"
+msgstr "Solde Ouverture"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_jewelry_ticket__active
+msgid "Active"
+msgstr "Actif"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_jewelry_ticket__associate_transaction_ids
+msgid "Associate Transactions"
+msgstr "Opérations Associés"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_jewelry_ticket__balance
+msgid "Balance"
+msgstr "Solde"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_jewelry_ticket__barcode
+msgid "Barcode"
+msgstr "Code-barres"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_jewelry_ticket_line__casse_melting_line_ids
+msgid "Melting Lines"
+msgstr "Lignes Fonte"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_jewelry_ticket_line__description
+msgid "Description"
+msgstr "Désignation"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_jewelry_ticket_line__line_type
+msgid "Line Type"
+msgstr "Type de Ligne"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_jewelry_ticket_line__metal_type_id
+msgid "Metal Type"
+msgstr "Type de Métal"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_jewelry_ticket_line__price_subtotal
+msgid "Subtotal"
+msgstr "Sous-total"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_jewelry_ticket_line__price_unit
+msgid "Unit Price"
+msgstr "Prix Unitaire"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_jewelry_ticket_line__product_id
+msgid "Product"
+msgstr "Article"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_jewelry_ticket_line__quantity
+msgid "Quantity"
+msgstr "Quantité"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_jewelry_ticket_line__remise_amount
+msgid "Remise Amount"
+msgstr "Montant Remise"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_jewelry_ticket_line__remise_type
+msgid "Remise Type"
+msgstr "Type Remise"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_jewelry_ticket_line__remise_value
+msgid "Remise Value"
+msgstr "Valeur Remise"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_jewelry_ticket_line__weight
+msgid "Weight (g)"
+msgstr "Poids (g)"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_jewelry_ticket__name
+msgid "Ticket #"
+msgstr "Ticket N°"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_jewelry_ticket__partner_id
+msgid "Partner"
+msgstr "Client"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_jewelry_ticket__payment_status
+msgid "Payment Status"
+msgstr "État Paiement"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_jewelry_ticket__product_status
+msgid "Product Status"
+msgstr "État Article"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_jewelry_ticket__seller_id
+msgid "Seller"
+msgstr "Vendeur"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_jewelry_ticket__service_order_ids
+msgid "Service Orders"
+msgstr "Bons de Service"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_jewelry_ticket__ticket_line_ids
+msgid "Ticket Lines"
+msgstr "Lignes du Ticket"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_jewelry_ticket__total_cash_in
+msgid "Total Cash In"
+msgstr "Total Entrées"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_jewelry_ticket__total_cash_out
+msgid "Total Cash Out"
+msgstr "Total Sorties"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_service_order__estimated_ready_date
+msgid "Estimated Ready Date"
+msgstr "Date Prévue Fin"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_service_order__finished_weight
+msgid "Finished Weight (g)"
+msgstr "Poids Fini (g)"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_service_order__min_profit_percentage
+msgid "Min Profit %"
+msgstr "Marge Min. %"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_service_order__price_from_table
+msgid "Price from Atelier Table"
+msgstr "Prix Grille Atelier"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_service_order__raw_gold_metal
+msgid "Raw Gold Metal"
+msgstr "Métal Or Brut"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_service_order__raw_gold_weight
+msgid "Raw Gold Weight (g)"
+msgstr "Poids Or Brut (g)"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_service_order__received_date
+msgid "Received Date"
+msgstr "Date Réception"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_service_order__service_type
+msgid "Service Type"
+msgstr "Type de Service"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_service_order__status
+msgid "Status"
+msgstr "Statut"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_service_order__ticket_id
+msgid "Linked Ticket"
+msgstr "Ticket Lié"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_service_order__wastage_percentage
+msgid "Wastage %"
+msgstr "Déchet %"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_supplier_account__cash_balance
+msgid "Cash Balance"
+msgstr "Solde Caisse"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_supplier_account__last_rate_used
+msgid "Last Rate Used"
+msgstr "Dernier Cours"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_supplier_account__last_transaction_date
+msgid "Last Transaction"
+msgstr "Dernière Opération"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_supplier_account__partner_type
+msgid "Partner Type"
+msgstr "Type Partenaire"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_supplier_account__purchase_order_ids
+msgid "Purchase Orders"
+msgstr "Bons d'Achat"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_supplier_account__weight_balance
+msgid "Weight Balance (g)"
+msgstr "Solde Poids (g)"
+
+#. module: jewelry_transactions
+#: model_terms:ir.ui.view,arch_db:jewelry_transactions.view_jewelry_ticket_form
+msgid "Totals"
+msgstr "Totaux"
+
+#. module: jewelry_transactions
+#: model_terms:ir.ui.view,arch_db:jewelry_transactions.view_jewelry_ticket_search
+msgid "Today"
+msgstr "Aujourd'hui"
+
+#. module: jewelry_transactions
+#: model_terms:ir.ui.view,arch_db:jewelry_transactions.view_daily_cash_register_form
+msgid "Close Register"
+msgstr "Fermer la Caisse"
+
+#. module: jewelry_transactions
+#: model_terms:ir.ui.view,arch_db:jewelry_transactions.view_daily_cash_register_form
+msgid "Bill Breakdown"
+msgstr "Détail Billets"
+
+#. module: jewelry_transactions
+#: model_terms:ir.ui.view,arch_db:jewelry_transactions.view_service_order_form
+msgid "Gold / Weight"
+msgstr "Or / Poids"
+
+#. module: jewelry_transactions
+#: model_terms:ir.ui.view,arch_db:jewelry_transactions.view_service_order_form
+msgid "Pricing"
+msgstr "Tarification"
+
+#. module: jewelry_transactions
+#: model_terms:ir.ui.view,arch_db:jewelry_transactions.view_purchase_order_jewelry_form
+msgid "Gold"
+msgstr "Or"
+
+#. module: jewelry_transactions
+#: model_terms:ir.ui.view,arch_db:jewelry_transactions.view_casse_melting_form
+msgid "Weights"
+msgstr "Poids"
+
+#. module: jewelry_transactions
+#: model:ir.actions.act_window,name:jewelry_transactions.action_daily_cash_register
+msgid "Cash Registers"
+msgstr "Caisses"
+
+#. module: jewelry_transactions
+#: model:ir.actions.act_window,name:jewelry_transactions.action_supplier_account
+msgid "Supplier Accounts"
+msgstr "Comptes Fournisseurs"
+
+#. module: jewelry_transactions
+#. odoo-python
+#: code:addons/jewelry_transactions/models/jewelry_ticket.py:0
+#, python-format
+msgid "Paiement ticket %s"
+msgstr "Paiement ticket %s"

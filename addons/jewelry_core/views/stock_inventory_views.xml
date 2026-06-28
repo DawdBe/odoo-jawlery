@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_stock_inventory_weight_tree" model="ir.ui.view">
+        <field name="name">stock.inventory.weight.tree</field>
+        <field name="model">stock.inventory.weight</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="date"/>
+                <field name="metal_type_id"/>
+                <field name="expected_weight"/>
+                <field name="actual_weight"/>
+                <field name="difference_weight"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_stock_inventory_weight_form" model="ir.ui.view">
+        <field name="name">stock.inventory.weight.form</field>
+        <field name="model">stock.inventory.weight</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="reconcile_weights" string="Reconcile" type="object"
+                            class="btn-primary"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="date"/>
+                            <field name="metal_type_id"/>
+                        </group>
+                        <group>
+                            <field name="expected_weight"/>
+                            <field name="actual_weight"/>
+                            <field name="difference_weight"/>
+                        </group>
+                    </group>
+                    <field name="line_ids">
+                        <tree editable="bottom">
+                            <field name="product_id"/>
+                            <field name="weight_before"/>
+                            <field name="weight_after"/>
+                            <field name="weight_difference"/>
+                            <field name="notes"/>
+                        </tree>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_stock_inventory_weight_search" model="ir.ui.view">
+        <field name="name">stock.inventory.weight.search</field>
+        <field name="model">stock.inventory.weight</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="metal_type_id"/>
+                <filter name="draft" string="Draft" domain="[('state','=','draft')]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_stock_inventory_weight" model="ir.actions.act_window">
+        <field name="name">Weight Inventories</field>
+        <field name="res_model">stock.inventory.weight</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+</odoo>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_dashboard_360_form" model="ir.ui.view">
+        <field name="name">dashboard.360.form</field>
+        <field name="model">dashboard.360</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group string="Overview">
+                        <group>
+                            <field name="total_cash" widget="monetary"/>
+                            <field name="today_sales" widget="monetary"/>
+                            <field name="today_profit" widget="monetary"/>
+                        </group>
+                        <group>
+                            <field name="today_remise" widget="monetary"/>
+                            <field name="pending_payments" widget="monetary"/>
+                            <field name="pending_fasonages"/>
+                        </group>
+                    </group>
+                    <group string="Gold Rates">
+                        <group>
+                            <field name="gold_rate_bursa" widget="monetary"/>
+                            <field name="gold_rate_market" widget="monetary"/>
+                            <field name="silver_rate" widget="monetary"/>
+                        </group>
+                    </group>
+                    <group string="Weights by Metal">
+                        <field name="weight_by_metal_type" nolabel="1"/>
+                    </group>
+                    <footer>
+                        <button name="%(action_dashboard_360)d" string="Refresh" type="action" class="btn-primary"/>
+                        <field name="last_update"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+</odoo>

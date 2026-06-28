@@ -1,0 +1,104 @@
+# Translation of jewelry_dashboard to French
+# Business vocabulary sourced from Excel files (Caisse magasin 2024-2025)
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: odoo\n"
+"Language: fr\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#. module: jewelry_dashboard
+#: model:ir.model,name:jewelry_dashboard.model_dashboard_360
+msgid "Dashboard 360°"
+msgstr "Tableau de Bord 360°"
+
+#. module: jewelry_dashboard
+#: model:ir.model.fields,field_description:jewelry_dashboard.field_dashboard_360__currency_id
+msgid "Currency"
+msgstr "Devise"
+
+#. module: jewelry_dashboard
+#: model:ir.model.fields,field_description:jewelry_dashboard.field_dashboard_360__gold_rate_bursa
+msgid "Gold Rate (Bursa)"
+msgstr "Cours Or (Bourse)"
+
+#. module: jewelry_dashboard
+#: model:ir.model.fields,field_description:jewelry_dashboard.field_dashboard_360__gold_rate_market
+msgid "Gold Rate (Market)"
+msgstr "Cours Or (Marché)"
+
+#. module: jewelry_dashboard
+#: model:ir.model.fields,field_description:jewelry_dashboard.field_dashboard_360__last_update
+msgid "Last Update"
+msgstr "Dernière Mise à Jour"
+
+#. module: jewelry_dashboard
+#: model:ir.model.fields,field_description:jewelry_dashboard.field_dashboard_360__pending_fasonages
+msgid "Pending Fasonages"
+msgstr "Façonnages en Cours"
+
+#. module: jewelry_dashboard
+#: model:ir.model.fields,field_description:jewelry_dashboard.field_dashboard_360__pending_payments
+msgid "Pending Payments"
+msgstr "Impayés"
+
+#. module: jewelry_dashboard
+#: model:ir.model.fields,field_description:jewelry_dashboard.field_dashboard_360__silver_rate
+msgid "Silver Rate"
+msgstr "Cours Argent"
+
+#. module: jewelry_dashboard
+#: model:ir.model.fields,field_description:jewelry_dashboard.field_dashboard_360__today_profit
+msgid "Today's Profit"
+msgstr "Profit du Jour"
+
+#. module: jewelry_dashboard
+#: model:ir.model.fields,field_description:jewelry_dashboard.field_dashboard_360__today_remise
+msgid "Today's Remise"
+msgstr "Remise du Jour"
+
+#. module: jewelry_dashboard
+#: model:ir.model.fields,field_description:jewelry_dashboard.field_dashboard_360__today_sales
+msgid "Today's Sales"
+msgstr "Ventes du Jour"
+
+#. module: jewelry_dashboard
+#: model:ir.model.fields,field_description:jewelry_dashboard.field_dashboard_360__total_cash
+msgid "Total Cash"
+msgstr "Total Caisse"
+
+#. module: jewelry_dashboard
+#: model:ir.model.fields,field_description:jewelry_dashboard.field_dashboard_360__weight_by_metal_type
+msgid "Weight by Metal Type"
+msgstr "Poids par Type de Métal"
+
+#. module: jewelry_dashboard
+#: model_terms:ir.ui.view,arch_db:jewelry_dashboard.view_dashboard_360_form
+msgid "Overview"
+msgstr "Vue d'Ensemble"
+
+#. module: jewelry_dashboard
+#: model_terms:ir.ui.view,arch_db:jewelry_dashboard.view_dashboard_360_form
+msgid "Gold Rates"
+msgstr "Cours de l'Or"
+
+#. module: jewelry_dashboard
+#: model_terms:ir.ui.view,arch_db:jewelry_dashboard.view_dashboard_360_form
+msgid "Weights by Metal"
+msgstr "Poids par Métal"
+
+#. module: jewelry_dashboard
+#: model_terms:ir.ui.view,arch_db:jewelry_dashboard.view_dashboard_360_form
+msgid "Refresh"
+msgstr "Actualiser"
+
+#. module: jewelry_dashboard
+#: model:ir.actions.act_window,name:jewelry_dashboard.action_dashboard_360
+msgid "Dashboard 360°"
+msgstr "Tableau de Bord 360°"
+
+#. module: jewelry_dashboard
+#: model:ir.ui.menu,name:jewelry_dashboard.menu_jewelry_dashboard
+msgid "Dashboard 360°"
+msgstr "Tableau de Bord 360°"

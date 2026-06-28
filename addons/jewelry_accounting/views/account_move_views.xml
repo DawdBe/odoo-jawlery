@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_account_move_jewelry_form" model="ir.ui.view">
+        <field name="name">account.move.jewelry.form</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='invoice_date']" position="after">
+                <field name="jewelry_operation_type"/>
+                <field name="weight_total"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_account_move_line_jewelry_form" model="ir.ui.view">
+        <field name="name">account.move.line.jewelry.form</field>
+        <field name="model">account.move.line</field>
+        <field name="inherit_id" ref="account.view_move_line_form"/>
+        <field name="arch" type="xml">
+            <field name="quantity" position="after">
+                <field name="weight"/>
+                <field name="metal_type_id"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_account_move_line_jewelry_tree" model="ir.ui.view">
+        <field name="name">account.move.line.jewelry.tree</field>
+        <field name="model">account.move.line</field>
+        <field name="inherit_id" ref="account.view_move_line_tree"/>
+        <field name="arch" type="xml">
+            <field name="debit" position="after">
+                <field name="weight"/>
+                <field name="metal_type_id"/>
+            </field>
+        </field>
+    </record>
+</odoo>

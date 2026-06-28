@@ -1,0 +1,214 @@
+# Translation of jewelry_core to French
+# Business vocabulary sourced from Excel files (Caisse magasin 2024-2025)
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: odoo\n"
+"Language: fr\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#. module: jewelry_core
+#: model:ir.model,name:jewelry_core.model_gold_rate_history
+msgid "Gold Rate History"
+msgstr "Cours de l'Or"
+
+#. module: jewelry_core
+#: model:ir.model,name:jewelry_core.model_metal_type
+msgid "Metal Type / Casse"
+msgstr "Type de Métal / Casse"
+
+#. module: jewelry_core
+#: model:ir.model.fields,help:jewelry_core.field_metal_type__code
+msgid "AU, AG, PT, etc."
+msgstr "Ex: OR18, CS21, ARG"
+
+#. module: jewelry_core
+#: model:ir.model.fields,help:jewelry_core.field_product_category__has_weight
+msgid "True = sold by weight, False = fixed price"
+msgstr "Oui = vendu au poids, Non = prix fixe"
+
+#. module: jewelry_core
+#: model:ir.model.fields,help:jewelry_core.field_product_template__barcode
+msgid "Encodes product attributes (casse, karat, weight, style)"
+msgstr "Encode les attributs de l'article (casse, carat, poids, style)"
+
+#. module: jewelry_core
+#: model:ir.model,name:jewelry_core.model_stock_inventory_weight
+msgid "Physical Weight Inventory"
+msgstr "Inventaire Physique des Poids"
+
+#. module: jewelry_core
+#: model:ir.model,name:jewelry_core.model_stock_inventory_weight_line
+msgid "Weight Inventory Line"
+msgstr "Ligne d'Inventaire Poids"
+
+#. module: jewelry_core
+#: model:ir.model,name:jewelry_core.model_stock_move
+msgid "Stock Move"
+msgstr "Mouvement de Stock"
+
+#. module: jewelry_core
+#: model:ir.model,name:jewelry_core.model_stock_quant
+msgid "Quants"
+msgstr "Quantité en Stock"
+
+#. module: jewelry_core
+#: model:ir.model.fields,field_description:jewelry_core.field_gold_rate_history__bursa_rate
+msgid "Bursa Rate (Reference)"
+msgstr "Cours Bourse (Référence)"
+
+#. module: jewelry_core
+#: model:ir.model.fields,field_description:jewelry_core.field_gold_rate_history__create_uid
+msgid "Created by"
+msgstr "Créé par"
+
+#. module: jewelry_core
+#: model:ir.model.fields,field_description:jewelry_core.field_gold_rate_history__currency_id
+msgid "Currency"
+msgstr "Devise"
+
+#. module: jewelry_core
+#: model:ir.model.fields,field_description:jewelry_core.field_gold_rate_history__effective_date
+msgid "Effective Date"
+msgstr "Date d'Effet"
+
+#. module: jewelry_core
+#: model:ir.model.fields,field_description:jewelry_core.field_gold_rate_history__market_rate
+msgid "Market Rate (Used)"
+msgstr "Cours Marché (Utilisé)"
+
+#. module: jewelry_core
+#: model:ir.model.fields,field_description:jewelry_core.field_gold_rate_history__market_spread
+msgid "Spread (Bursa→Market)"
+msgstr "Écart (Bourse→Marché)"
+
+#. module: jewelry_core
+#: model:ir.model.fields,field_description:jewelry_core.field_gold_rate_history__metal_type_id
+msgid "Metal Type"
+msgstr "Type de Métal"
+
+#. module: jewelry_core
+#: model:ir.model.fields,field_description:jewelry_core.field_gold_rate_history__notes
+msgid "Notes"
+msgstr "Remarques"
+
+#. module: jewelry_core
+#: model:ir.model.fields,field_description:jewelry_core.field_metal_type__category
+msgid "Category"
+msgstr "Catégorie"
+
+#. module: jewelry_core
+#: model:ir.model.fields,field_description:jewelry_core.field_metal_type__name
+msgid "Name"
+msgstr "Nom"
+
+#. module: jewelry_core
+#: model:ir.model.fields,field_description:jewelry_core.field_stock_inventory_weight__actual_weight
+msgid "Actual Weight (g)"
+msgstr "Poids Réel (g)"
+
+#. module: jewelry_core
+#: model:ir.model.fields,field_description:jewelry_core.field_stock_inventory_weight__difference_weight
+msgid "Difference (g)"
+msgstr "Différence (g)"
+
+#. module: jewelry_core
+#: model:ir.model.fields,field_description:jewelry_core.field_stock_inventory_weight__expected_weight
+msgid "Expected Weight (g)"
+msgstr "Poids Attendu (g)"
+
+#. module: jewelry_core
+#: model:ir.model.fields,field_description:jewelry_core.field_stock_inventory_weight__line_ids
+msgid "Lines"
+msgstr "Lignes"
+
+#. module: jewelry_core
+#: model:ir.model.fields,field_description:jewelry_core.field_stock_inventory_weight_line__inventory_id
+msgid "Inventory"
+msgstr "Inventaire"
+
+#. module: jewelry_core
+#: model:ir.model.fields,field_description:jewelry_core.field_stock_inventory_weight_line__product_id
+msgid "Product"
+msgstr "Article"
+
+#. module: jewelry_core
+#: model:ir.model.fields,field_description:jewelry_core.field_stock_inventory_weight_line__weight_after
+msgid "Weight After (g)"
+msgstr "Poids Après (g)"
+
+#. module: jewelry_core
+#: model:ir.model.fields,field_description:jewelry_core.field_stock_inventory_weight_line__weight_before
+msgid "Weight Before (g)"
+msgstr "Poids Avant (g)"
+
+#. module: jewelry_core
+#: model:ir.model.fields,field_description:jewelry_core.field_stock_inventory_weight__state
+msgid "State"
+msgstr "État"
+
+#. module: jewelry_core
+#: model_terms:ir.ui.view,arch_db:jewelry_core.view_metal_type_form
+msgid "Gold Rates"
+msgstr "Cours de l'Or"
+
+#. module: jewelry_core
+#: model_terms:ir.ui.view,arch_db:jewelry_core.view_metal_type_search
+msgid "Active"
+msgstr "Actif"
+
+#. module: jewelry_core
+#: model_terms:ir.ui.view,arch_db:jewelry_core.view_product_product_jewelry_form
+msgid "Jewelry"
+msgstr "Bijouterie"
+
+#. module: jewelry_core
+#: model_terms:ir.ui.view,arch_db:jewelry_core.view_product_template_jewelry_form
+msgid "Jewelry"
+msgstr "Bijouterie"
+
+#. module: jewelry_core
+#: model_terms:ir.ui.view,arch_db:jewelry_core.view_stock_inventory_weight_form
+msgid "Reconcile"
+msgstr "Rapprocher"
+
+#. module: jewelry_core
+#: model_terms:ir.ui.view,arch_db:jewelry_core.view_stock_inventory_weight_search
+msgid "Draft"
+msgstr "Brouillon"
+
+#. module: jewelry_core
+#: model:ir.actions.act_window,name:jewelry_core.action_gold_rate
+msgid "Gold Rates"
+msgstr "Cours de l'Or"
+
+#. module: jewelry_core
+#: model:ir.actions.act_window,name:jewelry_core.action_metal_type
+msgid "Metal Types"
+msgstr "Types de Métal"
+
+#. module: jewelry_core
+#: model:ir.actions.act_window,name:jewelry_core.action_stock_inventory_weight
+msgid "Weight Inventories"
+msgstr "Inventaires des Poids"
+
+#. module: jewelry_core
+#: model:ir.ui.menu,name:jewelry_core.menu_gold_rate
+msgid "Gold Rates"
+msgstr "Cours de l'Or"
+
+#. module: jewelry_core
+#: model:ir.ui.menu,name:jewelry_core.menu_jewelry_core
+msgid "Core"
+msgstr "Base"
+
+#. module: jewelry_core
+#: model:ir.ui.menu,name:jewelry_core.menu_metal_type
+msgid "Metal Types"
+msgstr "Types de Métal"
+
+#. module: jewelry_core
+#: model:ir.ui.menu,name:jewelry_core.menu_weight_inventory
+msgid "Weight Inventories"
+msgstr "Inventaires des Poids"

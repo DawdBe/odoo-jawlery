@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_dashboard_360" model="ir.actions.act_window">
+        <field name="name">Dashboard 360°</field>
+        <field name="res_model">dashboard.360</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+    </record>
+
+    <menuitem id="menu_jewelry_dashboard" name="Dashboard 360°"
+              parent="jewelry_core.menu_jewelry_root" action="action_dashboard_360" sequence="5"/>
+</odoo>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_gold_rate_tree" model="ir.ui.view">
+        <field name="name">gold.rate.history.tree</field>
+        <field name="model">gold.rate.history</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="metal_type_id"/>
+                <field name="effective_date"/>
+                <field name="bursa_rate" widget="monetary"/>
+                <field name="market_rate" widget="monetary"/>
+                <field name="market_spread" widget="monetary"/>
+                <field name="is_active"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_gold_rate_form" model="ir.ui.view">
+        <field name="name">gold.rate.history.form</field>
+        <field name="model">gold.rate.history</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="metal_type_id"/>
+                            <field name="effective_date"/>
+                        </group>
+                        <group>
+                            <field name="bursa_rate" widget="monetary"/>
+                            <field name="market_rate" widget="monetary"/>
+                            <field name="market_spread" widget="monetary"/>
+                            <field name="is_active"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="notes" colspan="2"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_gold_rate" model="ir.actions.act_window">
+        <field name="name">Gold Rates</field>
+        <field name="res_model">gold.rate.history</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

@@ -1,0 +1,20 @@
+{
+    'name': 'Jewelry Core',
+    'version': '17.0.1.0.0',
+    'category': 'Inventory',
+    'summary': 'Socle fondation — métaux, cours, produits, inventaire',
+    'depends': ['product', 'stock', 'uom', 'mail', 'account'],
+    'data': [
+        'security/ir.model.access.csv',
+        'data/metal_type_data.xml',
+        'data/sequence_data.xml',
+        'views/metal_type_views.xml',
+        'views/gold_rate_views.xml',
+        'views/product_views.xml',
+        'views/stock_inventory_views.xml',
+        'views/menus.xml',
+    ],
+    'installable': True,
+    'license': 'LGPL-3',
+    'post_init_hook': 'apply_translations',
+}

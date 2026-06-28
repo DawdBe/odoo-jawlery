@@ -1,0 +1,79 @@
+# Translation of jewelry_accounting to French
+# Business vocabulary sourced from Excel files (Caisse magasin 2024-2025)
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: odoo\n"
+"Language: fr\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#. module: jewelry_accounting
+#: model:ir.model,name:jewelry_accounting.model_account_move
+msgid "Journal Entry"
+msgstr "Écriture Comptable"
+
+#. module: jewelry_accounting
+#: model:ir.model,name:jewelry_accounting.model_account_move_line
+msgid "Journal Item"
+msgstr "Ligne d'Écriture"
+
+#. module: jewelry_accounting
+#: model:ir.model.fields,field_description:jewelry_accounting.field_account_move__jewelry_operation_type
+msgid "Operation Type"
+msgstr "Type d'Opération"
+
+#. module: jewelry_accounting
+#: model:ir.model.fields,field_description:jewelry_accounting.field_account_move_line__metal_type_id
+msgid "Metal Type"
+msgstr "Type de Métal"
+
+#. module: jewelry_accounting
+#: model:ir.model.fields,field_description:jewelry_accounting.field_account_move_line__weight
+msgid "Weight (g)"
+msgstr "Poids (g)"
+
+#. module: jewelry_accounting
+#: model:ir.model.fields,field_description:jewelry_accounting.field_account_move__weight_total
+msgid "Total Weight (g)"
+msgstr "Poids Total (g)"
+
+#. module: jewelry_accounting
+#: model:ir.ui.menu,name:jewelry_accounting.menu_jewelry_accounting
+msgid "Accounting"
+msgstr "Comptabilité"
+
+#. module: jewelry_accounting
+#: model_terms:ir.ui.view,arch_db:jewelry_accounting.report_bilan_global
+msgid "Bilan Global"
+msgstr "Bilan Global"
+
+#. module: jewelry_accounting
+#: model_terms:ir.ui.view,arch_db:jewelry_accounting.report_bilan_global
+msgid "Generated: "
+msgstr "Généré le : "
+
+#. module: jewelry_accounting
+#: model_terms:ir.ui.view,arch_db:jewelry_accounting.report_bilan_global
+msgid "Journal Entry"
+msgstr "Écriture"
+
+#. module: jewelry_accounting
+#: model_terms:ir.ui.view,arch_db:jewelry_accounting.report_bilan_global
+msgid "Date"
+msgstr "Date"
+
+#. module: jewelry_accounting
+#: model_terms:ir.ui.view,arch_db:jewelry_accounting.report_bilan_global
+msgid "Operation"
+msgstr "Opération"
+
+#. module: jewelry_accounting
+#: model_terms:ir.ui.view,arch_db:jewelry_accounting.report_bilan_global
+msgid "Weight"
+msgstr "Poids"
+
+#. module: jewelry_accounting
+#: model_terms:ir.ui.view,arch_db:jewelry_accounting.report_bilan_global
+msgid "Amount"
+msgstr "Montant"

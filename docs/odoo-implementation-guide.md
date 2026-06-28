@@ -234,11 +234,12 @@ Toute la logique métier :
 2. `product.promotion`
 3. `purchase.order` étendu + ligne
 4. `supplier.account`
-5. `service.order` + `atelier.price.table`
-6. `casse.melting` + ligne
-7. `daily.cash.register` + `cash.register.line`
-8. Vues XML pour chaque modèle
-9. Droits d'accès
+5. `associate.account` + `associate.transaction`
+6. `service.order` + `atelier.price.table`
+7. `casse.melting` + ligne
+8. `daily.cash.register` + `cash.register.line`
+9. Vues XML pour chaque modèle
+10. Droits d'accès
 
 > **Note — Store strategy for computed fields:** The following computed fields use `store=True` to avoid expensive re-aggregations on every read. Odoo auto-recomputes them in DB only when their `@api.depends` trigger:
 > - `supplier.account.weight_balance`, `cash_balance` → depends on `purchase.order` + `cash.register.line`

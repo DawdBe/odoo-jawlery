@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_product_promotion_tree" model="ir.ui.view">
+        <field name="name">product.promotion.tree</field>
+        <field name="model">product.promotion</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="promotion_type"/>
+                <field name="value"/>
+                <field name="applicable_on"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_product_promotion_form" model="ir.ui.view">
+        <field name="name">product.promotion.form</field>
+        <field name="model">product.promotion</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="promotion_type"/>
+                            <field name="value"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="applicable_on"/>
+                            <field name="metal_type_id" invisible="applicable_on not in ('metal_type', 'all')"/>
+                            <field name="product_category_id" invisible="applicable_on not in ('category', 'all')"/>
+                            <field name="style" invisible="applicable_on not in ('style', 'all')"/>
+                            <field name="product_id" invisible="applicable_on != 'product'"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="date_start"/>
+                        <field name="date_end"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_product_promotion" model="ir.actions.act_window">
+        <field name="name">Promotions</field>
+        <field name="res_model">product.promotion</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>
