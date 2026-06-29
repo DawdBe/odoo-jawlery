@@ -2,4 +2,24 @@
 <odoo>
     <menuitem id="menu_jewelry_accounting" name="Accounting"
                parent="jewelry_core.menu_jewelry_root" sequence="30"/>
+
+    <record id="action_jewelry_account_move" model="ir.actions.act_window">
+        <field name="name">Journal Entries</field>
+        <field name="res_model">account.move</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('jewelry_operation_type', '!=', False)]</field>
+    </record>
+
+    <menuitem id="menu_jewelry_account_move" name="Journal Entries"
+              parent="menu_jewelry_accounting" action="action_jewelry_account_move" sequence="10"/>
+
+    <record id="action_jewelry_bilan_global" model="ir.actions.act_window">
+        <field name="name">Bilan Global</field>
+        <field name="res_model">account.move</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('jewelry_operation_type', '!=', False)]</field>
+    </record>
+
+    <menuitem id="menu_jewelry_bilan_global" name="Bilan Global"
+              parent="menu_jewelry_accounting" action="action_jewelry_bilan_global" sequence="20"/>
 </odoo>

@@ -7,8 +7,8 @@
 
     <menuitem id="menu_metal_type" name="Metal Types"
               parent="menu_jewelry_config" action="action_metal_type" sequence="10"/>
-    <menuitem id="menu_gold_rate" name="Gold Rates"
-              parent="menu_jewelry_config" action="action_gold_rate" sequence="20"/>
+    <menuitem id="menu_gold_rate" name="Gold Price"
+              parent="menu_jewelry_config" action="action_gold_price_overview" sequence="20"/>
 
     <menuitem id="menu_weight_inventory" name="Weight Inventories"
               parent="menu_jewelry_core" action="action_stock_inventory_weight" sequence="30"/>

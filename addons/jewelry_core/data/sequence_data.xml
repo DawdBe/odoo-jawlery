@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="seq_stock_inventory_weight" model="ir.sequence">
+        <field name="name">Weight Inventory</field>
+        <field name="code">stock.inventory.weight</field>
+        <field name="prefix">INV/%(year)s/</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <record id="seq_product_barcode" model="ir.sequence">
+        <field name="name">Product Barcode</field>
+        <field name="code">product.barcode</field>
+        <field name="prefix">JWL/</field>
+        <field name="padding">8</field>
+        <field name="company_id" eval="False"/>
+    </record>
+</odoo>

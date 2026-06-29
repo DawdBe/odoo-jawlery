@@ -65,6 +65,13 @@ class JewelryTicketLine(models.Model):
             rate = self.metal_type_id.get_current_rate('market')
             if rate:
                 self.price_unit = rate
+            elif self.metal_type_id:
+                live = self.env['gold.rate.history'].search([
+                    ('metal_type_id', '=', self.metal_type_id.id),
+                    ('is_active', '=', True),
+                ], order='effective_date desc', limit=1)
+                if live and live.live_usd_price and live.dzd_parallel_rate:
+                    self.price_unit = live.live_usd_price * live.dzd_parallel_rate
 
     @api.onchange('weight', 'price_unit')
     def _onchange_price_subtotal(self):

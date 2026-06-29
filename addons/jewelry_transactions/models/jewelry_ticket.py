@@ -62,6 +62,16 @@ class JewelryTicket(models.Model):
             vals['barcode'] = self.env['ir.sequence'].next_by_code('jewelry.ticket.barcode') or vals['name']
         return super().create(vals)
 
+    def action_update_prices_from_gold_rate(self):
+        for ticket in self:
+            for line in ticket.ticket_line_ids:
+                if line.line_type in ('achat_casse', 'achat') and line.metal_type_id:
+                    rate = line.metal_type_id.get_current_rate('market')
+                    if rate:
+                        line.price_unit = rate
+                        line._onchange_price_subtotal()
+        return True
+
     def register_payment(self, amount):
         self.ensure_one()
         if amount > 0:

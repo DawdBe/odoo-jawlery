@@ -1,4 +1,5 @@
-from odoo import models, fields
+from odoo import models, fields, api
+from dateutil.parser import parse
 
 
 class ProductPromotion(models.Model):
@@ -33,3 +34,39 @@ class ProductPromotion(models.Model):
     date_start = fields.Date(string='Start Date')
     date_end = fields.Date(string='End Date')
     notes = fields.Text()
+
+    def get_applicable_price(self, product, metal_type, style):
+        today = fields.Date.today()
+        promotions = self.search([
+            ('active', '=', True),
+            '|', ('date_start', '<=', today), ('date_start', '=', False),
+            '|', ('date_end', '>=', today), ('date_end', '=', False),
+        ])
+        base_price = product.lst_price if hasattr(product, 'lst_price') else 0.0
+        best_price = base_price
+        for promo in promotions:
+            if not promo._applies_to(product, metal_type, style):
+                continue
+            if promo.promotion_type == 'percentage':
+                discounted = base_price * (1 - promo.value / 100)
+            else:
+                discounted = promo.value
+            if discounted < best_price:
+                best_price = discounted
+        return best_price
+
+    def _applies_to(self, product, metal_type, style):
+        self.ensure_one()
+        if self.applicable_on == 'all':
+            return True
+        if self.applicable_on == 'product' and self.product_id == product:
+            return True
+        if self.applicable_on == 'metal_type' and metal_type and self.metal_type_id == metal_type:
+            return True
+        if self.applicable_on == 'style' and style and self.style == style:
+            return True
+        if self.applicable_on == 'category' and self.product_category_id:
+            cat = product.product_tmpl_id.categ_id if hasattr(product, 'product_tmpl_id') else None
+            if cat and (cat.id == self.product_category_id.id or cat.parent_path.startswith(str(self.product_category_id.id))):
+                return True
+        return False

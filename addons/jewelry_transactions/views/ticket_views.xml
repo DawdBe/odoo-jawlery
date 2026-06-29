@@ -24,6 +24,8 @@
         <field name="arch" type="xml">
             <form>
                 <header>
+                    <button name="action_update_prices_from_gold_rate" string="Update Gold Rates"
+                            type="object" class="btn-secondary"/>
                     <field name="payment_status" widget="statusbar"/>
                     <field name="product_status" widget="statusbar"/>
                 </header>

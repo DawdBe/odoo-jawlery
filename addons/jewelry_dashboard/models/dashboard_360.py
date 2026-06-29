@@ -12,9 +12,10 @@ class Dashboard360(models.TransientModel):
     today_remise = fields.Monetary(string="Today's Remise", compute='_compute_values')
     pending_payments = fields.Monetary(string='Pending Payments', compute='_compute_values')
     pending_fasonages = fields.Integer(string='Pending Fasonages', compute='_compute_values')
-    gold_rate_bursa = fields.Monetary(string='Gold Rate (Bursa)', compute='_compute_values')
+    base_24k_dzd = fields.Monetary(string='24k Base (DZD/g)', compute='_compute_values')
     gold_rate_market = fields.Monetary(string='Gold Rate (Market)', compute='_compute_values')
     silver_rate = fields.Monetary(string='Silver Rate', compute='_compute_values')
+    dzd_parallel_rate = fields.Float(string='DZD Parallel Rate', compute='_compute_values')
     last_update = fields.Datetime(string='Last Update', compute='_compute_values')
     currency_id = fields.Many2one('res.currency', default=lambda self: self.env.company.currency_id)
 
@@ -26,7 +27,7 @@ class Dashboard360(models.TransientModel):
                 ('metal_type_id.category', 'in', ('or', 'casse')),
                 ('is_active', '=', True),
             ], order='effective_date desc, id desc', limit=1)
-            record.gold_rate_bursa = gold_rate_rec.bursa_rate if gold_rate_rec else 0.0
+            record.base_24k_dzd = gold_rate_rec.base_24k_dzd if gold_rate_rec else 0.0
             record.gold_rate_market = gold_rate_rec.market_rate if gold_rate_rec else 0.0
 
             silver_metal = self.env['metal.type'].search([('category', '=', 'argent')], limit=1)
@@ -44,6 +45,12 @@ class Dashboard360(models.TransientModel):
             record.today_sales = sum(t.total_cash_in for t in today_tickets)
             record.today_remise = sum(t.total_remise for t in today_tickets)
             record.today_profit = sum(t.balance for t in today_tickets)
+
+            latest_gold = self.env['gold.rate.history'].search([
+                ('metal_type_id.category', 'in', ('or', 'casse')),
+                ('is_active', '=', True),
+            ], order='effective_date desc, id desc', limit=1)
+            record.dzd_parallel_rate = latest_gold.dzd_parallel_rate if latest_gold else 0.0
 
             pending = self.env['jewelry.ticket'].search([('payment_status', 'in', ('impaye', 'partiel'))])
             record.pending_payments = sum(max(t.balance, 0) for t in pending)

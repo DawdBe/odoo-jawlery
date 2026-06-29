@@ -6,3 +6,5 @@ from . import stock_quant
 from . import stock_move
 from . import stock_inventory_weight
 from . import res_partner
+from . import gold_price_api
+from . import gold_price_overview

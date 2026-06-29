@@ -3,7 +3,7 @@
     'version': '17.0.1.0.0',
     'category': 'Inventory',
     'summary': 'Dashboard 360° — interface temps réel',
-    'depends': ['jewelry_accounting'],
+    'depends': ['jewelry_accounting', 'jewelry_core'],
     'data': [
         'security/ir.model.access.csv',
         'views/actions.xml',

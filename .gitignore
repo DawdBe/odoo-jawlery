@@ -38,3 +38,6 @@ AGENTS.md
 
 # Obsidian vault configuration (local editor config)
 docs/.obsidian/
+
+# Testing notes (internal verification)
+docs/testing_notes

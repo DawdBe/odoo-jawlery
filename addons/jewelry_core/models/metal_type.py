@@ -1,13 +1,16 @@
-from odoo import models, fields, api
+from odoo import models, fields, api, _
+from odoo.exceptions import ValidationError
 
 
 class MetalType(models.Model):
     _name = 'metal.type'
     _description = 'Metal Type / Casse'
     _order = 'sequence, name'
+    _sql_constraints = [
+        ('name_unique', 'UNIQUE(name)', _('A metal type with this name already exists.')),
+    ]
 
     name = fields.Char(required=True, translate=True)
-    code = fields.Char(string='Code', help='AU, AG, PT, etc.')
     purity_percentage = fields.Float(string='Purity (%)')
     karat_value = fields.Float(string='Karat')
     category = fields.Selection([
@@ -22,6 +25,12 @@ class MetalType(models.Model):
     active = fields.Boolean(default=True)
     gold_rate_ids = fields.One2many('gold.rate.history', 'metal_type_id', string='Gold Rates')
 
+    @api.constrains('karat_value')
+    def _check_karat(self):
+        for rec in self:
+            if rec.karat_value == 0.0:
+                raise ValidationError(_('Karat value cannot be 0.'))
+
     @api.model
     def _get_casse_types(self):
         return self.search([('category', '=', 'casse')])
@@ -33,5 +42,7 @@ class MetalType(models.Model):
             ('is_active', '=', True),
         ], order='effective_date desc', limit=1)
         if rate:
-            return rate.market_rate if rate_type == 'market' else rate.bursa_rate
+            if rate_type == 'market':
+                return rate.market_rate or 0.0
+            return rate.bursa_rate or 0.0
         return 0.0

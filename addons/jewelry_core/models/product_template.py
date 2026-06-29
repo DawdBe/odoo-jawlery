@@ -37,3 +37,11 @@ class ProductProduct(models.Model):
     certificate_number = fields.Char(string='Certificate Number')
     weight = fields.Float(string='Weight (g)')
     location_id = fields.Many2one('stock.location', string='Location')
+
+    @api.model
+    def create(self, vals):
+        if not vals.get('barcode'):
+            seq = self.env['ir.sequence'].next_by_code('product.barcode') or ''
+            if seq:
+                vals['barcode'] = seq
+        return super().create(vals)

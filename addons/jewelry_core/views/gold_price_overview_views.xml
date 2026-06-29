@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_gold_price_overview_form" model="ir.ui.view">
+        <field name="name">gold.price.overview.form</field>
+        <field name="model">gold.price.overview</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_refresh" string="⟳ Refresh from API"
+                            type="object" class="btn-primary"/>
+                    <button name="action_save_rates" string="💾 Save Rates"
+                            type="object" class="btn-success"/>
+                </header>
+                <sheet>
+                    <group string="Reference">
+                        <group>
+                            <field name="base_24k_usd_g" widget="monetary" class="text-big"/>
+                            <field name="dzd_parallel_rate" widget="float" options="{'min_value': 100}"/>
+                            <field name="base_24k_dzd" widget="monetary" class="text-big"/>
+                        </group>
+                        <group>
+                            <field name="last_update"/>
+                        </group>
+                    </group>
+
+                    <group string="Gold Prices (per gram)">
+                        <group col="6">
+                            <div class="row" style="width: 100%;">
+                                <table style="width: 100%; border-collapse: collapse;" class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th style="padding: 8px; text-align: center;">Karat</th>
+                                            <th style="padding: 8px; text-align: center;">Purity</th>
+                                            <th style="padding: 8px; text-align: center;">Bursa (DZD/g)</th>
+                                            <th style="padding: 8px; text-align: center;">Market (DZD/g)</th>
+                                            <th style="padding: 8px; text-align: center;">Spread (DZD/g)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td style="padding: 8px; text-align: center;"><strong>24k</strong></td>
+                                            <td style="padding: 8px; text-align: center;">99.99%</td>
+                                            <td style="padding: 8px;">
+                                                <field name="bursa_24k_dzd" widget="monetary" class="text-center"/>
+                                            </td>
+                                            <td style="padding: 8px;">
+                                                <field name="market_24k_dzd" class="text-center text-bold"/>
+                                            </td>
+                                            <td style="padding: 8px;">
+                                                <field name="spread_24k" widget="monetary" class="text-center"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 8px; text-align: center;"><strong>21k</strong></td>
+                                            <td style="padding: 8px; text-align: center;">87.50%</td>
+                                            <td style="padding: 8px;">
+                                                <field name="bursa_21k_dzd" widget="monetary" class="text-center"/>
+                                            </td>
+                                            <td style="padding: 8px;">
+                                                <field name="market_21k_dzd" widget="monetary" class="text-center text-bold"/>
+                                            </td>
+                                            <td style="padding: 8px;">
+                                                <field name="spread_21k" widget="monetary" class="text-center"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 8px; text-align: center;"><strong>18k</strong></td>
+                                            <td style="padding: 8px; text-align: center;">75.00%</td>
+                                            <td style="padding: 8px;">
+                                                <field name="bursa_18k_dzd" widget="monetary" class="text-center"/>
+                                            </td>
+                                            <td style="padding: 8px;">
+                                                <field name="market_18k_dzd" widget="monetary" class="text-center text-bold"/>
+                                            </td>
+                                            <td style="padding: 8px;">
+                                                <field name="spread_18k" widget="monetary" class="text-center"/>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </group>
+                    </group>
+
+                    <group string="How it works">
+                        <p style="margin: 8px 0;">
+                            <strong>24k USD/g</strong> = API price ÷ 31.1035.<br/>
+                            <strong>DZD Parallel</strong> = auto-scraped from ChangeDA (exchangedz.com), or type it manually.<br/>
+                            <strong>24k DZD/g</strong> = USD/g × DZD Parallel.<br/>
+                            <strong>Bursa</strong> = 24k DZD/g × (karat purity ÷ 99.99).<br/>
+                            <strong>Market 24k</strong> = type your 24k selling price — 21k &amp; 18k auto-calculate proportionally.<br/>
+                            <strong>Spread</strong> = auto-computed (Market − Bursa).<br/><br/>
+                            Click <strong>Refresh</strong> to fetch live 24k USD price + ChangeDA rate.<br/>
+                            Click <strong>Save</strong> to persist all rates to today's records.
+                        </p>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_gold_price_overview" model="ir.actions.act_window">
+        <field name="name">Gold Price Overview</field>
+        <field name="res_model">gold.price.overview</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+    </record>
+</odoo>

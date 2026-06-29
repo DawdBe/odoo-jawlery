@@ -7,6 +7,7 @@
             <tree>
                 <field name="metal_type_id"/>
                 <field name="effective_date"/>
+                <field name="base_24k_dzd" widget="monetary"/>
                 <field name="bursa_rate" widget="monetary"/>
                 <field name="market_rate" widget="monetary"/>
                 <field name="market_spread" widget="monetary"/>
@@ -21,7 +22,16 @@
         <field name="arch" type="xml">
             <form>
                 <sheet>
-                    <group>
+                    <group string="24k Reference (99.99%)">
+                        <group>
+                            <field name="base_24k_usd" widget="monetary"/>
+                            <field name="dzd_parallel_rate"/>
+                        </group>
+                        <group>
+                            <field name="base_24k_dzd" widget="monetary"/>
+                        </group>
+                    </group>
+                    <group string="Rate for this Metal">
                         <group>
                             <field name="metal_type_id"/>
                             <field name="effective_date"/>
