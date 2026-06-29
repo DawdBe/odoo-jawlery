@@ -14,7 +14,7 @@ class ServiceOrder(models.Model):
         if vals.get('name', 'New') == 'New':
             vals['name'] = self.env['ir.sequence'].next_by_code('service.order') or 'New'
         return super().create(vals)
-    atelier_id = fields.Many2one('res.partner', string='Atelier', domain="[('is_atelier','=',True)]")
+    atelier_id = fields.Many2one('res.partner', string='Atelier', domain="[('partner_type','=','atelier')]")
     ticket_id = fields.Many2one('jewelry.ticket', string='Linked Ticket')
     service_type = fields.Selection([
         ('fasonage', 'Fasonage'),

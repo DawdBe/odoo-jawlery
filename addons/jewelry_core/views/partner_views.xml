@@ -21,13 +21,28 @@
         <field name="model">res.partner</field>
         <field name="inherit_id" ref="base.view_partner_form"/>
         <field name="arch" type="xml">
-            <field name="phone" position="after">
+            <field name="function" position="after">
                 <field name="partner_type" widget="radio"/>
                 <field name="client_code"/>
-                <field name="is_supplier"/>
-                <field name="is_atelier"/>
-                <field name="is_associated" invisible="partner_type != 'associe'"/>
             </field>
+            <xpath expr="//label[@for='phone']" position="replace"/>
+            <xpath expr="//div[@class='o_row o_row_readonly' and .//field[@name='phone']]" position="replace"/>
+            <xpath expr="//label[@for='email']" position="replace"/>
+            <xpath expr="//div[@class='o_row o_row_readonly' and .//field[@name='email']]" position="replace"/>
+            <xpath expr="//page[@name='contact_addresses']" position="attributes">
+                <attribute name="string">Contacts</attribute>
+            </xpath>
+            <xpath expr="//field[@name='child_ids']//field[@name='type']" position="replace"/>
+            <xpath expr="//field[@name='child_ids']" position="attributes">
+                <attribute name="context">{'default_parent_id': id, 'default_type': 'other', 'default_street': street, 'default_street2': street2, 'default_city': city, 'default_state_id': state_id, 'default_zip': zip, 'default_country_id': country_id, 'default_lang': lang, 'default_user_id': user_id}</attribute>
+            </xpath>
+            <xpath expr="//field[@name='child_ids']//div[contains(@class,'text-muted')]" position="replace"/>
+            <xpath expr="//field[@name='child_ids']//label[@for='street']" position="attributes">
+                <attribute name="invisible">0</attribute>
+            </xpath>
+            <xpath expr="//field[@name='child_ids']//div[@name='div_address']/.." position="attributes">
+                <attribute name="invisible">0</attribute>
+            </xpath>
         </field>
     </record>
 
@@ -40,8 +55,18 @@
                 <field name="partner_type"/>
                 <field name="client_code"/>
                 <field name="phone"/>
-                <field name="email"/>
             </field>
+            <field name="email" position="replace"/>
+            <field name="phone" position="replace"/>
+        </field>
+    </record>
+
+    <record id="view_res_partner_jewelry_remove_chatter" model="ir.ui.view">
+        <field name="name">res.partner.jewelry.remove.chatter</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <div class="oe_chatter" position="replace"/>
         </field>
     </record>
 </odoo>

@@ -22,6 +22,7 @@
         'web.assets_backend': [
             'jewelry_core/static/src/js/clipboard_fix.js',
             'jewelry_core/static/src/css/metal_type.css',
+            'jewelry_core/static/src/css/hide_chat.css',
         ],
     },
     'installable': True,

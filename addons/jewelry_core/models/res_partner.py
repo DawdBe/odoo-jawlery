@@ -11,6 +11,3 @@ class ResPartner(models.Model):
         ('atelier', 'Atelier (AT)'),
         ('associe', 'Associé'),
     ], string='Partner Type')
-    is_supplier = fields.Boolean(string='Is Supplier')
-    is_atelier = fields.Boolean(string='Is Atelier')
-    is_associated = fields.Boolean(string='Is Associated')

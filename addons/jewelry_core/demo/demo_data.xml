@@ -118,21 +118,18 @@
     <record id="partner_supplier_omar" model="res.partner">
         <field name="name">Omar Métaux Précieux</field>
         <field name="partner_type">frs</field>
-        <field name="is_supplier" eval="True"/>
         <field name="is_company" eval="True"/>
     </record>
 
     <record id="partner_atelier_el_djazaer" model="res.partner">
         <field name="name">Atelier El Djazaïr</field>
         <field name="partner_type">atelier</field>
-        <field name="is_atelier" eval="True"/>
         <field name="is_company" eval="True"/>
     </record>
 
     <record id="partner_associe_karim" model="res.partner">
         <field name="name">Karim Association</field>
         <field name="partner_type">associe</field>
-        <field name="is_associated" eval="True"/>
         <field name="is_company" eval="True"/>
     </record>
 

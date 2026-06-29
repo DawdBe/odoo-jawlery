@@ -6,7 +6,7 @@ class AtelierPriceTable(models.Model):
     _description = 'Atelier Price Table'
     _rec_name = 'atelier_id'
 
-    atelier_id = fields.Many2one('res.partner', string='Atelier', required=True, domain="[('is_atelier','=',True)]")
+    atelier_id = fields.Many2one('res.partner', string='Atelier', required=True, domain="[('partner_type','=','atelier')]")
     style = fields.Selection([
         ('massif', 'Massif'),
         ('massif_lux', 'Massif Lux'),

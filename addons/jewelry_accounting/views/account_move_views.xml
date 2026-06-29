@@ -35,4 +35,13 @@
             </field>
         </field>
     </record>
+
+    <record id="view_account_move_jewelry_remove_chatter" model="ir.ui.view">
+        <field name="name">account.move.jewelry.remove.chatter</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <div class="oe_chatter" position="replace"/>
+        </field>
+    </record>
 </odoo>
