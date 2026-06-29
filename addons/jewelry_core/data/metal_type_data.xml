@@ -2,47 +2,40 @@
 <odoo>
     <record id="metal_casse18" model="metal.type">
         <field name="name">Casse18</field>
-        <field name="category">casse</field>
         <field name="karat_value">18</field>
         <field name="purity_percentage">75.0</field>
         <field name="sequence">10</field>
     </record>
     <record id="metal_casse21" model="metal.type">
         <field name="name">Casse21</field>
-        <field name="category">casse</field>
         <field name="karat_value">21</field>
         <field name="purity_percentage">87.5</field>
         <field name="sequence">20</field>
     </record>
     <record id="metal_casse22" model="metal.type">
         <field name="name">Casse22</field>
-        <field name="category">casse</field>
         <field name="karat_value">22</field>
         <field name="purity_percentage">91.67</field>
         <field name="sequence">30</field>
     </record>
     <record id="metal_casse14" model="metal.type">
         <field name="name">Casse14</field>
-        <field name="category">casse</field>
         <field name="karat_value">14</field>
         <field name="purity_percentage">58.5</field>
         <field name="sequence">40</field>
     </record>
     <record id="metal_or750" model="metal.type">
         <field name="name">Or 750</field>
-        <field name="category">casse</field>
         <field name="karat_value">18</field>
         <field name="purity_percentage">75.0</field>
         <field name="sequence">50</field>
     </record>
     <record id="metal_argent_casse" model="metal.type">
         <field name="name">Argent casse</field>
-        <field name="category">argent</field>
         <field name="sequence">60</field>
     </record>
     <record id="metal_argent_mar" model="metal.type">
         <field name="name">Argent Mar.</field>
-        <field name="category">argent</field>
         <field name="sequence">70</field>
     </record>
 </odoo>

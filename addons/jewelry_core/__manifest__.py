@@ -3,7 +3,7 @@
     'version': '17.0.1.0.0',
     'category': 'Inventory',
     'summary': 'Socle fondation — métaux, cours, produits, inventaire',
-    'depends': ['product', 'stock', 'uom', 'mail', 'account'],
+    'depends': ['product', 'stock', 'stock_account', 'uom', 'mail', 'account'],
     'data': [
         'security/ir.model.access.csv',
         'data/metal_type_data.xml',
@@ -17,6 +17,12 @@
         'views/stock_inventory_views.xml',
         'views/menus.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'jewelry_core/static/src/js/clipboard_fix.js',
+            'jewelry_core/static/src/css/metal_type.css',
+        ],
+    },
     'installable': True,
     'license': 'LGPL-3',
     'post_init_hook': 'apply_translations',

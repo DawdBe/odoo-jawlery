@@ -140,8 +140,7 @@ class GoldPriceApiConfig(models.Model):
         dzd_rate = self.fetch_dzd_parallel_rate()
         if usd_price_oz:
             MetalType = self.env['metal.type']
-            gold_metals = MetalType.search([('category', 'in', ('or', 'casse'))])
-            for metal in gold_metals:
+            for metal in MetalType.search([]):
                 existing = self.env['gold.rate.history'].search([
                     ('metal_type_id', '=', metal.id),
                     ('effective_date', '=', fields.Date.today()),

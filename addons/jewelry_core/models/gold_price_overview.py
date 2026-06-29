@@ -142,7 +142,6 @@ class GoldPriceOverview(models.TransientModel):
         for rec in self:
             for k, purity in self.PURITY.items():
                 metal = self.env['metal.type'].search([
-                    ('category', 'in', ('or', 'casse')),
                     ('purity_percentage', '=', purity),
                 ], limit=1)
                 if not metal:

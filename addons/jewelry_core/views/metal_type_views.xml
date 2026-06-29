@@ -7,9 +7,8 @@
             <tree editable="top">
                 <field name="sequence" widget="handle"/>
                 <field name="name"/>
-                <field name="category" widget="badge"/>
-                <field name="karat_value"/>
-                <field name="purity_percentage"/>
+                <field name="karat_value" class="text-start"/>
+                <field name="purity_percentage" class="text-start"/>
                 <field name="active" widget="boolean_toggle"/>
             </tree>
         </field>
@@ -24,7 +23,6 @@
                     <group>
                         <group>
                             <field name="name"/>
-                            <field name="category"/>
                         </group>
                         <group>
                             <field name="karat_value"/>
@@ -57,7 +55,6 @@
         <field name="arch" type="xml">
             <search>
                 <field name="name"/>
-                <field name="category"/>
                 <filter name="active" string="Active" domain="[('active','=',True)]"/>
             </search>
         </field>

@@ -1,0 +1,10 @@
+.o_list_number_th {
+    text-align: left !important;
+}
+.o_list_view td[data-name="karat_value"],
+.o_list_view td[data-name="purity_percentage"],
+.o_list_view td[data-name="sequence"] {
+    width: 1%;
+    white-space: nowrap;
+    padding-right: 16px;
+}

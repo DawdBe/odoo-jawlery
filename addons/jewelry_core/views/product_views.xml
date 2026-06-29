@@ -63,6 +63,19 @@
                 <field name="has_weight"/>
                 <field name="is_jewelry"/>
             </xpath>
+            <group name="logistics" position="replace"/>
+        </field>
+    </record>
+
+    <record id="view_product_category_jewelry_hide_valuation" model="ir.ui.view">
+        <field name="name">product.category.jewelry.hide.valuation</field>
+        <field name="model">product.category</field>
+        <field name="inherit_id" ref="stock_account.view_category_property_form_stock"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='property_cost_method']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
         </field>
     </record>
 </odoo>
+

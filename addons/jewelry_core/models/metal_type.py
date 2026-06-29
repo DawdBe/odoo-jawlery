@@ -13,14 +13,6 @@ class MetalType(models.Model):
     name = fields.Char(required=True, translate=True)
     purity_percentage = fields.Float(string='Purity (%)')
     karat_value = fields.Float(string='Karat')
-    category = fields.Selection([
-        ('or', 'Or'),
-        ('argent', 'Argent'),
-        ('casse', 'Casse'),
-        ('plaque', 'Plaqué'),
-        ('perle', 'Perle / Djouhar'),
-        ('devise', 'Devise'),
-    ], required=True, default='casse')
     sequence = fields.Integer(default=10)
     active = fields.Boolean(default=True)
     gold_rate_ids = fields.One2many('gold.rate.history', 'metal_type_id', string='Gold Rates')
@@ -30,10 +22,6 @@ class MetalType(models.Model):
         for rec in self:
             if rec.karat_value == 0.0:
                 raise ValidationError(_('Karat value cannot be 0.'))
-
-    @api.model
-    def _get_casse_types(self):
-        return self.search([('category', '=', 'casse')])
 
     def get_current_rate(self, rate_type='market'):
         self.ensure_one()

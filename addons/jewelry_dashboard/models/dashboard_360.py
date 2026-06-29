@@ -24,19 +24,11 @@ class Dashboard360(models.TransientModel):
             today = fields.Date.today()
 
             gold_rate_rec = self.env['gold.rate.history'].search([
-                ('metal_type_id.category', 'in', ('or', 'casse')),
                 ('is_active', '=', True),
             ], order='effective_date desc, id desc', limit=1)
             record.base_24k_dzd = gold_rate_rec.base_24k_dzd if gold_rate_rec else 0.0
             record.gold_rate_market = gold_rate_rec.market_rate if gold_rate_rec else 0.0
-
-            silver_metal = self.env['metal.type'].search([('category', '=', 'argent')], limit=1)
-            if silver_metal:
-                silver_rate_rec = self.env['gold.rate.history'].search([
-                    ('metal_type_id', '=', silver_metal.id),
-                    ('is_active', '=', True),
-                ], order='effective_date desc, id desc', limit=1)
-                record.silver_rate = silver_rate_rec.market_rate if silver_rate_rec else 0.0
+            record.silver_rate = 0.0
 
             today_start = fields.Datetime.now().replace(hour=0, minute=0, second=0)
             today_tickets = self.env['jewelry.ticket'].search([
@@ -47,7 +39,6 @@ class Dashboard360(models.TransientModel):
             record.today_profit = sum(t.balance for t in today_tickets)
 
             latest_gold = self.env['gold.rate.history'].search([
-                ('metal_type_id.category', 'in', ('or', 'casse')),
                 ('is_active', '=', True),
             ], order='effective_date desc, id desc', limit=1)
             record.dzd_parallel_rate = latest_gold.dzd_parallel_rate if latest_gold else 0.0
