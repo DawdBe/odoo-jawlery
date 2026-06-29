@@ -13,6 +13,10 @@
               parent="menu_jewelry_transactions" action="action_supplier_account" sequence="40"/>
     <menuitem id="menu_daily_cash_register" name="Cash Registers"
               parent="menu_jewelry_transactions" action="action_daily_cash_register" sequence="50"/>
+    <menuitem id="menu_associates" name="Associates"
+              parent="menu_jewelry_transactions" action="action_associate_account" sequence="35"/>
+    <menuitem id="menu_associate_transactions" name="Associate Transactions"
+              parent="menu_jewelry_transactions" action="action_associate_transaction" sequence="36"/>
     <menuitem id="menu_product_promotion" name="Promotions"
               parent="menu_jewelry_transactions" action="action_product_promotion" sequence="60"/>
 </odoo>

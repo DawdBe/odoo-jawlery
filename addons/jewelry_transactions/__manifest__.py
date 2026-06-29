@@ -13,6 +13,7 @@
         'views/promotion_views.xml',
         'views/purchase_views.xml',
         'views/supplier_account_views.xml',
+        'views/associate_views.xml',
         'views/casse_melting_views.xml',
         'views/service_views.xml',
         'views/cash_register_views.xml',

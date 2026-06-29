@@ -10,6 +10,13 @@
     <menuitem id="menu_gold_rate" name="Gold Price"
               parent="menu_jewelry_config" action="action_gold_price_overview" sequence="20"/>
 
+    <menuitem id="menu_jewelry_partners" name="Partners" parent="menu_jewelry_root" sequence="15"/>
+
+    <menuitem id="menu_partner_list" name="All Partners"
+              parent="menu_jewelry_partners" action="action_jewelry_partner" sequence="10"/>
+    <menuitem id="menu_supplier_list" name="Suppliers (FRS)"
+              parent="menu_jewelry_partners" action="action_jewelry_supplier" sequence="20"/>
+
     <menuitem id="menu_weight_inventory" name="Weight Inventories"
               parent="menu_jewelry_core" action="action_stock_inventory_weight" sequence="30"/>
 </odoo>

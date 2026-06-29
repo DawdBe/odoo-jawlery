@@ -14,6 +14,7 @@
         'views/gold_price_api_views.xml',
         'views/gold_price_overview_views.xml',
         'views/product_views.xml',
+        'views/partner_views.xml',
         'views/stock_inventory_views.xml',
         'views/menus.xml',
     ],

@@ -72,9 +72,7 @@
         <field name="model">product.category</field>
         <field name="inherit_id" ref="stock_account.view_category_property_form_stock"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='property_cost_method']" position="attributes">
-                <attribute name="invisible">1</attribute>
-            </xpath>
+            <xpath expr="//group[field/@name='property_cost_method']" position="replace"/>
         </field>
     </record>
 </odoo>

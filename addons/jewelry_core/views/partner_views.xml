@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_jewelry_partner" model="ir.actions.act_window">
+        <field name="name">Partners</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[]</field>
+        <field name="context">{'default_partner_type': 'client'}</field>
+    </record>
+
+    <record id="action_jewelry_supplier" model="ir.actions.act_window">
+        <field name="name">Suppliers</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('partner_type', '=', 'frs')]</field>
+        <field name="context">{'default_partner_type': 'frs'}</field>
+    </record>
+
+    <record id="view_res_partner_jewelry_form" model="ir.ui.view">
+        <field name="name">res.partner.jewelry.form</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <field name="phone" position="after">
+                <field name="partner_type" widget="radio"/>
+                <field name="client_code"/>
+                <field name="is_supplier"/>
+                <field name="is_atelier"/>
+                <field name="is_associated" invisible="partner_type != 'associe'"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_res_partner_jewelry_tree" model="ir.ui.view">
+        <field name="name">res.partner.jewelry.tree</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_tree"/>
+        <field name="arch" type="xml">
+            <field name="display_name" position="after">
+                <field name="partner_type"/>
+                <field name="client_code"/>
+                <field name="phone"/>
+                <field name="email"/>
+            </field>
+        </field>
+    </record>
+</odoo>
