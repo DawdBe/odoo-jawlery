@@ -1,3 +1,4 @@
+from . import res_partner
 from . import jewelry_ticket
 from . import jewelry_ticket_line
 from . import product_promotion

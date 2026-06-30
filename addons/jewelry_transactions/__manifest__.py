@@ -9,6 +9,7 @@
         'data/atelier_price_data.xml',
         'data/sequence_data.xml',
         'views/actions.xml',
+        'views/partner_views.xml',
         'views/ticket_views.xml',
         'views/promotion_views.xml',
         'views/purchase_views.xml',

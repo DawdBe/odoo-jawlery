@@ -100,7 +100,6 @@
     <!-- Partners -->
     <record id="partner_client_ali" model="res.partner">
         <field name="name">Ali Bencheikh</field>
-        <field name="client_code">CL001</field>
         <field name="partner_type">client</field>
         <field name="is_company" eval="False"/>
         <field name="phone">0555 12 34 56</field>
@@ -110,7 +109,6 @@
 
     <record id="partner_client_fatima" model="res.partner">
         <field name="name">Fatima Zohra</field>
-        <field name="client_code">CL002</field>
         <field name="partner_type">client</field>
         <field name="is_company" eval="False"/>
     </record>

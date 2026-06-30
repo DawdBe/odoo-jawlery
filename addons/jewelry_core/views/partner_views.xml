@@ -21,28 +21,25 @@
         <field name="model">res.partner</field>
         <field name="inherit_id" ref="base.view_partner_form"/>
         <field name="arch" type="xml">
-            <field name="function" position="after">
+            <field name="function" position="replace"/>
+            <field name="website" position="replace"/>
+            <field name="title" position="replace"/>
+            <field name="lang" position="replace"/>
+            <field name="active_lang_count" position="replace"/>
+            <xpath expr="//field[@name='vat']" position="replace">
                 <field name="partner_type" widget="radio"/>
-                <field name="client_code"/>
-            </field>
-            <xpath expr="//label[@for='phone']" position="replace"/>
-            <xpath expr="//div[@class='o_row o_row_readonly' and .//field[@name='phone']]" position="replace"/>
-            <xpath expr="//label[@for='email']" position="replace"/>
-            <xpath expr="//div[@class='o_row o_row_readonly' and .//field[@name='email']]" position="replace"/>
-            <xpath expr="//page[@name='contact_addresses']" position="attributes">
-                <attribute name="string">Contacts</attribute>
+                <field name="user_id" invisible="1"/>
+                <field name="duplicated_bank_account_partners_count" invisible="1"/>
             </xpath>
-            <xpath expr="//field[@name='child_ids']//field[@name='type']" position="replace"/>
-            <xpath expr="//field[@name='child_ids']" position="attributes">
-                <attribute name="context">{'default_parent_id': id, 'default_type': 'other', 'default_street': street, 'default_street2': street2, 'default_city': city, 'default_state_id': state_id, 'default_zip': zip, 'default_country_id': country_id, 'default_lang': lang, 'default_user_id': user_id}</attribute>
+            <xpath expr="//span[@name='address_name']" position="replace">
+                <span class="o_form_label o_td_label" name="address_name">
+                    <field name="type" invisible="1"/>
+                    <b>Address</b>
+                </span>
             </xpath>
-            <xpath expr="//field[@name='child_ids']//div[contains(@class,'text-muted')]" position="replace"/>
-            <xpath expr="//field[@name='child_ids']//label[@for='street']" position="attributes">
-                <attribute name="invisible">0</attribute>
-            </xpath>
-            <xpath expr="//field[@name='child_ids']//div[@name='div_address']/.." position="attributes">
-                <attribute name="invisible">0</attribute>
-            </xpath>
+            <xpath expr="//page[@name='contact_addresses']" position="replace"/>
+            <xpath expr="//page[@name='accounting']" position="replace"/>
+            <xpath expr="//page[@name='accounting_disabled']" position="replace"/>
         </field>
     </record>
 
@@ -53,7 +50,6 @@
         <field name="arch" type="xml">
             <field name="display_name" position="after">
                 <field name="partner_type"/>
-                <field name="client_code"/>
                 <field name="phone"/>
             </field>
             <field name="email" position="replace"/>
