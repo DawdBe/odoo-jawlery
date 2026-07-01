@@ -3,6 +3,8 @@
     <menuitem id="menu_jewelry_transactions" name="Transactions"
                parent="jewelry_core.menu_jewelry_root" sequence="20"/>
 
+    <menuitem id="menu_product_barcode_scan" name="Scan Barcode"
+              parent="menu_jewelry_transactions" action="action_product_barcode_scan" sequence="5"/>
     <menuitem id="menu_jewelry_ticket" name="Tickets"
               parent="menu_jewelry_transactions" action="action_jewelry_ticket" sequence="10"/>
     <menuitem id="menu_service_order" name="Service Orders"

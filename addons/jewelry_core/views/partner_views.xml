@@ -40,6 +40,15 @@
             <xpath expr="//page[@name='contact_addresses']" position="replace"/>
             <xpath expr="//page[@name='accounting']" position="replace"/>
             <xpath expr="//page[@name='accounting_disabled']" position="replace"/>
+            <!-- Remove warning fields from Internal Notes -->
+            <field name="invoice_warn" position="replace"/>
+            <field name="invoice_warn_msg" position="replace"/>
+            <field name="purchase_warn" position="replace"/>
+            <field name="purchase_warn_msg" position="replace"/>
+            <field name="picking_warn" position="replace"/>
+            <field name="picking_warn_msg" position="replace"/>
+            <!-- Remove Vendor Bills button from button box -->
+            <xpath expr="//button[./field[@name='supplier_invoice_count']]" position="replace"/>
         </field>
     </record>
 
@@ -53,7 +62,7 @@
                 <field name="phone"/>
             </field>
             <field name="email" position="replace"/>
-            <field name="phone" position="replace"/>
+            <xpath expr="(//field[@name='phone'])[last()]" position="replace"/>
         </field>
     </record>
 

@@ -23,46 +23,43 @@ class GoldPriceOverview(models.TransientModel):
         compute='_compute_all', currency_field='currency_id',
         help='24k gold price in DZD per gram = USD/g × DZD parallel')
 
-    # ── Bursa (theoretical) ──
-    bursa_24k_dzd = fields.Monetary(
-        string='Bursa 24k/g',
-        compute='_compute_all', currency_field='currency_id')
-    bursa_21k_dzd = fields.Monetary(
-        string='Bursa 21k/g',
-        compute='_compute_all', currency_field='currency_id')
-    bursa_18k_dzd = fields.Monetary(
-        string='Bursa 18k/g',
-        compute='_compute_all', currency_field='currency_id')
+    # ── Bursa / Market / Spread per purity ──
+    bursa_24k_dzd = fields.Monetary(compute='_compute_all', currency_field='currency_id')
+    bursa_21k_dzd = fields.Monetary(compute='_compute_all', currency_field='currency_id')
+    bursa_18k_dzd = fields.Monetary(compute='_compute_all', currency_field='currency_id')
+    bursa_18k_720_dzd = fields.Monetary(compute='_compute_all', currency_field='currency_id')
+    bursa_18k_710_dzd = fields.Monetary(compute='_compute_all', currency_field='currency_id')
+    bursa_18k_705_dzd = fields.Monetary(compute='_compute_all', currency_field='currency_id')
 
-    # ── Market ──
     market_24k_dzd = fields.Monetary(
         string='Market 24k/g',
         currency_field='currency_id',
         help='Your 24k selling price per gram — type directly')
     market_21k_dzd = fields.Monetary(
-        string='Market 21k/g',
-        compute='_compute_market_21k', currency_field='currency_id',
-        help='Auto: 24k market × (87.5/99.99)')
+        compute='_compute_all', currency_field='currency_id')
     market_18k_dzd = fields.Monetary(
-        string='Market 18k/g',
-        compute='_compute_market_18k', currency_field='currency_id',
-        help='Auto: 24k market × (75.0/99.99)')
+        compute='_compute_all', currency_field='currency_id')
+    market_18k_720_dzd = fields.Monetary(
+        compute='_compute_all', currency_field='currency_id')
+    market_18k_710_dzd = fields.Monetary(
+        compute='_compute_all', currency_field='currency_id')
+    market_18k_705_dzd = fields.Monetary(
+        compute='_compute_all', currency_field='currency_id')
 
-    # ── Spread (auto from market − bursa) ──
-    spread_24k = fields.Monetary(
-        string='Spread 24k',
-        compute='_compute_all', currency_field='currency_id')
-    spread_21k = fields.Monetary(
-        string='Spread 21k',
-        compute='_compute_all', currency_field='currency_id')
-    spread_18k = fields.Monetary(
-        string='Spread 18k',
-        compute='_compute_all', currency_field='currency_id')
+    spread_24k = fields.Monetary(compute='_compute_all', currency_field='currency_id')
+    spread_21k = fields.Monetary(compute='_compute_all', currency_field='currency_id')
+    spread_18k = fields.Monetary(compute='_compute_all', currency_field='currency_id')
+    spread_18k_720 = fields.Monetary(compute='_compute_all', currency_field='currency_id')
+    spread_18k_710 = fields.Monetary(compute='_compute_all', currency_field='currency_id')
+    spread_18k_705 = fields.Monetary(compute='_compute_all', currency_field='currency_id')
 
     currency_id = fields.Many2one('res.currency', default=lambda self: self.env.company.currency_id)
     last_update = fields.Datetime(string='Last Update')
 
-    PURITY = {'24k': 999, '21k': 875, '18k': 750}
+    PURITY = {
+        '24k': 999, '21k': 875, '18k': 750,
+        '18k_720': 720, '18k_710': 710, '18k_705': 705,
+    }
 
     @staticmethod
     def _r10(val):
@@ -75,22 +72,17 @@ class GoldPriceOverview(models.TransientModel):
             rec.base_24k_usd_g = usd_per_g
             rec.base_24k_dzd = self._r10(usd_per_g * (rec.dzd_parallel_rate or 0.0))
 
-            for k, purity in self.PURITY.items():
-                ratio = purity / 999.0
+            m24 = rec.market_24k_dzd or 0.0
+            for k, per_mille in self.PURITY.items():
+                ratio = per_mille / 999.0
                 bursa = self._r10(rec.base_24k_dzd * ratio)
-                market = self._r10(getattr(rec, f'market_{k}_dzd') or 0.0)
                 setattr(rec, f'bursa_{k}_dzd', bursa)
-                setattr(rec, f'spread_{k}', market - bursa)
-
-    @api.depends('market_24k_dzd')
-    def _compute_market_21k(self):
-        for rec in self:
-            rec.market_21k_dzd = self._r10((rec.market_24k_dzd or 0.0) * 875 / 999)
-
-    @api.depends('market_24k_dzd')
-    def _compute_market_18k(self):
-        for rec in self:
-            rec.market_18k_dzd = self._r10((rec.market_24k_dzd or 0.0) * 750 / 999)
+                if k == '24k':
+                    setattr(rec, f'market_{k}_dzd', m24)
+                else:
+                    setattr(rec, f'market_{k}_dzd', self._r10(m24 * per_mille / 999))
+                setattr(rec, f'spread_{k}',
+                        getattr(rec, f'market_{k}_dzd') - bursa)
 
     def load_from_db(self):
         latest = self.env['gold.rate.history'].search([
@@ -115,8 +107,9 @@ class GoldPriceOverview(models.TransientModel):
             res['dzd_parallel_rate'] = latest.dzd_parallel_rate or 0.0
             m24 = self._r10(latest._get_market_for('24k') or 0.0)
             res['market_24k_dzd'] = m24
-            res['market_21k_dzd'] = self._r10(m24 * 875 / 999)
-            res['market_18k_dzd'] = self._r10(m24 * 750 / 999)
+            for k, per_mille in self.PURITY.items():
+                if k != '24k':
+                    res[f'market_{k}_dzd'] = self._r10(m24 * per_mille / 999)
         res['last_update'] = fields.Datetime.now()
         return res
 
@@ -139,10 +132,17 @@ class GoldPriceOverview(models.TransientModel):
         }
 
     def action_save_rates(self):
+        purity_to_pct = {
+            999: 99.99, 875: 87.5, 750: 75.0,
+            720: 72.0, 710: 71.0, 705: 70.5,
+        }
         for rec in self:
-            for k, purity in self.PURITY.items():
+            for k, per_mille in self.PURITY.items():
+                pct = purity_to_pct.get(per_mille)
+                if not pct:
+                    continue
                 metal = self.env['metal.type'].search([
-                    ('purity_percentage', '=', purity),
+                    ('purity_percentage', '=', pct),
                 ], limit=1)
                 if not metal:
                     continue

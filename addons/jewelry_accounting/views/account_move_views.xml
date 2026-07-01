@@ -9,6 +9,10 @@
                 <field name="jewelry_operation_type"/>
                 <field name="weight_total"/>
             </xpath>
+            <!-- Remove taxes from invoice header -->
+            <field name="fiscal_position_id" position="replace"/>
+            <!-- Remove payment reference -->
+            <field name="payment_reference" position="replace"/>
         </field>
     </record>
 

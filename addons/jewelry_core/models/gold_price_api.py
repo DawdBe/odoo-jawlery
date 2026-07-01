@@ -112,21 +112,19 @@ class GoldPriceApiConfig(models.Model):
             resp.raise_for_status()
             html = resp.text
 
-            # Strategy 1: extract JSON-LD ItemList with MonetaryAmount entries
-            # Look for the sell rate from the structured data
             patterns = [
-                # "value": 236.67 ... sell ... "value": 239.0  (buy then sell)
+                # JSON-LD: "value":237.67 ... sell ... "value":240
                 r'"value":\s*([\d.]+).*?sell.*?"value":\s*([\d.]+)',
-                # Sell: 239.00 (from ticker HTML)
-                r'Sell\s*:\s*([\d.]+)',
+                # HTML ticker: Sell : <span class="...">240.00
+                r'Sell\s*:\s*<[^>]+>([\d.]+)',
             ]
             for pat in patterns:
-                match = re.search(pat, html, re.DOTALL)
+                match = re.search(pat, html, re.DOTALL | re.IGNORECASE)
                 if match:
                     groups = match.groups()
-                    val = float(groups[-1])  # last group = sell rate
+                    val = float(groups[-1])
                     if 100 < val < 500:
-                        _logger.info("ChangeDA scraped rate: 1 USD = %s DZD", val)
+                        _logger.info("ChangeDA scraped rate (sell): 1 USD = %s DZD", val)
                         return val
             _logger.warning("Could not find parallel rate in ChangeDA HTML")
             return None
@@ -145,6 +143,11 @@ class GoldPriceApiConfig(models.Model):
                     ('metal_type_id', '=', metal.id),
                     ('effective_date', '=', fields.Date.today()),
                 ], limit=1)
+                prev = self.env['gold.rate.history'].search([
+                    ('metal_type_id', '=', metal.id),
+                    ('is_active', '=', True),
+                ], order='effective_date desc, id desc', limit=1)
+                prev_market = prev.market_rate if prev else 0.0
                 vals = {
                     'metal_type_id': metal.id,
                     'base_24k_usd': usd_price_oz,
@@ -153,8 +156,10 @@ class GoldPriceApiConfig(models.Model):
                     'is_active': True,
                 }
                 if existing:
+                    vals['market_rate'] = existing.market_rate or prev_market
                     existing.write(vals)
                 else:
+                    vals['market_rate'] = prev_market
                     self.env['gold.rate.history'].create(vals)
             self.write({
                 'last_fetch_time': fields.Datetime.now(),

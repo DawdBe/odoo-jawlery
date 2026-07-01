@@ -1,41 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <record id="metal_casse18" model="metal.type">
-        <field name="name">Casse18</field>
-        <field name="karat_value">18</field>
-        <field name="purity_percentage">75.0</field>
-        <field name="sequence">10</field>
+    <record id="metal_24k" model="metal.type">
+        <field name="name">Or 24k</field>
+        <field name="karat_value">24</field>
+        <field name="purity_percentage">99.99</field>
+        <field name="sequence">5</field>
     </record>
-    <record id="metal_casse21" model="metal.type">
-        <field name="name">Casse21</field>
+
+    <record id="metal_or_21k" model="metal.type">
+        <field name="name">Or 21k</field>
         <field name="karat_value">21</field>
         <field name="purity_percentage">87.5</field>
         <field name="sequence">20</field>
     </record>
-    <record id="metal_casse22" model="metal.type">
-        <field name="name">Casse22</field>
-        <field name="karat_value">22</field>
-        <field name="purity_percentage">91.67</field>
-        <field name="sequence">30</field>
-    </record>
-    <record id="metal_casse14" model="metal.type">
-        <field name="name">Casse14</field>
-        <field name="karat_value">14</field>
-        <field name="purity_percentage">58.5</field>
-        <field name="sequence">40</field>
-    </record>
-    <record id="metal_or750" model="metal.type">
-        <field name="name">Or 750</field>
+
+    <record id="metal_or_18k" model="metal.type">
+        <field name="name">Or 18k</field>
         <field name="karat_value">18</field>
         <field name="purity_percentage">75.0</field>
+        <field name="sequence">30</field>
+    </record>
+
+    <record id="metal_18k_720" model="metal.type">
+        <field name="name">Or 18k 720</field>
+        <field name="karat_value">18</field>
+        <field name="purity_percentage">72.0</field>
+        <field name="sequence">32</field>
+    </record>
+
+    <record id="metal_18k_710" model="metal.type">
+        <field name="name">Or 18k 710</field>
+        <field name="karat_value">18</field>
+        <field name="purity_percentage">71.0</field>
+        <field name="sequence">34</field>
+    </record>
+
+    <record id="metal_18k_705" model="metal.type">
+        <field name="name">Or 18k 705</field>
+        <field name="karat_value">18</field>
+        <field name="purity_percentage">70.5</field>
+        <field name="sequence">36</field>
+    </record>
+
+    <record id="metal_argent_925" model="metal.type">
+        <field name="name">Argent 925</field>
+        <field name="purity_percentage">92.5</field>
         <field name="sequence">50</field>
     </record>
+
     <record id="metal_argent_casse" model="metal.type">
         <field name="name">Argent casse</field>
         <field name="sequence">60</field>
     </record>
+
     <record id="metal_argent_mar" model="metal.type">
         <field name="name">Argent Mar.</field>
         <field name="sequence">70</field>
+    </record>
+
+    <record id="metal_plaque_or" model="metal.type">
+        <field name="name">Plaqué Or</field>
+        <field name="sequence">80</field>
     </record>
 </odoo>

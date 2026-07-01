@@ -5,22 +5,80 @@
         <field name="model">product.template</field>
         <field name="inherit_id" ref="product.product_template_form_view"/>
         <field name="arch" type="xml">
-            <xpath expr="//notebook//page[1]" position="after">
-                <page name="jewelry" string="Jewelry">
-                    <group>
-                        <group>
-                            <field name="metal_type_id"/>
-                            <field name="jewelry_category"/>
-                            <field name="style"/>
-                        </group>
-                        <group>
-                            <field name="gross_weight"/>
-                            <field name="stone_weight"/>
-                            <field name="net_weight"/>
-                        </group>
-                    </group>
-                </page>
+            <!-- Print Barcode stat button -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_print_barcode"
+                        string="Print Barcode"
+                        type="object"
+                        icon="fa-barcode"
+                        class="oe_stat_button"/>
             </xpath>
+
+            <!-- Add clean field group before the notebook -->
+            <xpath expr="//notebook" position="before">
+                <group>
+                    <group name="jewelry_left">
+                        <field name="barcode" readonly="1"/>
+                        <field name="categ_id" options="{'no_create': True}"/>
+                        <field name="metal_type_id" options="{'no_create': True}"/>
+                        <field name="jewelry_category"/>
+                        <field name="style"/>
+                    </group>
+                    <group name="jewelry_right">
+                        <field name="net_weight"/>
+                        <field name="list_price" widget="monetary" options="{'currency_field': 'currency_id', 'field_digits': True}"/>
+                        <field name="standard_price" widget="monetary" options="{'currency_field': 'currency_id', 'field_digits': True}"/>
+                        <field name="active"/>
+                    </group>
+                </group>
+            </xpath>
+
+            <!-- Hide the notebook (keeps other views' xpath targets intact) -->
+            <xpath expr="//notebook" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- Hide sale/purchase toggles -->
+            <xpath expr="//div[@name='options']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- Hide Print Labels header button -->
+            <xpath expr="//header/button[@name='action_open_label_layout']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_product_template_tree_hide_print_labels" model="ir.ui.view">
+        <field name="name">product.template.tree.hide.print.labels</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_open_label_layout']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_product_product_tree_hide_print_labels" model="ir.ui.view">
+        <field name="name">product.product.tree.hide.print.labels</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_product_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_open_label_layout']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_product_template_jewelry_hide_default_code" model="ir.ui.view">
+        <field name="name">product.template.jewelry.hide.default.code</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='default_code']" position="replace"/>
+            <xpath expr="//field[@name='barcode'][last()]" position="replace"/>
         </field>
     </record>
 
@@ -36,24 +94,6 @@
         </field>
     </record>
 
-    <record id="view_product_product_jewelry_form" model="ir.ui.view">
-        <field name="name">product.product.jewelry.form</field>
-        <field name="model">product.product</field>
-        <field name="inherit_id" ref="product.product_normal_form_view"/>
-        <field name="arch" type="xml">
-            <xpath expr="//notebook" position="inside">
-                <page name="jewelry" string="Jewelry">
-                    <group>
-                        <field name="serial_number"/>
-                        <field name="certificate_number"/>
-                        <field name="weight"/>
-                        <field name="location_id"/>
-                    </group>
-                </page>
-            </xpath>
-        </field>
-    </record>
-
     <record id="view_product_category_jewelry_form" model="ir.ui.view">
         <field name="name">product.category.jewelry.form</field>
         <field name="model">product.category</field>
@@ -63,16 +103,6 @@
                 <field name="has_weight"/>
                 <field name="is_jewelry"/>
             </xpath>
-            <group name="logistics" position="replace"/>
-        </field>
-    </record>
-
-    <record id="view_product_category_jewelry_hide_valuation" model="ir.ui.view">
-        <field name="name">product.category.jewelry.hide.valuation</field>
-        <field name="model">product.category</field>
-        <field name="inherit_id" ref="stock_account.view_category_property_form_stock"/>
-        <field name="arch" type="xml">
-            <xpath expr="//group[field/@name='property_cost_method']" position="replace"/>
         </field>
     </record>
 
@@ -84,5 +114,13 @@
             <div class="oe_chatter" position="replace"/>
         </field>
     </record>
-</odoo>
 
+    <record id="view_stock_picking_jewelry_remove_chatter" model="ir.ui.view">
+        <field name="name">stock.picking.jewelry.remove.chatter</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <div class="oe_chatter" position="replace"/>
+        </field>
+    </record>
+</odoo>

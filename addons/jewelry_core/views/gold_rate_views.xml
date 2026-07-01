@@ -51,9 +51,41 @@
         </field>
     </record>
 
+    <record id="view_gold_rate_history_graph" model="ir.ui.view">
+        <field name="name">gold.rate.history.graph</field>
+        <field name="model">gold.rate.history</field>
+        <field name="arch" type="xml">
+            <graph type="line">
+                <field name="effective_date" interval="day"/>
+                <field name="bursa_rate" type="measure"/>
+                <field name="market_rate" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
     <record id="action_gold_rate" model="ir.actions.act_window">
         <field name="name">Gold Rates</field>
         <field name="res_model">gold.rate.history</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">tree,form,graph</field>
+    </record>
+
+    <record id="view_gold_rate_history_search" model="ir.ui.view">
+        <field name="name">gold.rate.history.search</field>
+        <field name="model">gold.rate.history</field>
+        <field name="arch" type="xml">
+            <search>
+                <filter name="last_30_days" string="Last 30 Days"
+                        date="effective_date"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_gold_rate_chart" model="ir.actions.act_window">
+        <field name="name">30-Day Chart (Or 24k)</field>
+        <field name="res_model">gold.rate.history</field>
+        <field name="view_mode">graph</field>
+        <field name="domain">[('metal_type_id.purity_percentage', '=', 99.99)]</field>
+        <field name="context">{'search_default_last_30_days': 1}</field>
+        <field name="target">new</field>
     </record>
 </odoo>

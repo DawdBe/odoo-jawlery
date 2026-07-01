@@ -18,6 +18,15 @@
                     </group>
                 </page>
             </xpath>
+            <!-- Remove fiscal position -->
+            <field name="fiscal_position_id" position="replace"/>
+            <!-- Remove payment terms -->
+            <field name="payment_term_id" position="replace"/>
+            <!-- Remove buyer -->
+            <field name="user_id" position="replace"/>
+
+            <!-- Remove multi-currency -->
+            <field name="currency_id" position="replace"/>
         </field>
     </record>
 

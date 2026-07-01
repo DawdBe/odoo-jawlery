@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_product_barcode_scan_wizard" model="ir.ui.view">
+        <field name="name">product.barcode.scan.wizard.form</field>
+        <field name="model">product.barcode.scan.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <group>
+                        <field name="barcode" placeholder="Scan or type barcode here..."/>
+                        <field name="product_id" invisible="1"/>
+                        <field name="has_open_ticket" invisible="1"/>
+                    </group>
+                </group>
+                <group invisible="not product_id">
+                    <group string="Scanned Product">
+                        <field name="product_name"/>
+                        <field name="product_barcode"/>
+                        <field name="product_weight"/>
+                        <field name="product_price" widget="monetary"/>
+                        <field name="metal_type_id"/>
+                    </group>
+                </group>
+                <group invisible="not product_id">
+                    <group string="Ticket">
+                        <field name="open_ticket_id" invisible="not has_open_ticket"/>
+                        <field name="partner_id" required="not has_open_ticket"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_add_to_ticket"
+                            string="Add to Open Ticket"
+                            type="object"
+                            class="btn-primary"
+                            invisible="not open_ticket_id"/>
+                    <button name="action_create_ticket_and_add"
+                            string="Create Ticket &amp; Add"
+                            type="object"
+                            class="btn-success"
+                            invisible="not product_id"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_product_barcode_scan" model="ir.actions.act_window">
+        <field name="name">Scan Barcode</field>
+        <field name="res_model">product.barcode.scan.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

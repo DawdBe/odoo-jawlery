@@ -1,9 +1,9 @@
 {
     'name': 'Jewelry Core',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.1.0',
     'category': 'Inventory',
     'summary': 'Socle fondation — métaux, cours, produits, inventaire',
-    'depends': ['product', 'stock', 'stock_account', 'uom', 'mail', 'account'],
+    'depends': ['product', 'stock', 'stock_account', 'uom', 'mail', 'account', 'purchase'],
     'data': [
         'security/ir.model.access.csv',
         'data/metal_type_data.xml',
@@ -13,6 +13,7 @@
         'views/gold_rate_views.xml',
         'views/gold_price_api_views.xml',
         'views/gold_price_overview_views.xml',
+        'reports/product_barcode_label.xml',
         'views/product_views.xml',
         'views/partner_views.xml',
         'views/stock_inventory_views.xml',
@@ -23,6 +24,7 @@
             'jewelry_core/static/src/js/clipboard_fix.js',
             'jewelry_core/static/src/css/metal_type.css',
             'jewelry_core/static/src/css/hide_chat.css',
+
         ],
     },
     'installable': True,

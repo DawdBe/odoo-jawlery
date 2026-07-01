@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="jewelry_core.GoldChartWidget">
+        <div class="o_graph_linechart" style="height: 300px; width: 100%;">
+            <canvas t-ref="canvas"/>
+        </div>
+    </t>
+
+</templates>

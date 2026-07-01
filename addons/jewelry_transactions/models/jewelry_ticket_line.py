@@ -70,8 +70,8 @@ class JewelryTicketLine(models.Model):
                     ('metal_type_id', '=', self.metal_type_id.id),
                     ('is_active', '=', True),
                 ], order='effective_date desc', limit=1)
-                if live and live.live_usd_price and live.dzd_parallel_rate:
-                    self.price_unit = live.live_usd_price * live.dzd_parallel_rate
+                if live and live.base_24k_usd and live.dzd_parallel_rate:
+                    self.price_unit = live.base_24k_usd * live.dzd_parallel_rate
 
     @api.onchange('weight', 'price_unit')
     def _onchange_price_subtotal(self):

@@ -8,6 +8,7 @@
         'security/ir.model.access.csv',
         'data/atelier_price_data.xml',
         'data/sequence_data.xml',
+        'views/wizard_views.xml',
         'views/actions.xml',
         'views/partner_views.xml',
         'views/ticket_views.xml',

@@ -8,3 +8,4 @@ from . import stock_inventory_weight
 from . import res_partner
 from . import gold_price_api
 from . import gold_price_overview
+from . import ir_actions_report

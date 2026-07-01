@@ -63,7 +63,7 @@ class GoldRateHistory(models.Model):
         for rec in self:
             if rec.base_24k_dzd and rec.metal_type_id:
                 purity = rec.metal_type_id.purity_percentage or 0.0
-                rec.bursa_rate = self._r10(rec.base_24k_dzd * (purity / 999.0)) if purity else 0
+                rec.bursa_rate = self._r10(rec.base_24k_dzd * (purity / 99.99)) if purity else 0
             else:
                 rec.bursa_rate = 0
 
@@ -73,7 +73,8 @@ class GoldRateHistory(models.Model):
             rec.market_spread = self._r10((rec.market_rate or 0.0) - (rec.bursa_rate or 0.0))
 
     def _get_market_for(self, karat_label):
-        purity_map = {'24k': 99.99, '21k': 87.5, '18k': 75.0}
+        purity_map = {'24k': 99.99, '21k': 87.5, '18k': 75.0,
+                       '18k_720': 72.0, '18k_710': 71.0, '18k_705': 70.5}
         target_purity = purity_map.get(karat_label)
         if not target_purity:
             return 0.0
