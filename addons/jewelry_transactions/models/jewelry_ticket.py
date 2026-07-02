@@ -76,7 +76,9 @@ class JewelryTicket(models.Model):
         self.ensure_one()
         if amount > 0:
             self.payment_status = 'paye' if amount >= abs(self.balance) else 'partiel'
+            register = self.env['daily.cash.register'].search([('state', '=', 'open')], limit=1)
             self.env['cash.register.line'].create({
+                'register_id': register.id if register else False,
                 'ticket_id': self.id,
                 'partner_id': self.partner_id.id,
                 'amount': amount,

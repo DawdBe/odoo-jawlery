@@ -9,6 +9,8 @@
               parent="menu_jewelry_config" action="action_metal_type" sequence="10"/>
     <menuitem id="menu_gold_rate" name="Gold Price"
               parent="menu_jewelry_config" action="action_gold_price_overview" sequence="20"/>
+    <menuitem id="menu_gold_price_api_config" name="Gold API Config"
+              parent="menu_jewelry_config" action="action_gold_price_api_config" sequence="25"/>
 
     <menuitem id="menu_jewelry_partners" name="Partners" parent="menu_jewelry_root" sequence="15"/>
 

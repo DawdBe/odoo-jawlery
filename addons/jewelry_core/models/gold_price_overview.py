@@ -1,5 +1,10 @@
+from datetime import timedelta
+import logging
+
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
+
+_logger = logging.getLogger(__name__)
 
 
 class GoldPriceOverview(models.TransientModel):
@@ -55,6 +60,8 @@ class GoldPriceOverview(models.TransientModel):
 
     currency_id = fields.Many2one('res.currency', default=lambda self: self.env.company.currency_id)
     last_update = fields.Datetime(string='Last Update')
+    chart_data_text = fields.Text(string='Chart Data (internal)')
+    auto_refresh_msg = fields.Char(string='Auto-Refresh Status (internal)')
 
     PURITY = {
         '24k': 999, '21k': 875, '18k': 750,
@@ -117,6 +124,68 @@ class GoldPriceOverview(models.TransientModel):
     def _onchange_market_24k(self):
         if self.market_24k_dzd:
             self.market_24k_dzd = self._r10(self.market_24k_dzd)
+
+    @api.model
+    def get_chart_data(self, date_range='all'):
+        today = fields.Date.today()
+        ranges = {
+            'today': (today, today),
+            '7d': (today - timedelta(days=7), today),
+            '30d': (today - timedelta(days=30), today),
+            '90d': (today - timedelta(days=90), today),
+            '1y': (today - timedelta(days=365), today),
+            'all': (None, None),
+        }
+        date_from, date_to = ranges.get(date_range, (None, None))
+
+        metal_24k = self.env['metal.type'].search([('purity_percentage', '=', 99.99)], limit=1)
+        if not metal_24k:
+            return {'data': []}
+
+        domain = [('metal_type_id', '=', metal_24k.id)]
+        if date_from:
+            domain.append(('effective_date', '>=', date_from))
+        if date_to:
+            domain.append(('effective_date', '<=', date_to))
+
+        records = self.env['gold.rate.history'].search(
+            domain, order='effective_date asc, id asc'
+        )
+
+        data = []
+        seen = set()
+        for rec in records:
+            date_key = str(rec.effective_date)
+            if date_key in seen:
+                continue
+            seen.add(date_key)
+            data.append({
+                'x': date_key,
+                'bourse_dzd': rec.base_24k_dzd or 0.0,
+                'market_usd': round((rec.base_24k_usd or 0.0) / 31.1035, 2),
+            })
+
+        return {'data': data}
+
+    def read(self, fnames=None, load='_classic_read'):
+        if not self.env.context.get('_gold_auto_refreshed'):
+            self = self.with_context(_gold_auto_refreshed=True)
+            config = self.env['gold.price.api.config']._get_config()
+            if config:
+                try:
+                    last = config.last_fetch_time
+                    now = fields.Datetime.now()
+                    if not last or (now - last).total_seconds() > 30:
+                        config.fetch_all_rates()
+                        self.load_from_db()
+                except Exception as e:
+                    _logger.warning("Gold price auto-refresh failed: %s", e)
+                    self.auto_refresh_msg = "Gold price auto-refresh failed. Showing last saved values."
+        return super().read(fields=fnames, load=load)
+
+    def get_auto_refresh_msg(self):
+        self.ensure_one()
+        return self.auto_refresh_msg or ''
 
     def action_refresh(self):
         config = self.env['gold.price.api.config']._get_config()

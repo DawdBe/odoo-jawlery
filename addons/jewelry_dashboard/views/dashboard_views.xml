@@ -18,16 +18,6 @@
                             <field name="pending_fasonages"/>
                         </group>
                     </group>
-                    <group string="Gold Rates">
-                        <group>
-                            <field name="base_24k_dzd" widget="monetary"/>
-                            <field name="gold_rate_market" widget="monetary"/>
-                            <field name="silver_rate" widget="monetary"/>
-                        </group>
-                    </group>
-                    <group>
-                        <field name="dzd_parallel_rate" string="DZD Parallel Rate"/>
-                    </group>
                     <group string="Weights by Metal">
                         <field name="weight_by_metal_type" nolabel="1"/>
                     </group>

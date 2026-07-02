@@ -12,61 +12,81 @@ class Dashboard360(models.TransientModel):
     today_remise = fields.Monetary(string="Today's Remise", compute='_compute_values')
     pending_payments = fields.Monetary(string='Pending Payments', compute='_compute_values')
     pending_fasonages = fields.Integer(string='Pending Fasonages', compute='_compute_values')
-    base_24k_dzd = fields.Monetary(string='24k Base (DZD/g)', compute='_compute_values')
-    gold_rate_market = fields.Monetary(string='Gold Rate (Market)', compute='_compute_values')
-    silver_rate = fields.Monetary(string='Silver Rate', compute='_compute_values')
-    dzd_parallel_rate = fields.Float(string='DZD Parallel Rate', compute='_compute_values')
-    last_update = fields.Datetime(string='Last Update', compute='_compute_values')
+    last_update = fields.Datetime(string='Dashboard Last Update', compute='_compute_values')
     currency_id = fields.Many2one('res.currency', default=lambda self: self.env.company.currency_id)
 
     def _compute_values(self):
         for record in self:
-            today = fields.Date.today()
+            today_dt = fields.Datetime.now().replace(hour=0, minute=0, second=0)
 
-            gold_rate_rec = self.env['gold.rate.history'].search([
-                ('is_active', '=', True),
-            ], order='effective_date desc, id desc', limit=1)
-            record.base_24k_dzd = gold_rate_rec.base_24k_dzd if gold_rate_rec else 0.0
-            record.gold_rate_market = gold_rate_rec.market_rate if gold_rate_rec else 0.0
-            record.silver_rate = 0.0
+            # -----------------------------------------------------------
+            # 2. Today's KPIs — read_group aggregation, no Python loops
+            # -----------------------------------------------------------
+            today_data = self.env['jewelry.ticket'].read_group(
+                [('date', '>=', today_dt)],
+                ['total_cash_in:sum', 'balance:sum', 'total_remise:sum'],
+                []
+            )
+            if today_data:
+                record.today_sales = today_data[0]['total_cash_in'] or 0.0
+                record.today_profit = today_data[0]['balance'] or 0.0
+                record.today_remise = today_data[0]['total_remise'] or 0.0
+            else:
+                record.today_sales = 0.0
+                record.today_profit = 0.0
+                record.today_remise = 0.0
 
-            today_start = fields.Datetime.now().replace(hour=0, minute=0, second=0)
-            today_tickets = self.env['jewelry.ticket'].search([
-                ('date', '>=', today_start),
-            ])
-            record.today_sales = sum(t.total_cash_in for t in today_tickets)
-            record.today_remise = sum(t.total_remise for t in today_tickets)
-            record.today_profit = sum(t.balance for t in today_tickets)
+            # -----------------------------------------------------------
+            # 3. Pending payments
+            # -----------------------------------------------------------
+            pending_data = self.env['jewelry.ticket'].read_group(
+                [('payment_status', 'in', ('impaye', 'partiel')), ('balance', '>', 0)],
+                ['balance:sum'],
+                []
+            )
+            record.pending_payments = pending_data[0]['balance'] or 0.0 if pending_data else 0.0
 
-            latest_gold = self.env['gold.rate.history'].search([
-                ('is_active', '=', True),
-            ], order='effective_date desc, id desc', limit=1)
-            record.dzd_parallel_rate = latest_gold.dzd_parallel_rate if latest_gold else 0.0
-
-            pending = self.env['jewelry.ticket'].search([('payment_status', 'in', ('impaye', 'partiel'))])
-            record.pending_payments = sum(max(t.balance, 0) for t in pending)
-
+            # -----------------------------------------------------------
+            # 4. Pending fasonages
+            # -----------------------------------------------------------
             record.pending_fasonages = self.env['service.order'].search_count([
                 ('status', 'not in', ('delivered',)),
             ])
 
-            record.total_cash = sum(
-                r.expected_balance for r in self.env['daily.cash.register'].search([
-                    ('state', '=', 'open'),
-                ])
-            )
+            # -----------------------------------------------------------
+            # 5. Total Caisse
+            #    = expected_balance of open registers + orphan cash lines
+            # -----------------------------------------------------------
+            open_regs = self.env['daily.cash.register'].search([('state', '=', 'open')])
+            total_cash_val = sum(open_regs.mapped('expected_balance')) or 0.0
 
-            metal_types = self.env['metal.type'].search([])
+            orphan_data = self.env['cash.register.line'].read_group(
+                [('register_id', '=', False)],
+                ['amount:sum', 'type'],
+                ['type']
+            )
+            for g in orphan_data:
+                if g['type'] == 'entree':
+                    total_cash_val += g['amount'] or 0.0
+                else:
+                    total_cash_val -= g['amount'] or 0.0
+            record.total_cash = total_cash_val
+
+            # -----------------------------------------------------------
+            # 6. Weight by Metal Type — single read_group, no N+1
+            # -----------------------------------------------------------
+            weight_data = self.env['jewelry.ticket.line'].read_group(
+                [],
+                ['weight:sum', 'metal_type_id'],
+                ['metal_type_id']
+            )
+            metal_names = {m.id: m.name for m in self.env['metal.type'].search([])}
             lines = []
-            for mt in metal_types:
-                total_weight = sum(
-                    l.weight or 0.0
-                    for l in self.env['jewelry.ticket.line'].search([
-                        ('metal_type_id', '=', mt.id),
-                    ])
-                )
-                if total_weight:
-                    lines.append(f"{mt.name}: {total_weight:.2f}g")
+            for g in weight_data:
+                mt_id = g['metal_type_id']
+                if mt_id and g.get('weight'):
+                    name = metal_names.get(mt_id[0], 'Unknown')
+                    lines.append(f"{name}: {g['weight']:.2f}g")
             record.weight_by_metal_type = '\n'.join(lines) if lines else 'No weight data'
 
             record.last_update = fields.Datetime.now()

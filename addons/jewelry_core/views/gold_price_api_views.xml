@@ -72,6 +72,4 @@
         <field name="view_mode">tree,form</field>
     </record>
 
-    <menuitem id="menu_gold_price_api_config" name="Gold API Config"
-              parent="menu_jewelry_config" action="action_gold_price_api_config" sequence="25"/>
 </odoo>

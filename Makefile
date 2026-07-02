@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := help
 
 PROJECT_NAME := $(shell basename $(CURDIR))
-DB_NAME ?= postgres
+DB_NAME ?= bijouterie
 
 help:
 	@echo "╔══════════════════════════════════════════════════════════╗"

@@ -22,6 +22,8 @@
     'assets': {
         'web.assets_backend': [
             'jewelry_core/static/src/js/clipboard_fix.js',
+            'jewelry_core/static/src/js/gold_chart_widget.js',
+            'jewelry_core/static/src/xml/gold_chart_widget.xml',
             'jewelry_core/static/src/css/metal_type.css',
             'jewelry_core/static/src/css/hide_chat.css',
 

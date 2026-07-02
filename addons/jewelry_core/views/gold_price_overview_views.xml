@@ -16,26 +16,42 @@
                     <div id="price_box" class="bg-light" style="padding: 20px; margin-bottom: 16px; border-radius: 8px;">
                         <div style="display: flex; align-items: center; font-size: 16px;">
                             <div style="flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                                <strong>24k USD/g</strong>
+                                <div style="display: flex; justify-content: center; align-items: baseline;">
+                                    <span style="font-size: 32px; font-weight: bold; color: #1a1a2e;">
+                                        <field name="base_24k_usd_g" widget="float" class="text-center"/>
+                                    </span>
+                                    <span style="font-size: 16px; font-weight: bold; color: #1a1a2e; margin-left: 6px;">USD</span>
+                                </div>
+                            </div>
+                            <div style="width: 1px; height: 60px; background: #dee2e6; margin: 0 24px;"></div>
+                            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center;">
                                 <strong>Bursa 24k</strong>
-                                <div style="font-size: 32px; font-weight: bold; color: #1a1a2e; display: flex; align-items: center; justify-content: center; white-space: nowrap;">
-                                    <field name="bursa_24k_dzd" class="text-center"/>
-                                    <span style="margin-left: 1px;">DZD</span>
+                                <div style="display: flex; justify-content: center; align-items: baseline;">
+                                    <span style="font-size: 32px; font-weight: bold; color: #1a1a2e;">
+                                        <field name="bursa_24k_dzd" class="text-center"/>
+                                    </span>
+                                    <span style="font-size: 16px; font-weight: bold; color: #1a1a2e; margin-left: 6px;">DZD</span>
                                 </div>
                             </div>
                             <div style="width: 1px; height: 60px; background: #dee2e6; margin: 0 24px;"></div>
                             <div style="flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center;">
                                 <strong>Market 24k</strong>
-                                <div style="font-size: 32px; font-weight: bold; color: #1a1a2e; display: flex; align-items: center; justify-content: center; white-space: nowrap;">
-                                    <field name="market_24k_dzd" class="text-center"/>
-                                    <span style="margin-left: 1px;">DZD</span>
+                                <div style="display: flex; justify-content: center; align-items: baseline;">
+                                    <span style="font-size: 32px; font-weight: bold; color: #1a1a2e;">
+                                        <field name="market_24k_dzd" class="text-center"/>
+                                    </span>
+                                    <span style="font-size: 16px; font-weight: bold; color: #1a1a2e; margin-left: 6px;">DZD</span>
                                 </div>
                             </div>
                             <div style="width: 1px; height: 60px; background: #dee2e6; margin: 0 24px;"></div>
                             <div style="flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center;">
                                 <strong>DZD Parallel</strong>
-                                <div style="font-size: 32px; font-weight: bold; color: #1a1a2e; display: flex; align-items: center; justify-content: center; white-space: nowrap;">
-                                    <field name="dzd_parallel_rate" readonly="1" widget="float" class="text-center"/>
-                                    <span style="margin-left: 1px;">DZD</span>
+                                <div style="display: flex; justify-content: center; align-items: baseline;">
+                                    <span style="font-size: 32px; font-weight: bold; color: #1a1a2e;">
+                                        <field name="dzd_parallel_rate" readonly="1" widget="float" class="text-center"/>
+                                    </span>
+                                    <span style="font-size: 16px; font-weight: bold; color: #1a1a2e; margin-left: 6px;">DZD</span>
                                 </div>
                             </div>
                         </div>
@@ -137,6 +153,7 @@
                             </tbody>
                         </table>
                     </group>
+                    <field name="chart_data_text" widget="gold_chart" nolabel="1"/>
                 </sheet>
             </form>
         </field>
