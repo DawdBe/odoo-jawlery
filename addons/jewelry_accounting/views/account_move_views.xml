@@ -48,4 +48,32 @@
             <div class="oe_chatter" position="replace"/>
         </field>
     </record>
+
+    <record id="view_account_move_jewelry_search" model="ir.ui.view">
+        <field name="name">account.move.jewelry.search</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_account_move_filter"/>
+        <field name="arch" type="xml">
+            <field name="name" position="before">
+                <field name="jewelry_operation_type"/>
+                <filter name="group_by_year" string="Année"
+                        context="{'group_by': 'date:year'}"/>
+                <separator/>
+                <filter name="type_vente" string="Vente"
+                        domain="[('jewelry_operation_type', '=', 'vente')]"/>
+                <filter name="type_achat" string="Achat"
+                        domain="[('jewelry_operation_type', '=', 'achat')]"/>
+                <filter name="type_fasonage" string="Fasonage"
+                        domain="[('jewelry_operation_type', '=', 'fasonage')]"/>
+                <filter name="type_service" string="Service"
+                        domain="[('jewelry_operation_type', '=', 'service')]"/>
+                <filter name="type_associe" string="Associé"
+                        domain="[('jewelry_operation_type', '=', 'associe')]"/>
+                <filter name="type_personnel" string="Personnel"
+                        domain="[('jewelry_operation_type', '=', 'personnel')]"/>
+                <filter name="type_invest" string="Investissement"
+                        domain="[('jewelry_operation_type', '=', 'invest')]"/>
+            </field>
+        </field>
+    </record>
 </odoo>

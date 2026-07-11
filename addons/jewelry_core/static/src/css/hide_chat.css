@@ -1,3 +1,5 @@
+/* Hides the Odoo chat/discuss widget from the entire backend.
+   Jewelry store staff don't use internal chat; removing it reduces clutter. */
 .o-mail-ChatWindowContainer,
 .o-mail-ChatWindow {
     display: none !important;

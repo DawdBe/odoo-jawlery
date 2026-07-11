@@ -10,6 +10,10 @@ _logger = logging.getLogger(__name__)
 class GoldPriceOverview(models.TransientModel):
     _name = 'gold.price.overview'
     _description = 'Gold Price Overview'
+    # Transient model (not stored in DB) that provides a real-time view of
+    # gold prices across all purities. Users can view, edit market rates,
+    # and save them to gold.rate.history. The auto-refresh logic also fetches
+    # live prices from the API every 30 seconds when this view is open.
 
     # ── API / Reference ──
     base_24k_usd_oz = fields.Monetary(
@@ -74,6 +78,13 @@ class GoldPriceOverview(models.TransientModel):
 
     @api.depends('base_24k_usd_oz', 'dzd_parallel_rate', 'market_24k_dzd')
     def _compute_all(self):
+        # Computes all purity-specific rates in one pass from three inputs:
+        # 1. 24k USD/oz (from API), 2. DZD parallel rate, 3. 24k market rate.
+        # For each purity (24k, 21k, 18k, etc.) it computes:
+        #   - bursa rate (theoretical value based on gold content)
+        #   - market rate (proportional to 24k market rate)
+        #   - spread (market - bursa = profit per gram)
+        # _r10 rounds to nearest 10 (business convention in Algerian gold trade).
         for rec in self:
             usd_per_g = (rec.base_24k_usd_oz or 0.0) / 31.1035
             rec.base_24k_usd_g = usd_per_g
@@ -168,6 +179,16 @@ class GoldPriceOverview(models.TransientModel):
         return {'data': data}
 
     def read(self, fnames=None, load='_classic_read'):
+        # Overrides read() to auto-fetch gold prices when the overview is opened.
+        # If more than 30 seconds have passed since last fetch, it silently
+        # refreshes rates. This gives the illusion of real-time updates.
+        # The _gold_auto_refreshed context flag prevents infinite recursion.
+        # Also handles stale transient records that were auto-vacuumed
+        # by recreating them transparently.
+        if not self:
+            defaults = self.default_get(list(self.env['gold.price.overview'].fields_get().keys()))
+            new = self.create(defaults)
+            return new.read(fnames=fnames, load=load)
         if not self.env.context.get('_gold_auto_refreshed'):
             self = self.with_context(_gold_auto_refreshed=True)
             config = self.env['gold.price.api.config']._get_config()
@@ -201,6 +222,10 @@ class GoldPriceOverview(models.TransientModel):
         }
 
     def action_save_rates(self):
+        # Saves all market rates from the overview form into gold.rate.history.
+        # Creates new records for today or updates existing ones.
+        # This is the manual alternative to the auto-fetch — lets the user
+        # override rates based on their own market knowledge.
         purity_to_pct = {
             999: 99.99, 875: 87.5, 750: 75.0,
             720: 72.0, 710: 71.0, 705: 70.5,

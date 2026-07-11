@@ -7,6 +7,7 @@
         <field name="target">inline</field>
     </record>
 
+    <!-- Dashboard menu item — highest priority (sequence 5), appears first in the Bijouterie menu -->
     <menuitem id="menu_jewelry_dashboard" name="Dashboard 360°"
               parent="jewelry_core.menu_jewelry_root" action="action_dashboard_360" sequence="5"/>
 </odoo>

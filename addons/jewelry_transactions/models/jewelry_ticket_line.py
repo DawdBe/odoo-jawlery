@@ -5,6 +5,11 @@ class JewelryTicketLine(models.Model):
     _name = 'jewelry.ticket.line'
     _description = 'Ticket Line'
     _order = 'id'
+    # A single line on a unified ticket. The line_type determines the nature
+    # of the operation: sale (vente), scrap purchase (achat_casse), raw purchase
+    # (achat), service, workshop (fasonage), deposit (verse), settlement (solde),
+    # or discount (remise).
+    # Each line can have a product, weight, metal type, and pricing info.
 
     ticket_id = fields.Many2one('jewelry.ticket', string='Ticket', required=True, ondelete='cascade')
     line_type = fields.Selection([
@@ -23,14 +28,14 @@ class JewelryTicketLine(models.Model):
     metal_type_id = fields.Many2one('metal.type', string='Metal Type')
     description = fields.Char(string='Description')
     price_unit = fields.Monetary(string='Unit Price')
-    price_subtotal = fields.Monetary(string='Subtotal')
+    price_subtotal = fields.Monetary(string='Subtotal', compute='_compute_price_subtotal', store=True)
     remise_type = fields.Selection([
         ('none', 'None'),
         ('percentage', 'Percentage'),
         ('fixed', 'Fixed'),
     ], string='Remise Type', default='none')
     remise_value = fields.Float(string='Remise Value')
-    remise_amount = fields.Monetary(string='Remise Amount', compute='_compute_remise_amount')
+    remise_amount = fields.Monetary(string='Remise Amount', compute='_compute_remise_amount', store=True)
     currency_id = fields.Many2one('res.currency', related='ticket_id.currency_id', store=True)
     notes = fields.Text()
 
@@ -55,13 +60,18 @@ class JewelryTicketLine(models.Model):
                 self.weight = product.weight
             else:
                 tmpl = product.product_tmpl_id
-                self.weight = tmpl.net_weight or tmpl.gross_weight or 0.0
+                self.weight = tmpl.net_weight or 0.0
             self.metal_type_id = product.product_tmpl_id.metal_type_id
+            if self.metal_type_id and self.line_type != 'service':
+                rate = self.metal_type_id.get_current_rate('market')
+                if rate:
+                    self.price_unit = rate
+                    return
             self.price_unit = product.lst_price
 
     @api.onchange('metal_type_id', 'line_type')
     def _onchange_metal_type(self):
-        if self.metal_type_id and self.line_type in ('achat_casse', 'achat'):
+        if self.metal_type_id and self.line_type != 'service':
             rate = self.metal_type_id.get_current_rate('market')
             if rate:
                 self.price_unit = rate
@@ -73,7 +83,7 @@ class JewelryTicketLine(models.Model):
                 if live and live.base_24k_usd and live.dzd_parallel_rate:
                     self.price_unit = live.base_24k_usd * live.dzd_parallel_rate
 
-    @api.onchange('weight', 'price_unit')
-    def _onchange_price_subtotal(self):
-        if self.weight and self.price_unit:
-            self.price_subtotal = self.weight * self.price_unit
+    @api.depends('line_type', 'metal_type_id', 'weight', 'quantity', 'price_unit')
+    def _compute_price_subtotal(self):
+        for line in self:
+            line.price_subtotal = (line.quantity or 0.0) * (line.weight or 0.0) * (line.price_unit or 0.0)

@@ -1,3 +1,6 @@
+// DashboardWidget — placeholder widget for the jewelry dashboard.
+// Currently a shell; the actual dashboard KPIs are rendered server-side
+// via the dashboard.360 TransientModel fields in the XML form view.
 odoo.define('jewelry_dashboard.dashboard', function (require) {
     'use strict';
 

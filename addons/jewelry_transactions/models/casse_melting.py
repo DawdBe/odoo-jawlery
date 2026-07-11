@@ -5,6 +5,9 @@ class CasseMelting(models.Model):
     _name = 'casse.melting'
     _description = 'Casse Melting'
     _order = 'date desc'
+    # Records the melting (smelting) process where scrap gold is melted down
+    # into refined gold. Tracks weight before/after, wastage, cost, and the
+    # refined value based on current market rates. Profit = refined value - cost.
 
     name = fields.Char(required=True, default='New')
     date = fields.Date(default=fields.Date.today, required=True)

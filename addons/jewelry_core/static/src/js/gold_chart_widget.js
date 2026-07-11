@@ -1,4 +1,8 @@
 /** @odoo-module **/
+// GoldChartWidget — OWL component that renders two interactive Chart.js line charts
+// (Bourse 24K DZD/g and International Market USD/g) on the Gold Price Overview form.
+// Communicates with the backend via ORM calls to gold.price.overview.get_chart_data().
+// Supports date-range filtering (today, 7d, 30d, 90d, 1y, all).
 
 import { loadBundle } from "@web/core/assets";
 import { registry } from "@web/core/registry";
@@ -12,6 +16,7 @@ class GoldChartWidget extends Component {
     static props = { ...standardFieldProps };
 
     setup() {
+        // Refs to the two <canvas> elements in the QWeb template
         this.canvasBourseRef = useRef("canvasBourse");
         this.canvasMarketRef = useRef("canvasMarket");
         this.orm = useService("orm");
@@ -19,6 +24,7 @@ class GoldChartWidget extends Component {
         this.state = useState({ range: "all", loading: false });
 
         onWillStart(async () => {
+            // Load Chart.js library dynamically (not bundled by default)
             await loadBundle("web.chartjs_lib");
         });
 
@@ -33,6 +39,7 @@ class GoldChartWidget extends Component {
     }
 
     async _checkAutoRefresh() {
+        // Check if the backend has an auto-refresh warning message to display
         try {
             const error = await this.orm.call(
                 "gold.price.overview",
@@ -49,7 +56,7 @@ class GoldChartWidget extends Component {
 
     _destroyCharts() {
         [this.canvasBourseRef.el, this.canvasMarketRef.el].forEach((canvas) => {
-            if (canvas) {
+            if (canvas && typeof Chart !== "undefined") {
                 const existing = Chart.getChart(canvas);
                 if (existing) existing.destroy();
             }
@@ -57,6 +64,7 @@ class GoldChartWidget extends Component {
     }
 
     async onFilter(range) {
+        // Called when user clicks a date-range filter button
         this.state.range = range;
         this.state.loading = true;
         await this.renderCharts();
@@ -64,6 +72,7 @@ class GoldChartWidget extends Component {
     }
 
     _chartOptions(title, unit) {
+        // Shared Chart.js configuration for both charts
         return {
             responsive: true,
             maintainAspectRatio: false,
@@ -116,6 +125,7 @@ class GoldChartWidget extends Component {
 
     async renderCharts() {
         this._destroyCharts();
+        if (typeof Chart === "undefined") return;
 
         const result = await this.orm.call(
             "gold.price.overview",
@@ -175,4 +185,5 @@ export const goldChartWidget = {
     supportedTypes: ["text"],
 };
 
+// Register as a custom field widget so it can be used via widget="gold_chart" in XML views
 registry.category("fields").add("gold_chart", goldChartWidget);

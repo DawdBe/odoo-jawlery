@@ -8,6 +8,7 @@
         'security/ir.model.access.csv',
         'views/account_move_views.xml',
         'views/menus.xml',
+        'views/bilan_report_views.xml',
         'reports/bilan_global_report.xml',
     ],
     'installable': True,

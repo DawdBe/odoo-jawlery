@@ -2,41 +2,162 @@
 <odoo>
     <record id="action_report_bilan_global" model="ir.actions.report">
         <field name="name">Bilan Global</field>
-        <field name="model">account.move</field>
+        <field name="model">bilan.global.report</field>
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">jewelry_accounting.bilan_global</field>
         <field name="report_file">jewelry_accounting.bilan_global</field>
-        <field name="print_report_name">'Bilan Global - %s' % (time.strftime('%Y-%m-%d'))</field>
-        <field name="binding_model_id" ref="account.model_account_move"/>
-        <field name="binding_type">report</field>
+        <field name="print_report_name">'Bilan Patrimonial - %s' % (time.strftime('%Y-%m-%d'))</field>
     </record>
 
     <template id="bilan_global">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="doc">
                 <div class="page">
-                    <h2>Bilan Global</h2>
-                    <p>Generated: <span t-esc="time.strftime('%Y-%m-%d %H:%M')"/></p>
+                    <h2>Bilan Patrimonial Global</h2>
+                    <p>
+                        Période: <span t-esc="doc.mode"/>
+                        — Arrêté au <span t-esc="doc.date_cloture"/>
+                        — Généré le <span t-esc="time.strftime('%Y-%m-%d %H:%M')"/>
+                    </p>
+
+                    <t t-if="doc.is_historical">
+                        <div class="alert alert-warning">
+                            <i class="fa fa-exclamation-triangle"/>
+                            Stock et trésorerie = valeur actuelle, pas celle de <t t-esc="doc.year"/>.
+                        </div>
+                    </t>
+
+                    <h3>ACTIF</h3>
                     <table class="table table-bordered">
                         <thead>
                             <tr>
-                                <th>Journal Entry</th>
-                                <th>Date</th>
-                                <th>Operation</th>
-                                <th>Weight</th>
-                                <th>Amount</th>
+                                <th>Rubrique</th>
+                                <th class="text-end">Montant</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr t-foreach="doc.line_ids" t-as="line">
-                                <td><span t-esc="doc.name"/></td>
-                                <td><span t-esc="doc.date"/></td>
-                                <td><span t-esc="doc.jewelry_operation_type"/></td>
-                                <td><span t-esc="line.weight"/></td>
-                                <td><span t-esc="line.balance" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></td>
+                            <tr>
+                                <td>Stock Or valorisé</td>
+                                <td class="text-end">
+                                    <span t-esc="doc.stock_or_valorise"
+                                          t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Stock Argent valorisé</td>
+                                <td class="text-end">
+                                    <span t-esc="doc.stock_argent_valorise"
+                                          t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Autres stocks valorisés</td>
+                                <td class="text-end">
+                                    <span t-esc="doc.stock_autres_valorise"
+                                          t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Trésorerie</td>
+                                <td class="text-end">
+                                    <span t-esc="doc.tresorerie"
+                                          t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Créances clients</td>
+                                <td class="text-end">
+                                    <span t-esc="doc.creances_clients"
+                                          t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                </td>
+                            </tr>
+                            <tr class="fw-bold">
+                                <td>Total Actif</td>
+                                <td class="text-end">
+                                    <span t-esc="doc.total_actif"
+                                          t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
+
+                    <h3>PASSIF</h3>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Rubrique</th>
+                                <th class="text-end">Montant</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Capital associés</td>
+                                <td class="text-end">
+                                    <span t-esc="doc.capital_associes"
+                                          t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Avances associés</td>
+                                <td class="text-end">
+                                    <span t-esc="doc.avances_associes"
+                                          t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Dettes fournisseurs</td>
+                                <td class="text-end">
+                                    <span t-esc="doc.dettes_fournisseurs"
+                                          t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Personnel</td>
+                                <td class="text-end">
+                                    <span t-esc="doc.personnel"
+                                          t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Investissements</td>
+                                <td class="text-end">
+                                    <span t-esc="doc.investissements"
+                                          t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                </td>
+                            </tr>
+                            <tr class="fw-bold">
+                                <td>Total Passif</td>
+                                <td class="text-end">
+                                    <span t-esc="doc.total_passif"
+                                          t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Contrôle</h3>
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr>
+                                <td>Écart Actif - Passif</td>
+                                <td class="text-end">
+                                    <span t-esc="doc.ecart_actif_passif"
+                                          t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p class="text-muted small">
+                        <i>Écart non significatif — Personnel et Investissements incomplets
+                        (Phase 2 à venir).</i>
+                    </p>
+
+                    <h3>Répartition par associé</h3>
+                    <pre t-esc="doc.repartition_globale" style="font-family: monospace;"/>
+
+                    <p class="text-muted">
+                        Dernier calcul: <span t-esc="doc.last_update"/>
+                    </p>
                 </div>
             </t>
         </t>

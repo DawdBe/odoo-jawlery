@@ -5,6 +5,9 @@ class StockInventoryWeight(models.Model):
     _name = 'stock.inventory.weight'
     _description = 'Physical Weight Inventory'
     _order = 'date desc'
+    # Physical inventory: compares expected vs actual weight for a given metal type.
+    # Jewelry stores must regularly weigh their gold stock to detect losses/theft.
+    # Each inventory focuses on one metal type at a time.
 
     name = fields.Char(required=True, default='New')
     date = fields.Date(default=fields.Date.today, required=True)
@@ -31,6 +34,8 @@ class StockInventoryWeight(models.Model):
             record.difference_weight = (record.actual_weight or 0.0) - (record.expected_weight or 0.0)
 
     def reconcile_weights(self):
+        # Mark an inventory as done (reconciled).
+        # The difference_weight field shows any discrepancy found.
         self.state = 'done'
 
 

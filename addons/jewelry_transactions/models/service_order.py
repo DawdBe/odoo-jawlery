@@ -3,11 +3,15 @@ from odoo import models, fields, api
 
 class ServiceOrder(models.Model):
     _name = 'service.order'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
     _description = 'Service Order (Fasonage / Repair)'
     _order = 'received_date desc'
+    # Manages workshop orders: fasonage (gold transformation), repairs,
+    # gold plating (dorure/argenture), engraving (gravure), and assembly (goupelle).
+    # Tracks raw gold input, finished weight, wastage, and pricing via atelier price tables.
 
     name = fields.Char(required=True, default='New')
-    partner_id = fields.Many2one('res.partner', string='Client', required=True)
+    partner_id = fields.Many2one('res.partner', string='Client', required=True, tracking=True)
 
     @api.model
     def create(self, vals):
@@ -42,12 +46,12 @@ class ServiceOrder(models.Model):
         ('in_progress', 'In Progress'),
         ('ready', 'Ready'),
         ('delivered', 'Delivered'),
-    ], string='Status', default='received')
+    ], string='Status', default='received', tracking=True)
     payment_status = fields.Selection([
         ('impaye', 'Impayé'),
         ('partiel', 'Partiel'),
         ('paye', 'Payé'),
-    ], string='Payment Status', default='impaye')
+    ], string='Payment Status', default='impaye', tracking=True)
     price_from_table = fields.Monetary(string='Price from Atelier Table', compute='_compute_price_from_table')
     min_profit_percentage = fields.Float(string='Min Profit %', default=20.0)
     received_date = fields.Datetime(default=fields.Datetime.now)
@@ -57,6 +61,9 @@ class ServiceOrder(models.Model):
 
     @api.depends('raw_gold_weight', 'finished_weight')
     def _compute_wastage(self):
+        # Wastage = gold lost during the fasonage process (e.g., filings, dust).
+        # This is normal in jewelry manufacturing and represents a profit center
+        # for the store (wastage remains store property after fasonage).
         for order in self:
             raw = order.raw_gold_weight or 0.0
             fin = order.finished_weight or 0.0
@@ -80,6 +87,8 @@ class ServiceOrder(models.Model):
                 order.price_from_table = 0.0
 
     def validate_selling_price(self, proposed_price):
+        # Ensures the selling price covers at least the atelier cost + min profit margin.
+        # Returns (is_valid, minimum_price) tuple.
         self.ensure_one()
         if self.price_from_table and self.min_profit_percentage:
             min_price = self.price_from_table * (1 + self.min_profit_percentage / 100)

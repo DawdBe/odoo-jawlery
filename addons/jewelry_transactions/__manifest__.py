@@ -1,9 +1,9 @@
 {
     'name': 'Jewelry Transactions',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.2.0',
     'category': 'Sales',
     'summary': 'Cœur métier — tickets, achats, services, caisse, fonte casse',
-    'depends': ['jewelry_core', 'account', 'purchase'],
+    'depends': ['mail', 'jewelry_core', 'account', 'purchase'],
     'data': [
         'security/ir.model.access.csv',
         'data/atelier_price_data.xml',
@@ -21,6 +21,14 @@
         'views/cash_register_views.xml',
         'views/menus.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'jewelry_transactions/static/src/scss/ticket_list_view.scss',
+            'jewelry_transactions/static/src/scss/ticket_form_view.scss',
+            'jewelry_transactions/static/src/js/product_statusbar.js',
+            'jewelry_transactions/static/src/js/cash_register_live.js',
+        ],
+    },
     'installable': True,
     'license': 'LGPL-3',
     'post_init_hook': 'apply_translations',

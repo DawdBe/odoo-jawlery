@@ -3,6 +3,9 @@ from odoo import models, fields, api
 
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
+    # Extends Odoo's product template with jewelry-specific fields:
+    # metal type, net weight, style, and jewelry category.
+    # Price is auto-computed from weight × current gold market rate.
 
     def action_print_barcode(self):
         self.ensure_one()
@@ -29,9 +32,14 @@ class ProductTemplate(models.Model):
         ('mesaise', 'Mesaise'),
         ('or_750', 'Or 750'),
     ], string='Style')
+    # Style determines atelier pricing (fasonage cost per gram varies by style).
 
     @api.model
     def create(self, vals):
+        # Auto-compute list_price from weight × gold market rate when creating.
+        # Junior Developer Note: This avoids hardcoding prices — gold prices
+        # fluctuate daily, so auto-computing from weight + current rate ensures
+        # prices stay aligned with the market.
         if not vals.get('list_price') and vals.get('metal_type_id') and vals.get('net_weight'):
             metal_type = self.env['metal.type'].browse(vals['metal_type_id'])
             rate = metal_type.get_current_rate('market')
@@ -52,6 +60,7 @@ class ProductTemplate(models.Model):
 
     @api.onchange('metal_type_id', 'net_weight')
     def _onchange_metal_pricing(self):
+        # Recalculate price in real-time when user changes metal type or weight.
         if self.metal_type_id and self.net_weight:
             rate = self.metal_type_id.get_current_rate('market')
             self.list_price = (self.net_weight or 0.0) * rate
@@ -67,6 +76,8 @@ class ProductProduct(models.Model):
 
     @api.model
     def create(self, vals):
+        # Auto-generate barcode: first try inheriting from template,
+        # then fall back to ir.sequence.
         if not vals.get('barcode'):
             tmpl_id = vals.get('product_tmpl_id')
             if tmpl_id:

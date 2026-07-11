@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!-- Root menu for the entire jewelry application.
+         All custom modules (dashboard, core, transactions, accounting)
+         are nested under this top-level menu item. -->
     <menuitem id="menu_jewelry_root" name="Bijouterie" sequence="10"/>
 
     <menuitem id="menu_jewelry_core" name="Core" parent="menu_jewelry_root" sequence="10"/>

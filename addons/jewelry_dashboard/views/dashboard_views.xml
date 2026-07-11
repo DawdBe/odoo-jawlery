@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!-- Dashboard 360° form view — real-time KPI overview.
+         All fields are computed (TransientModel) on every view load.
+         Displays: total cash, today's sales/profit/remise,
+         pending payments, pending fasonages, and weight breakdown by metal type. -->
     <record id="view_dashboard_360_form" model="ir.ui.view">
         <field name="name">dashboard.360.form</field>
         <field name="model">dashboard.360</field>

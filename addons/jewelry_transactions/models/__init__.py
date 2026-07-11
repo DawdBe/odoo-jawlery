@@ -13,3 +13,4 @@ from . import service_order
 from . import atelier_price_table
 from . import daily_cash_register
 from . import cash_register_line
+from . import gold_movement

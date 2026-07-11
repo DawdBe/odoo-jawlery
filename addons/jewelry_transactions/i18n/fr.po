@@ -374,11 +374,6 @@ msgid "Wastage %"
 msgstr "Déchet %"
 
 #. module: jewelry_transactions
-#: model:ir.model.fields,field_description:jewelry_transactions.field_supplier_account__cash_balance
-msgid "Cash Balance"
-msgstr "Solde Caisse"
-
-#. module: jewelry_transactions
 #: model:ir.model.fields,field_description:jewelry_transactions.field_supplier_account__last_rate_used
 msgid "Last Rate Used"
 msgstr "Dernier Cours"

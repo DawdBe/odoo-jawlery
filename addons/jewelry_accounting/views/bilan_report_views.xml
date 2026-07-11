@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_bilan_global_report_form" model="ir.ui.view">
+        <field name="name">bilan.global.report.form</field>
+        <field name="model">bilan.global.report</field>
+        <field name="arch" type="xml">
+            <form string="Bilan Patrimonial Global">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_print_bilan" string="Imprimer PDF"
+                                type="object" class="btn-primary" icon="fa-print"/>
+                    </div>
+
+                    <group string="Paramètres">
+                        <group>
+                            <field name="year" widget="integer"/>
+                            <field name="mode" widget="radio"/>
+                        </group>
+                        <group>
+                            <field name="date_cloture" readonly="1"/>
+                            <field name="is_historical" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <group string="Avertissements" name="warnings"
+                           invisible="not is_historical">
+                        <div class="alert alert-warning" role="alert"
+                             style="margin-bottom:0; padding: 8px 12px;">
+                            <i class="fa fa-exclamation-triangle"/> Stock et trésorerie =
+                            <b>valeur actuelle</b>, pas celle de <field name="year" class="oe_inline"/>.
+                            Les créances, dettes, fournisseurs et associés sont filtrés à la date de clôture.
+                        </div>
+                    </group>
+
+                    <group string="ACTIF">
+                        <group>
+                            <field name="stock_or_valorise" widget="monetary"/>
+                            <button name="action_view_stock_or" type="object"
+                                    icon="fa-external-link" class="btn-link" title="Détail stock Or"/>
+                        </group>
+                        <group>
+                            <field name="stock_argent_valorise" widget="monetary"/>
+                            <button name="action_view_stock_argent" type="object"
+                                    icon="fa-external-link" class="btn-link" title="Détail stock Argent"/>
+                        </group>
+                        <group>
+                            <field name="stock_autres_valorise" widget="monetary"/>
+                            <button name="action_view_stock_autres" type="object"
+                                    icon="fa-external-link" class="btn-link" title="Détail autres stocks"/>
+                        </group>
+                        <group>
+                            <field name="tresorerie" widget="monetary"/>
+                            <button name="action_view_tresorerie" type="object"
+                                    icon="fa-external-link" class="btn-link" title="Détail caisses"/>
+                        </group>
+                        <group>
+                            <field name="creances_clients" widget="monetary"/>
+                            <button name="action_view_creances" type="object"
+                                    icon="fa-external-link" class="btn-link" title="Détail créances"/>
+                        </group>
+                        <group>
+                            <field name="total_actif" widget="monetary" class="font-weight-bold"/>
+                        </group>
+                    </group>
+
+                    <group string="PASSIF">
+                        <group>
+                            <field name="capital_associes" widget="monetary"/>
+                            <button name="action_view_associes" type="object"
+                                    icon="fa-external-link" class="btn-link" title="Détail associés"/>
+                        </group>
+                        <group>
+                            <field name="avances_associes" widget="monetary"/>
+                            <button name="action_view_associes" type="object"
+                                    icon="fa-external-link" class="btn-link" title="Détail associés"/>
+                        </group>
+                        <group>
+                            <field name="dettes_fournisseurs" widget="monetary"/>
+                            <button name="action_view_fournisseurs" type="object"
+                                    icon="fa-external-link" class="btn-link" title="Détail fournisseurs"/>
+                        </group>
+                        <group>
+                            <field name="personnel" widget="monetary"/>
+                            <button name="action_view_personnel" type="object"
+                                    icon="fa-external-link" class="btn-link" title="Détail personnel"/>
+                        </group>
+                        <group>
+                            <field name="investissements" widget="monetary"/>
+                            <button name="action_view_investissements" type="object"
+                                    icon="fa-external-link" class="btn-link" title="Détail investissements"/>
+                        </group>
+                        <group>
+                            <field name="total_passif" widget="monetary" class="font-weight-bold"/>
+                        </group>
+                    </group>
+
+                    <group string="Répartition par associé">
+                        <field name="repartition_globale" nolabel="1" readonly="1"/>
+                        <button name="action_view_associes" type="object"
+                                string="Détail complet des associés"
+                                icon="fa-users" class="btn-link"/>
+                    </group>
+
+                    <group string="Contrôle">
+                        <group>
+                            <field name="ecart_actif_passif" widget="monetary" class="text-muted"/>
+                            <div class="text-muted small">
+                                <i class="fa fa-info-circle"/>
+                                Écart non significatif — Personnel et Investissements incomplets
+                                (Phase 2 à venir).
+                            </div>
+                        </group>
+                        <group>
+                            <field name="last_update"/>
+                        </group>
+                    </group>
+
+                    <footer>
+                        <button name="action_recalculate" string="Recalculer"
+                                type="object" class="btn-primary"/>
+                        <button special="cancel" string="Fermer" class="btn-secondary"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

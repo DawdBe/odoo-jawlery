@@ -1,6 +1,8 @@
+/* Aligns number headers in list views to the left (Odoo defaults to right) */
 .o_list_number_th {
     text-align: left !important;
 }
+/* Compact layout for karat/purity/sequence columns in metal type list */
 .o_list_view td[data-name="karat_value"],
 .o_list_view td[data-name="purity_percentage"],
 .o_list_view td[data-name="sequence"] {
@@ -9,6 +11,7 @@
     padding-right: 16px;
 }
 
+/* Gold Price Overview — inline monetary field styling for the header "price_box" */
 #price_box .o_field_monetary {
     display: inline-flex !important;
     flex: 0 1 auto !important;
@@ -22,6 +25,7 @@
     min-width: 0;
     align-items: center;
 }
+/* Large 32px font for the headline price numbers (24k USD/g, Bursa, Market, DZD) */
 #price_box .o_field_monetary .o_input,
 #price_box .o_field_monetary input {
     font-size: 32px !important;
@@ -31,6 +35,7 @@
     padding: 4px 8px !important;
     box-sizing: border-box !important;
 }
+/* Hide the currency symbol since we display it separately next to the value */
 #price_box .o_field_monetary .o_currency_symbol {
     display: none !important;
 }

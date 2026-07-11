@@ -4,6 +4,10 @@ from odoo import models, fields, api
 class Dashboard360(models.TransientModel):
     _name = 'dashboard.360'
     _description = 'Dashboard 360°'
+    # Transient (non-persisted) model that aggregates KPIs from all modules
+    # in real-time. All fields are computed, none are stored.
+    # Provides a single-page overview: cash positions, today's sales/profit,
+    # pending payments, pending fasonages, and weight breakdown by metal type.
 
     total_cash = fields.Monetary(string='Total Cash', compute='_compute_values')
     weight_by_metal_type = fields.Text(string='Weight by Metal Type', compute='_compute_values')
@@ -21,6 +25,10 @@ class Dashboard360(models.TransientModel):
 
             # -----------------------------------------------------------
             # 2. Today's KPIs — read_group aggregation, no Python loops
+            # Junior Developer Note: read_group() performs SQL-level GROUP BY
+            # aggregation directly in PostgreSQL. This is MUCH faster than
+            # fetching every ticket and summing in Python, especially with
+            # thousands of records.
             # -----------------------------------------------------------
             today_data = self.env['jewelry.ticket'].read_group(
                 [('date', '>=', today_dt)],
@@ -54,26 +62,18 @@ class Dashboard360(models.TransientModel):
             ])
 
             # -----------------------------------------------------------
-            # 5. Total Caisse
-            #    = expected_balance of open registers + orphan cash lines
+            # 5. Total Caisse — single source of truth: open registers
+            #    Orphan cash lines cannot exist: every cash.register.line
+            #    auto-assigns to its date's register on creation.
             # -----------------------------------------------------------
             open_regs = self.env['daily.cash.register'].search([('state', '=', 'open')])
-            total_cash_val = sum(open_regs.mapped('expected_balance')) or 0.0
-
-            orphan_data = self.env['cash.register.line'].read_group(
-                [('register_id', '=', False)],
-                ['amount:sum', 'type'],
-                ['type']
-            )
-            for g in orphan_data:
-                if g['type'] == 'entree':
-                    total_cash_val += g['amount'] or 0.0
-                else:
-                    total_cash_val -= g['amount'] or 0.0
-            record.total_cash = total_cash_val
+            record.total_cash = sum(open_regs.mapped('expected_balance')) or 0.0
 
             # -----------------------------------------------------------
             # 6. Weight by Metal Type — single read_group, no N+1
+            # Junior Developer Note: read_group groups all ticket lines by
+            # metal_type_id and sums their weights in ONE SQL query.
+            # Without it, we'd need N queries for N metal types (N+1 problem).
             # -----------------------------------------------------------
             weight_data = self.env['jewelry.ticket.line'].read_group(
                 [],

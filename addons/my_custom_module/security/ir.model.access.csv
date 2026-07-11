@@ -1,3 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_my_custom_module_example_user,my_custom_module.example.user,model_my_custom_module_example,base.group_user,1,1,1,1
-access_my_custom_module_example_manager,my_custom_module.example.manager,model_my_custom_module_example,base.group_system,1,1,1,1

@@ -20,4 +20,7 @@ access_atelier_price_table_admin,atelier.price.table.admin,model_atelier_price_t
 access_daily_cash_register_user,daily.cash.register.user,model_daily_cash_register,base.group_user,1,1,1,0
 access_daily_cash_register_admin,daily.cash.register.admin,model_daily_cash_register,base.group_system,1,1,1,1
 access_cash_register_line_user,cash.register.line.user,model_cash_register_line,base.group_user,1,1,1,1
+access_gold_movement_user,gold.movement.user,model_gold_movement,base.group_user,1,1,1,1
+access_gold_movement_admin,gold.movement.admin,model_gold_movement,base.group_system,1,1,1,1
 access_product_barcode_scan_wizard,product.barcode.scan.wizard,model_product_barcode_scan_wizard,base.group_user,1,1,1,1
+

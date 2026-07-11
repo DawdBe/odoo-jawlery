@@ -4,6 +4,10 @@ from odoo import models, fields, api
 class ProductBarcodeScanWizard(models.TransientModel):
     _name = 'product.barcode.scan.wizard'
     _description = 'Scan Product Barcode Wizard'
+    # Wizard for barcode scanning at point of sale.
+    # Scans a barcode, looks up the product, and adds it to an open ticket
+    # (or creates a new one). Supports multiple barcode formats and fallback
+    # lookups by ID, default_code, or template barcode.
 
     barcode = fields.Char(string='Barcode', required=True, help='Scan or type the product barcode')
     product_id = fields.Many2one('product.product', string='Product', readonly=True)
@@ -31,6 +35,13 @@ class ProductBarcodeScanWizard(models.TransientModel):
         return rec
 
     def _lookup_barcode(self):
+        # Multi-strategy barcode lookup:
+        # 1) Direct product barcode match
+        # 2) Numeric barcode = product ID
+        # 3) Numeric barcode = template ID (use first variant)
+        # 4) Default code match
+        # 5) Template barcode match (use first variant)
+        # This flexibility handles barcodes from different sources/scanners.
         self.ensure_one()
         if not self.barcode:
             return
@@ -80,7 +91,6 @@ class ProductBarcodeScanWizard(models.TransientModel):
             'weight': self.product_weight,
             'metal_type_id': self.metal_type_id.id if self.metal_type_id else False,
             'price_unit': self.product_price,
-            'price_subtotal': self.product_price,
         })
         return {
             'type': 'ir.actions.act_window',
@@ -111,7 +121,6 @@ class ProductBarcodeScanWizard(models.TransientModel):
             'weight': self.product_weight,
             'metal_type_id': self.metal_type_id.id if self.metal_type_id else False,
             'price_unit': self.product_price,
-            'price_subtotal': self.product_price,
         })
         return {
             'type': 'ir.actions.act_window',

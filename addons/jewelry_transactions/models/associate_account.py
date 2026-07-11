@@ -4,6 +4,9 @@ from odoo import models, fields, api
 class AssociateAccount(models.Model):
     _name = 'associate.account'
     _description = 'Associate Account'
+    # Tracks capital and advance balances for business associates (partners).
+    # Associates invest capital, receive profit distributions, and can take
+    # advances against future profits. This is a simplified partnership ledger.
 
     partner_id = fields.Many2one('res.partner', string='Associate', required=True)
     capital_balance = fields.Monetary(string='Capital Balance', compute='_compute_balances', store=True)

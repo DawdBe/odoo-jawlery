@@ -3,6 +3,9 @@ from odoo.http import request
 
 
 class BarcodePrintController(http.Controller):
+    # HTTP controller that renders a printable barcode label page.
+    # Generates an inline HTML page with the product's Code128 barcode image,
+    # triggers browser print dialog, then returns to the product form view.
 
     @http.route('/print/barcode/<int:product_id>', type='http', auth='user')
     def print_barcode(self, product_id):

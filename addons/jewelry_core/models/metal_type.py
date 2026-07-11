@@ -9,9 +9,14 @@ class MetalType(models.Model):
     _sql_constraints = [
         ('name_unique', 'UNIQUE(name)', _('A metal type with this name already exists.')),
     ]
+    # Defines metal purity types used throughout the jewelry system.
+    # Examples: Or 18K (75.0%), Or 21K (87.5%), Argent 925 (92.5%).
+    # The term "Casse" refers to scrap/recycled gold classified by purity.
+    # Each metal type has its own gold rate history and pricing.
 
     name = fields.Char(required=True, translate=True)
     purity_percentage = fields.Float(string='Purity (%)')
+    # E.g., 75.0 for 18k gold (75% pure gold, 25% alloy)
     karat_value = fields.Float(string='Karat')
     sequence = fields.Integer(default=10)
     active = fields.Boolean(default=True)
@@ -24,6 +29,10 @@ class MetalType(models.Model):
                 raise ValidationError(_('Karat value cannot be 0.'))
 
     def get_current_rate(self, rate_type='market'):
+        # Returns the latest active rate for this metal type.
+        # Used extensively throughout the system whenever a price
+        # needs to be computed from current gold prices.
+        # rate_type can be 'market' (selling price) or 'bursa' (reference).
         self.ensure_one()
         rate = self.env['gold.rate.history'].search([
             ('metal_type_id', '=', self.id),

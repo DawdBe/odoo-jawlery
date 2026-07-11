@@ -29,4 +29,18 @@
             </xpath>
         </field>
     </record>
+    <record id="view_partner_jewelry_supplier_account_button" model="ir.ui.view">
+        <field name="name">res.partner.jewelry.supplier.account.button</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_open_supplier_account" type="object"
+                        string="Supplier Account"
+                        class="oe_stat_button"
+                        icon="fa-balance-scale"
+                        invisible="partner_type not in ('frs', 'atelier')"/>
+            </xpath>
+        </field>
+    </record>
 </odoo>

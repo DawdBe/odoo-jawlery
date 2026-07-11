@@ -1,3 +1,6 @@
+// Polyfill for navigator.clipboard.writeText for older browsers/insecure contexts.
+// Some Odoo backend features rely on clipboard API; this fallback uses the
+// legacy document.execCommand('copy') method when the modern API isn't available.
 if (!navigator.clipboard) {
     navigator.clipboard = {};
 }

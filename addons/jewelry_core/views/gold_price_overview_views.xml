@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!-- Gold Price Overview form view.
+         Displays a live pricing dashboard with:
+         - 4 headline KPIs (24k USD/g, Bursa 24k, Market 24k, DZD Parallel)
+         - Purity table (24k, 21k, 18k variants) with Bursa/Market/Spread columns
+         - Interactive Chart.js history widget (gold_chart)
+         Users can refresh from API or manually edit market rates and save them. -->
     <record id="view_gold_price_overview_form" model="ir.ui.view">
         <field name="name">gold.price.overview.form</field>
         <field name="model">gold.price.overview</field>

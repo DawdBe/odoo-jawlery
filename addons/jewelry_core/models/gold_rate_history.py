@@ -5,6 +5,10 @@ class GoldRateHistory(models.Model):
     _name = 'gold.rate.history'
     _description = 'Gold Rate History'
     _order = 'effective_date desc'
+    # Daily snapshot of gold prices per metal type.
+    # Each record captures the 24k reference in USD/oz, the DZD parallel rate,
+    # and derived values (bursa, market, spread) for one metal purity.
+    # The is_active flag marks the "current" rate used in ticket transactions.
 
     metal_type_id = fields.Many2one('metal.type', string='Metal Type', required=True)
 
@@ -20,17 +24,24 @@ class GoldRateHistory(models.Model):
     dzd_parallel_rate = fields.Float(
         string='DZD Parallel Rate',
         help='Parallel market USD/DZD rate (ChangeDA)')
+    # The parallel rate is crucial: Algerian jewelry stores operate on the
+    # parallel (black) market rate, not the official bank rate.
 
     bursa_rate = fields.Monetary(
         string='Bursa Rate (Reference)',
         compute='_compute_bursa_rate', store=True,
         currency_field='currency_id',
         help='Theoretical rate = 24k base × (metal purity ÷ 99.99)')
+    # "Bursa" = reference rate based purely on gold content.
+    # For 18k (75% purity): bursa = 24k_DZD/g × (75.0 / 99.99)
 
     market_rate = fields.Monetary(
         string='Market Rate (Used)',
         currency_field='currency_id',
         help='Your selling price per gram — used in ticket transactions')
+    # Market rate is the actual selling price the store uses.
+    # The spread (market - bursa) represents profit per gram.
+    # This is the key field used in ticket line price_unit calculations.
     market_spread = fields.Monetary(
         string='Spread (Bursa→Market)',
         compute='_compute_market_spread', store=True,
@@ -73,6 +84,8 @@ class GoldRateHistory(models.Model):
             rec.market_spread = self._r10((rec.market_rate or 0.0) - (rec.bursa_rate or 0.0))
 
     def _get_market_for(self, karat_label):
+        # Look up the latest active market rate for a given karat label.
+        # Used by the gold price overview and ticket line auto-pricing.
         purity_map = {'24k': 99.99, '21k': 87.5, '18k': 75.0,
                        '18k_720': 72.0, '18k_710': 71.0, '18k_705': 70.5}
         target_purity = purity_map.get(karat_label)

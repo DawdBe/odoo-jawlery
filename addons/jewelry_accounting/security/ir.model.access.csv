@@ -3,3 +3,5 @@ access_account_move_jewelry_user,account.move.jewelry.user,model_account_move,ac
 access_account_move_jewelry_admin,account.move.jewelry.admin,model_account_move,account.group_account_manager,1,1,1,1
 access_account_move_line_jewelry_user,account.move.line.jewelry.user,model_account_move_line,account.group_account_user,1,0,0,0
 access_account_move_line_jewelry_admin,account.move.line.jewelry.admin,model_account_move_line,account.group_account_manager,1,1,1,1
+access_bilan_global_report_user,bilan.global.report.user,model_bilan_global_report,account.group_account_user,1,0,0,0
+access_bilan_global_report_admin,bilan.global.report.admin,model_bilan_global_report,account.group_account_manager,1,1,1,1

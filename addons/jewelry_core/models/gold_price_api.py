@@ -19,6 +19,9 @@ class GoldPriceApiConfig(models.Model):
     _name = 'gold.price.api.config'
     _description = 'Gold Price API Configuration'
     _rec_name = 'name'
+    # This model stores configuration for fetching live gold prices.
+    # It connects to gold-api.com for USD gold price and scrapes
+    # ChangeDA (exchangedz.com) for parallel-market DZD rate.
 
     name = fields.Char(default='Gold API Config', required=True)
     api_url_usd = fields.Char(
@@ -33,6 +36,9 @@ class GoldPriceApiConfig(models.Model):
         string='DZD Scrape Pattern',
         default=r'"value":\s*([\d.]+).*?sell.*?"value":\s*([\d.]+)',
         help='Regex with two capture groups: buy rate, sell rate. Uses the SELL rate.')
+    # The parallel market rate is essential for Algerian jewelry stores
+    # because official bank rates differ significantly from the
+    # real (parallel) market rate used in daily commerce.
     usd_price_json_path = fields.Char(
         string='USD JSON Path',
         default='price',
@@ -53,6 +59,8 @@ class GoldPriceApiConfig(models.Model):
         return self.search([('active', '=', True)], limit=1)
 
     def _extract_json_path(self, data, path):
+        # Extract a nested value from JSON by walking a dot-separated path.
+        # E.g., 'data.price' extracts data['data']['price'] from the response.
         parts = path.split('.')
         for part in parts:
             if isinstance(data, dict) and part in data:
@@ -84,11 +92,14 @@ class GoldPriceApiConfig(models.Model):
             raise UserError(_("Python 'requests' library is required for API fetch"))
 
         # 1) Try scraping ChangeDA (exchangedz.com)
+        #    This is the preferred source for the real parallel-market rate.
         rate = self._scrape_changeda(self.api_url_dzd)
         if rate:
             return rate
 
         # 2) Fallback: official rate + premium
+        #    If scraping fails, estimate the parallel rate by applying a
+        #    configurable premium percentage to the official exchangerate-api rate.
         _logger.info("ChangeDA scrape failed, falling back to official rate + premium")
         fallback_url = 'https://api.exchangerate-api.com/v4/latest/USD'
         try:
@@ -104,6 +115,9 @@ class GoldPriceApiConfig(models.Model):
         return None
 
     def _scrape_changeda(self, url):
+        # Scrape the parallel DZD/USD rate from ChangeDA (exchangedz.com).
+        # This is a web-scraping fallback since ChangeDA has no public API.
+        # Multiple regex patterns handle different HTML structures they use.
         try:
             resp = requests.get(url, timeout=15, headers={
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
@@ -133,6 +147,9 @@ class GoldPriceApiConfig(models.Model):
             return None
 
     def fetch_all_rates(self):
+        # Main orchestrator: fetches USD gold price + DZD rate, then
+        # creates/updates gold.rate.history for every configured metal type.
+        # Preserves existing market_rate if already set for today.
         self.ensure_one()
         usd_price_oz = self.fetch_gold_price_usd()
         dzd_rate = self.fetch_dzd_parallel_rate()
@@ -156,6 +173,7 @@ class GoldPriceApiConfig(models.Model):
                     'is_active': True,
                 }
                 if existing:
+                    # Preserve manual market_rate adjustments if already set
                     vals['market_rate'] = existing.market_rate or prev_market
                     existing.write(vals)
                 else:
@@ -215,6 +233,8 @@ class GoldPriceApiLog(models.Model):
 
 class GoldPriceApiCron(models.Model):
     _inherit = 'ir.cron'
+    # Extends ir.cron so the scheduled action defined in cron_data.xml
+    # can call this method to periodically auto-fetch gold prices.
 
     @api.model
     def _gold_price_auto_fetch(self):

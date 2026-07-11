@@ -21,10 +21,10 @@
         <field name="name">daily.cash.register.form</field>
         <field name="model">daily.cash.register</field>
         <field name="arch" type="xml">
-            <form>
+            <form js_class="daily_cash_register_form">
                 <header>
                     <button name="close_register" string="Close Register" type="object"
-                            class="btn-primary"/>
+                            class="btn-primary" invisible="state != 'open'"/>
                     <field name="state" widget="statusbar"/>
                 </header>
                 <sheet>
@@ -55,15 +55,32 @@
                             <field name="breakdown_10"/>
                         </group>
                     </group>
-                    <field name="line_ids">
-                        <tree editable="bottom">
-                            <field name="ticket_id"/>
-                            <field name="type"/>
-                            <field name="amount" widget="monetary"/>
-                            <field name="is_travel_cash"/>
-                            <field name="journal_id"/>
-                            <field name="partner_id"/>
-                            <field name="description"/>
+                    <separator string="Today's Tickets"/>
+                    <field name="ticket_ids" nolabel="1">
+                        <tree>
+                            <field name="name" string="Ticket #"/>
+                            <field name="partner_id" string="Customer"/>
+                            <field name="balance" string="Amount" widget="monetary"/>
+                            <field name="paid_amount" string="Paid" widget="monetary"/>
+                            <field name="remaining_amount" string="Remaining" widget="monetary"/>
+                            <field name="payment_status" string="Status"/>
+                            <field name="date" string="Date"/>
+                        </tree>
+                    </field>
+                    <separator string="Today's Cash Movements"/>
+                    <field name="line_ids" nolabel="1">
+                        <tree>
+                            <field name="date" string="Time"/>
+                            <field name="description" string="Description"/>
+                            <field name="ticket_id" string="Ticket" optional="show"/>
+                            <field name="partner_id" string="Partner" optional="show"/>
+                            <field name="payment_method" string="Method"/>
+                            <field name="type" invisible="1"/>
+                            <field name="amount" string="In" widget="monetary"
+                                   invisible="type != 'entree'"/>
+                            <field name="amount" string="Out" widget="monetary"
+                                   invisible="type != 'sortie'"/>
+                            <field name="reversed" invisible="1"/>
                         </tree>
                     </field>
                 </sheet>

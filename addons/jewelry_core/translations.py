@@ -1,4 +1,8 @@
 ALL_TRANSLATIONS = {
+    # Centralized French/Arabic translations for all modules.
+    # Applied at module install via post_init_hook.
+    # Covers model names, field labels, menu items, actions, views, and sequences.
+    # Key: Odoo XML ID (technical), Value: French translation.
     'ir.model': {
         'jewelry_core.model_gold_rate_history': "Cours de l'Or",
         'jewelry_core.model_gold_price_api_config': "Configuration API Or",
