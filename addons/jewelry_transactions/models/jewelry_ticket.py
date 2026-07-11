@@ -161,7 +161,6 @@ class JewelryTicket(models.Model):
 
     @api.depends('date')
     def _compute_related_register(self):
-        date_map = {}
         for ticket in self:
             if not ticket.date:
                 ticket.related_register_id = False
@@ -169,10 +168,9 @@ class JewelryTicket(models.Model):
             ticket_date = ticket.date
             if isinstance(ticket_date, datetime):
                 ticket_date = ticket_date.date()
-            if ticket_date not in date_map:
-                register = self.env['daily.cash.register']._get_or_create_for_date(ticket_date)
-                date_map[ticket_date] = register.id if register else False
-            ticket.related_register_id = date_map[ticket_date]
+            register = self.env['daily.cash.register'].search(
+                [('date', '=', ticket_date)], limit=1)
+            ticket.related_register_id = register.id if register else False
 
     @api.model
     def create(self, vals):

@@ -9,9 +9,9 @@
                 <field name="date"/>
                 <field name="cashier_id"/>
                 <field name="opening_balance" widget="monetary"/>
-                <field name="expected_balance" widget="monetary"/>
-                <field name="closing_balance" widget="monetary"/>
-                <field name="difference" widget="monetary"/>
+                    <field name="expected_balance" widget="monetary"/>
+                    <field name="closing_balance" widget="monetary"/>
+                    <field name="difference" widget="monetary"/>
                 <field name="state"/>
             </tree>
         </field>

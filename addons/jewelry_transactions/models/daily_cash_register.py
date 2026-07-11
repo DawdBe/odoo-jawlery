@@ -1,4 +1,5 @@
 import logging
+from datetime import timedelta
 
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError, ValidationError
@@ -23,7 +24,74 @@ class DailyCashRegister(models.Model):
         for vals in vals_list:
             if vals.get('name', 'New') == 'New':
                 vals['name'] = self.env['ir.sequence'].next_by_code('daily.cash.register') or 'New'
-        return super().create(vals_list)
+        registers = super().create(vals_list)
+        registers._init_from_existing_data()
+        for reg in registers:
+            _logger.info("=== POST _init_from_existing_data register=%s line_ids.ids=%s tickets.ids=%s",
+                         reg.id, reg.line_ids.ids, reg.ticket_ids.ids)
+        return registers
+
+    def _init_from_existing_data(self):
+        for register in self:
+            date = register.date
+            date_end = date + timedelta(days=1)
+            dt_start = fields.Datetime.to_datetime(date)
+            dt_end = fields.Datetime.to_datetime(date_end)
+
+            _logger.info("=== _init_from_existing_data START register=%s date=%s range=[%s, %s)",
+                         register.id, date, dt_start, dt_end)
+
+            # ---- TICKETS ----
+            ticket_domain = [
+                ('date', '>=', dt_start),
+                ('date', '<', dt_end),
+                ('related_register_id', '=', False),
+            ]
+            orphan_tickets = self.env['jewelry.ticket'].search(ticket_domain)
+            _logger.info("  TICKETS: domain=%s found=%s ids=%s",
+                         ticket_domain, len(orphan_tickets), orphan_tickets.ids)
+            if orphan_tickets:
+                orphan_tickets.related_register_id = register.id
+                _logger.info("  TICKETS: reassigned to register=%s", register.id)
+
+            # ---- ALL CASH LINES FOR DATE ----
+            all_lines = self.env['cash.register.line'].search([
+                ('date', '>=', dt_start),
+                ('date', '<', dt_end),
+            ])
+            _logger.info("  ALL LINES for date: count=%s", len(all_lines))
+            for l in all_lines:
+                _logger.info("    line id=%s date=%s amount=%s type=%s register_id=%s",
+                             l.id, l.date, l.amount, l.type,
+                             l.register_id.id if l.register_id else None)
+
+            # ---- ORPHAN CASH LINES (not linked to this register) ----
+            orphan_domain = [
+                ('date', '>=', dt_start),
+                ('date', '<', dt_end),
+                '|',
+                ('register_id', '=', False),
+                ('register_id', '!=', register.id),
+            ]
+            orphan_lines = self.env['cash.register.line'].search(orphan_domain)
+            _logger.info("  ORPHAN LINES: domain=%s found=%s ids=%s",
+                         orphan_domain, len(orphan_lines), orphan_lines.ids)
+            if orphan_lines:
+                _logger.info("  ORPHAN LINES: reassigning to register=%s", register.id)
+                orphan_lines.register_id = register.id
+
+            self.env.flush_all()
+
+            # ---- VERIFY AFTER REASSIGNMENT ----
+            _logger.info("  AFTER REASSIGNMENT: register.line_ids.ids=%s",
+                         register.line_ids.ids)
+            for l in register.line_ids:
+                _logger.info("    line_ids: id=%s date=%s amount=%s type=%s register_id=%s",
+                             l.id, l.date, l.amount, l.type,
+                             l.register_id.id if l.register_id else None)
+
+            _logger.info("  calling _compute_balances")
+            register._compute_balances()
 
     closing_balance = fields.Monetary(string='Closing Balance (Physical Count)')
     expected_balance = fields.Monetary(
@@ -52,15 +120,12 @@ class DailyCashRegister(models.Model):
     ticket_ids = fields.One2many('jewelry.ticket', 'related_register_id', string="Today's Tickets")
 
     @api.model
-    def _get_or_create_for_date(self, dt):
+    def _get_register_for_date(self, dt):
+        """Return the register for the given date, or None if none exists.
+        This method ONLY searches — it never creates a register.
+        Registers should only be created manually by the cashier."""
         register = self.search([('date', '=', dt)], limit=1)
-        if register:
-            return register
-        register = self.create({
-            'opening_balance': 0.0,
-            'date': dt,
-        })
-        return register
+        return register if register else self.browse()
 
     @api.model
     def init(self):
@@ -77,13 +142,21 @@ class DailyCashRegister(models.Model):
                     expected += line.amount or 0.0
                 else:
                     expected -= line.amount or 0.0
+            _logger.info("=== _compute_balances register=%s opening=%s lines=%s expected=%s old_expected=%s",
+                         register.id, register.opening_balance,
+                         [(l.id, l.amount, l.type) for l in register.line_ids],
+                         expected, old_expected)
             register.expected_balance = expected
             if register.closing_balance is not None:
                 register.difference = (register.closing_balance or 0.0) - expected
             else:
                 register.difference = 0.0
 
-            if register.expected_balance != old_expected or register.difference != old_difference:
+            changed = register.expected_balance != old_expected or register.difference != old_difference
+            _logger.info("  sending bus notification? changed=%s expected=%s->%s diff=%s->%s",
+                         changed, old_expected, register.expected_balance,
+                         old_difference, register.difference)
+            if changed:
                 self.env['bus.bus']._sendone(
                     'daily.cash.register.balance',
                     'register_balance_updated',

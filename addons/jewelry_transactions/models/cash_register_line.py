@@ -9,7 +9,7 @@ class CashRegisterLine(models.Model):
     _description = 'Cash Register Line'
     _order = 'date desc, id desc'
 
-    register_id = fields.Many2one('daily.cash.register', string='Register', ondelete='cascade')
+    register_id = fields.Many2one('daily.cash.register', string='Register', ondelete='set null')
     ticket_id = fields.Many2one('jewelry.ticket', string='Linked Ticket')
     amount = fields.Monetary(string='Amount', required=True)
     type = fields.Selection([
@@ -38,17 +38,28 @@ class CashRegisterLine(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         Register = self.env['daily.cash.register']
+        register_ids = set()
         for vals in vals_list:
             if not vals.get('register_id'):
                 date_val = vals.get('date', fields.Datetime.now())
                 if isinstance(date_val, datetime):
                     date_val = date_val.date()
-                register = Register._get_or_create_for_date(date_val)
-                vals['register_id'] = register.id
-        return super().create(vals_list)
+                register = Register.search([('date', '=', date_val)], limit=1)
+                if register:
+                    vals['register_id'] = register.id
+                    register_ids.add(register.id)
+            else:
+                register_ids.add(vals['register_id'])
+        lines = super().create(vals_list)
+        if register_ids:
+            register_ids.discard(False)
+            if register_ids:
+                Register.browse(list(register_ids))._compute_balances()
+        return lines
 
     def write(self, vals):
         Register = self.env['daily.cash.register']
+        old_registers = self.mapped('register_id')
         if any(f in vals for f in ('amount', 'type')):
             for record in self:
                 if record.register_id and record.register_id.state == 'closed':
@@ -61,7 +72,9 @@ class CashRegisterLine(models.Model):
                 date_val = vals.get('date', record.date)
                 if isinstance(date_val, datetime):
                     date_val = date_val.date()
-                new_reg = Register._get_or_create_for_date(date_val)
+                new_reg = Register.search([('date', '=', date_val)], limit=1)
+                if not new_reg:
+                    continue
                 if record.register_id and record.register_id.state == 'closed' and record.register_id.id != new_reg.id:
                     raise UserError(_(
                         "Impossible de déplacer une ligne de caisse vers une autre date "
@@ -72,20 +85,31 @@ class CashRegisterLine(models.Model):
                 date_val = vals.get('date', record.date)
                 if isinstance(date_val, datetime):
                     date_val = date_val.date()
-                new_reg = Register._get_or_create_for_date(date_val)
-                if record.register_id and record.register_id.id != new_reg.id:
+                new_reg = Register.search([('date', '=', date_val)], limit=1)
+                if new_reg and record.register_id and record.register_id.id != new_reg.id:
                     record.register_id = new_reg.id
+            new_registers = self.mapped('register_id')
+            (old_registers | new_registers)._compute_balances()
             return result
-        return super().write(vals)
+        result = super().write(vals)
+        if 'register_id' in vals:
+            new_registers = self.mapped('register_id')
+            (old_registers | new_registers)._compute_balances()
+        return result
 
     def unlink(self):
+        registers = self.mapped('register_id')
         for record in self:
             if record.register_id and record.register_id.state == 'closed':
                 raise UserError(_(
                     "Impossible de supprimer une ligne dans un registre clôturé. "
                     "Rouvrez d'abord le registre."
                 ))
-        return super().unlink()
+        result = super().unlink()
+        if registers:
+            self.env.flush_all()
+            registers._compute_balances()
+        return result
 
     def action_reverse_payment(self):
         self.ensure_one()
