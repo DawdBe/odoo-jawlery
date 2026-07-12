@@ -48,7 +48,7 @@ class BilanGlobalReport(models.TransientModel):
     creances_clients = fields.Monetary(
         string='Créances clients',
         compute='_compute_actif',
-        help="Total des soldes impayés ou partiellement payés sur les tickets clients (jewelry.ticket avec payment_status = impaye/partiel, balance > 0, date ≤ date_cloture).")
+        help="Total des montants restants dus par les clients (tickets avec remaining_amount > 0, date ≤ date_cloture).")
     total_actif = fields.Monetary(
         string='Total Actif',
         compute='_compute_actif',
@@ -70,7 +70,11 @@ class BilanGlobalReport(models.TransientModel):
     dettes_fournisseurs = fields.Monetary(
         string='Dettes fournisseurs',
         compute='_compute_passif',
-        help="Total des soldes fournisseurs (supplier.account.balance).")
+        help="Total des soldes négatifs fournisseurs : montant que le magasin doit aux fournisseurs.")
+    dettes_clients = fields.Monetary(
+        string='Dettes clients (créditeurs)',
+        compute='_compute_passif',
+        help="Total des soldes négatifs des tickets : montant que le magasin doit aux clients.")
     personnel = fields.Monetary(
         string='Personnel',
         compute='_compute_passif',
@@ -82,13 +86,13 @@ class BilanGlobalReport(models.TransientModel):
     total_passif = fields.Monetary(
         string='Total Passif',
         compute='_compute_passif',
-        help="Somme de tous les passifs : capital + avances + fournisseurs + personnel + investissements.")
+        help="Somme de tous les passifs : capital + avances + dettes fournisseurs + dettes clients + personnel + investissements.")
 
     # ── Contrôle ───────────────────────────────────────────────────────────────
     ecart_actif_passif = fields.Monetary(
         string='Écart Actif - Passif',
         compute='_compute_controle',
-        help="Différence entre total actif et total passif. Non significatif tant que la Phase 2 (écritures auto) n'est pas implémentée — le personnel et les investissements resteront incomplets.")
+        help="Différence entre total actif et total passif.")
     last_update = fields.Datetime(
         string='Dernier calcul',
         compute='_compute_controle',
@@ -187,16 +191,19 @@ class BilanGlobalReport(models.TransientModel):
             rec.tresorerie = sum(open_regs.mapped('expected_balance')) or 0.0
 
             dt = rec.date_cloture
-            creances = self.env['jewelry.ticket'].read_group(
-                [
-                    ('payment_status', 'in', ('impaye', 'partiel')),
-                    ('balance', '>', 0),
-                    ('date', '<=', dt.isoformat()),
-                ],
-                ['balance:sum'],
-                []
-            )
-            rec.creances_clients = creances[0]['balance'] or 0.0 if creances else 0.0
+            tickets = self.env['jewelry.ticket'].search([
+                ('payment_status', 'in', ('impaye', 'partiel')),
+                ('date', '<=', dt.isoformat()),
+            ])
+            total_creances = 0.0
+            for t in tickets:
+                remaining = t.balance - (
+                    sum(l.amount for l in t.cash_line_ids if l.type == 'entree')
+                    - sum(l.amount for l in t.cash_line_ids if l.type == 'sortie')
+                )
+                if remaining > 0:
+                    total_creances += remaining
+            rec.creances_clients = total_creances
 
             rec.total_actif = (
                 rec.stock_or_valorise
@@ -233,9 +240,27 @@ class BilanGlobalReport(models.TransientModel):
                 rec.repartition_globale = "Aucun associé"
 
             fourn_accounts = self.env['supplier.account'].search([])
-            rec.dettes_fournisseurs = sum(a.balance for a in fourn_accounts) if fourn_accounts else 0.0
+            total_dettes_fourn = 0.0
+            for a in fourn_accounts:
+                if a.balance < 0:
+                    total_dettes_fourn += abs(a.balance)
+            rec.dettes_fournisseurs = total_dettes_fourn
 
             dt = rec.date_cloture
+            tickets = self.env['jewelry.ticket'].search([
+                ('payment_status', 'in', ('impaye', 'partiel')),
+                ('date', '<=', dt.isoformat()),
+            ])
+            total_dettes_clients = 0.0
+            for t in tickets:
+                remaining = t.balance - (
+                    sum(l.amount for l in t.cash_line_ids if l.type == 'entree')
+                    - sum(l.amount for l in t.cash_line_ids if l.type == 'sortie')
+                )
+                if remaining < 0:
+                    total_dettes_clients += abs(remaining)
+            rec.dettes_clients = total_dettes_clients
+
             for fname, optype in [('personnel', 'personnel'), ('investissements', 'invest')]:
                 lines_data = self.env['account.move.line'].read_group(
                     [
@@ -251,6 +276,7 @@ class BilanGlobalReport(models.TransientModel):
                 rec.capital_associes
                 + rec.avances_associes
                 + rec.dettes_fournisseurs
+                + rec.dettes_clients
                 + rec.personnel
                 + rec.investissements
             )
@@ -262,6 +288,41 @@ class BilanGlobalReport(models.TransientModel):
         for rec in self:
             rec.ecart_actif_passif = rec.total_actif - rec.total_passif
             rec.last_update = datetime.now()
+
+    # ── Sauvegarde dans l'historique ────────────────────────────────────────────
+
+    def action_save_bilan(self):
+        self.ensure_one()
+        history = self.env['bilan.global.history'].create({
+            'year': self.year,
+            'date_cloture': self.date_cloture,
+            'mode': self.mode,
+            'generated_on': datetime.now(),
+            'generated_by': self.env.user.id,
+            'currency_id': (self.currency_id.id or self.env.company.currency_id.id),
+            'stock_or_valorise': self.stock_or_valorise,
+            'stock_argent_valorise': self.stock_argent_valorise,
+            'stock_autres_valorise': self.stock_autres_valorise,
+            'tresorerie': self.tresorerie,
+            'creances_clients': self.creances_clients,
+            'total_actif': self.total_actif,
+            'capital_associes': self.capital_associes,
+            'avances_associes': self.avances_associes,
+            'dettes_fournisseurs': self.dettes_fournisseurs,
+            'dettes_clients': self.dettes_clients,
+            'personnel': self.personnel,
+            'investissements': self.investissements,
+            'total_passif': self.total_passif,
+            'repartition_globale': self.repartition_globale,
+            'ecart_actif_passif': self.ecart_actif_passif,
+        })
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'bilan.global.report',
+            'res_id': self.id,
+            'view_mode': 'form',
+            'target': 'inline',
+        }
 
     # ── Impression ──────────────────────────────────────────────────────────────
 
@@ -312,7 +373,22 @@ class BilanGlobalReport(models.TransientModel):
             'view_mode': 'tree,form',
             'domain': [
                 ('payment_status', 'in', ('impaye', 'partiel')),
-                ('balance', '>', 0),
+                ('date', '<=', dt.isoformat()),
+            ],
+            'context': {'search_default_group_by': 'payment_status'},
+        }
+
+    def action_view_dettes_clients(self):
+        self.ensure_one()
+        dt = self.date_cloture
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Dettes clients (créditeurs)',
+            'res_model': 'jewelry.ticket',
+            'view_mode': 'tree,form',
+            'domain': [
+                ('payment_status', 'in', ('impaye', 'partiel')),
+                ('balance', '<', 0),
                 ('date', '<=', dt.isoformat()),
             ],
         }

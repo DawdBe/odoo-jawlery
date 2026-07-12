@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+
+    <!-- ── Report Action — Transient ─────────────────────────────────────── -->
     <record id="action_report_bilan_global" model="ir.actions.report">
         <field name="name">Bilan Global</field>
         <field name="model">bilan.global.report</field>
@@ -9,6 +11,17 @@
         <field name="print_report_name">'Bilan Patrimonial - %s' % (time.strftime('%Y-%m-%d'))</field>
     </record>
 
+    <!-- ── Report Action — History ──────────────────────────────────────── -->
+    <record id="action_report_bilan_global_history" model="ir.actions.report">
+        <field name="name">Bilan Global (historique)</field>
+        <field name="model">bilan.global.history</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">jewelry_accounting.bilan_global</field>
+        <field name="report_file">jewelry_accounting.bilan_global</field>
+        <field name="print_report_name">'Bilan Patrimonial - %s' % (time.strftime('%Y-%m-%d'))</field>
+    </record>
+
+    <!-- ── QWeb Template (shared by both reports) ───────────────────────── -->
     <template id="bilan_global">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="doc">
@@ -18,9 +31,13 @@
                         Période: <span t-esc="doc.mode"/>
                         — Arrêté au <span t-esc="doc.date_cloture"/>
                         — Généré le <span t-esc="time.strftime('%Y-%m-%d %H:%M')"/>
+                        <t t-if="doc._name == 'bilan.global.history'">
+                            — Sauvegardé le <span t-esc="doc.generated_on"/>
+                            par <span t-esc="doc.generated_by.name"/>
+                        </t>
                     </p>
 
-                    <t t-if="doc.is_historical">
+                    <t t-if="doc._name == 'bilan.global.report' and doc.is_historical">
                         <div class="alert alert-warning">
                             <i class="fa fa-exclamation-triangle"/>
                             Stock et trésorerie = valeur actuelle, pas celle de <t t-esc="doc.year"/>.
@@ -112,6 +129,13 @@
                                 </td>
                             </tr>
                             <tr>
+                                <td>Dettes clients (créditeurs)</td>
+                                <td class="text-end">
+                                    <span t-esc="doc.dettes_clients"
+                                          t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                </td>
+                            </tr>
+                            <tr>
                                 <td>Personnel</td>
                                 <td class="text-end">
                                     <span t-esc="doc.personnel"
@@ -147,16 +171,15 @@
                             </tr>
                         </tbody>
                     </table>
-                    <p class="text-muted small">
-                        <i>Écart non significatif — Personnel et Investissements incomplets
-                        (Phase 2 à venir).</i>
-                    </p>
 
                     <h3>Répartition par associé</h3>
                     <pre t-esc="doc.repartition_globale" style="font-family: monospace;"/>
 
                     <p class="text-muted">
                         Dernier calcul: <span t-esc="doc.last_update"/>
+                        <t t-if="doc._name == 'bilan.global.history'">
+                            · Généré par <span t-esc="doc.generated_by.name"/>
+                        </t>
                     </p>
                 </div>
             </t>
