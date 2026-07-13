@@ -100,6 +100,7 @@ class JewelryTicketLine(models.Model):
         lines = super().create(vals_list)
         for ticket in lines.ticket_id:
             ticket._sync_to_melting()
+            ticket._sync_supplier_gold()
         return lines
 
     def write(self, vals):
@@ -110,22 +111,35 @@ class JewelryTicketLine(models.Model):
         if not any(f in vals for f in sync_fields):
             return res
         tickets = set()
+        gold_tickets = set()
         for line in self:
             was_achat = prev_types[line.id] == 'achat_casse'
             now_achat = line.line_type == 'achat_casse'
+            was_gold = prev_types[line.id] in ('achat_casse', 'achat', 'vente')
+            now_gold = line.line_type in ('achat_casse', 'achat', 'vente')
             if was_achat or now_achat:
                 tickets.add(line.ticket_id.id)
+            if was_gold or now_gold:
+                gold_tickets.add(line.ticket_id.id)
             tickets.add(prev_tickets[line.id].id)
         for tid in tickets:
             self.env['jewelry.ticket'].browse(tid)._sync_to_melting()
+        for tid in gold_tickets:
+            self.env['jewelry.ticket'].browse(tid)._sync_supplier_gold()
         return res
 
     def unlink(self):
         tickets = set()
+        gold_tickets = set()
         for line in self:
             if line.line_type == 'achat_casse' and not line.melting_id:
                 tickets.add(line.ticket_id.id)
+            if line.line_type in ('achat_casse', 'achat', 'vente') and line.metal_type_id:
+                gold_tickets.add(line.ticket_id.id)
+            tickets.add(line.ticket_id.id)
         res = super().unlink()
         for tid in tickets:
             self.env['jewelry.ticket'].browse(tid)._sync_to_melting()
+        for tid in gold_tickets:
+            self.env['jewelry.ticket'].browse(tid)._sync_supplier_gold()
         return res

@@ -33,6 +33,7 @@ class GoldMovement(models.Model):
     reversed = fields.Boolean(default=False)
     reversal_id = fields.Many2one('gold.movement', string='Contre-passation', ondelete='set null')
     currency_id = fields.Many2one('res.currency', default=lambda self: self.env.company.currency_id)
+    ticket_id = fields.Many2one('jewelry.ticket', string='Linked Ticket', ondelete='set null', index=True)
 
     def action_reverse(self):
         self.ensure_one()

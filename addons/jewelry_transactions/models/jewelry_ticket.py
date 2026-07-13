@@ -74,6 +74,11 @@ class JewelryTicket(models.Model):
         string='Gold Effect (g)',
         compute='_compute_supplier_balances',
         help='Net gold weight impact of this ticket')
+    partner_cash_balance_after = fields.Monetary(
+        string='Partner Cash Balance After',
+        compute='_compute_supplier_balances',
+        currency_field='currency_id',
+        help="Partner's projected cash balance after this ticket")
     partner_weight_balance_after = fields.Float(
         string='Partner Gold Balance After (g)',
         compute='_compute_supplier_balances',
@@ -215,7 +220,6 @@ class JewelryTicket(models.Model):
 
     @api.depends(
         'partner_id',
-        'client_cash_balance',
         'contrib_to_cash_balance',
         'ticket_line_ids.line_type',
         'ticket_line_ids.weight',
@@ -225,15 +229,28 @@ class JewelryTicket(models.Model):
         for ticket in self:
             account = self.env['supplier.account'].search(
                 [('partner_id', '=', ticket.partner_id.id)], limit=1)
+            ticket_contribution = ticket.contrib_to_cash_balance or 0.0
             if account:
                 ticket.has_supplier_account = True
-                ticket.partner_cash_balance_before = \
-                    (ticket.client_cash_balance or 0.0) \
-                    - (ticket.contrib_to_cash_balance or 0.0)
-                ticket.partner_weight_balance_before = account.weight_balance or 0.0
+                account_balance = account.balance or 0.0
+                is_saved = bool(ticket.exists())
+                if is_saved:
+                    ticket.partner_cash_balance_before = \
+                        account_balance - ticket_contribution
+                else:
+                    ticket.partner_cash_balance_before = account_balance
+                ticket.partner_cash_balance_after = \
+                    ticket.partner_cash_balance_before + ticket_contribution
+                existing_gold = 0.0
+                for gm in account.gold_movement_ids:
+                    if gm.ticket_id == ticket.id and not gm.reversed:
+                        existing_gold += gm.weight if gm.type == 'entree' else -gm.weight
+                ticket.partner_weight_balance_before = \
+                    (account.weight_balance or 0.0) - existing_gold
             else:
                 ticket.has_supplier_account = False
                 ticket.partner_cash_balance_before = 0.0
+                ticket.partner_cash_balance_after = 0.0
                 ticket.partner_weight_balance_before = 0.0
             gold_in = sum(
                 line.weight or 0.0
@@ -258,12 +275,14 @@ class JewelryTicket(models.Model):
             vals['barcode'] = self.env['ir.sequence'].next_by_code('jewelry.ticket.barcode') or vals['name']
         ticket = super().create(vals)
         ticket._sync_to_melting()
+        ticket._sync_supplier_gold()
         return ticket
 
     def write(self, vals):
         res = super().write(vals)
         for ticket in self:
             ticket._sync_to_melting()
+            ticket._sync_supplier_gold()
         return res
 
     def _sync_to_melting(self):
@@ -274,6 +293,46 @@ class JewelryTicket(models.Model):
         if not draft:
             return
         draft._add_ticket(self)
+
+    def _sync_supplier_gold(self):
+        self.ensure_one()
+        account = self.env['supplier.account'].search(
+            [('partner_id', '=', self.partner_id.id)], limit=1)
+        if not account:
+            return
+        GoldMovement = self.env['gold.movement']
+        gold_in = sum(
+            line.weight or 0.0 for line in self.ticket_line_ids
+            if line.line_type in ('achat_casse', 'achat')
+            and line.metal_type_id)
+        gold_out = sum(
+            line.weight or 0.0 for line in self.ticket_line_ids
+            if line.line_type == 'vente'
+            and line.metal_type_id)
+        existing = GoldMovement.search([('ticket_id', '=', self.id)])
+        for move in existing:
+            if not move.reversed:
+                move.action_reverse()
+        if gold_in:
+            GoldMovement.create({
+                'supplier_account_id': account.id,
+                'purpose': 'deposit',
+                'type': 'entree',
+                'weight': gold_in,
+                'date': fields.Datetime.now(),
+                'description': _('Ticket %s') % self.name,
+                'ticket_id': self.id,
+            })
+        if gold_out:
+            GoldMovement.create({
+                'supplier_account_id': account.id,
+                'purpose': 'payment',
+                'type': 'sortie',
+                'weight': gold_out,
+                'date': fields.Datetime.now(),
+                'description': _('Ticket %s') % self.name,
+                'ticket_id': self.id,
+            })
 
     def action_register_payment(self):
         self.ensure_one()

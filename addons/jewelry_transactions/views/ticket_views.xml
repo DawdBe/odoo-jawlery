@@ -63,22 +63,31 @@
                             <field name="remise_amount" widget="monetary"/>
                         </tree>
                     </field>
-                    <group col="4">
-                        <group string="Totals">
-                            <field name="total_cash_in" widget="monetary"/>
-                            <field name="total_cash_out" widget="monetary"/>
-                            <field name="balance" widget="monetary"/>
-                            <field name="total_remise" widget="monetary"/>
+                    <group string="Totaux">
+                        <field name="has_supplier_account" invisible="1"/>
+                        <group>
+                            <field name="balance" string="Total Ticket" widget="monetary"/>
+                            <field name="total_remise" string="Remise" widget="monetary"/>
+                            <field name="paid_amount" string="Payé" widget="monetary"/>
+                            <field name="remaining_amount" string="Restant dû" widget="monetary"/>
                         </group>
-                        <group string="Solde">
+                        <group string="Solde Fournisseur" invisible="not has_supplier_account">
+                            <separator string="Compte Espèces" colspan="2"/>
+                            <field name="partner_cash_balance_before" string="Solde Espèces Actuel" widget="monetary"/>
+                            <field name="contrib_to_cash_balance" string="Variation Espèces" widget="monetary"/>
+                            <field name="partner_cash_balance_after" string="Nouveau Solde Espèces" widget="monetary" class="o_stat_info"/>
+                            <separator string="Compte Or" colspan="2"/>
+                            <field name="partner_weight_balance_before" string="Solde Or Actuel (g)"/>
+                            <field name="ticket_gold_effect" string="Variation Or (g)"/>
+                            <field name="partner_weight_balance_after" string="Nouveau Solde Or (g)" class="o_stat_info"/>
+                        </group>
+                        <group string="Solde" invisible="has_supplier_account">
                             <field name="client_cash_balance" widget="monetary"/>
                             <button name="action_open_cash_balance_lines" type="object"
                                     string="Détails" class="btn-link oe_inline ml-2"/>
                         </group>
                     </group>
                     <group string="Payment">
-                        <field name="paid_amount" widget="monetary"/>
-                        <field name="remaining_amount" widget="monetary"/>
                         <field name="payment_amount" widget="monetary"
                                placeholder="Enter amount to pay"
                                invisible="payment_status == 'paye'"/>
