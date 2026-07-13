@@ -43,6 +43,18 @@
                                 </tree>
                             </field>
                         </page>
+                        <page name="silver_rates" string="Silver Rates">
+                            <field name="silver_rate_ids">
+                                <tree>
+                                    <field name="effective_date"/>
+                                    <field name="base_silver_dzd" widget="monetary"/>
+                                    <field name="bursa_rate" widget="monetary"/>
+                                    <field name="market_spread" widget="monetary"/>
+                                    <field name="market_rate" widget="monetary"/>
+                                    <field name="is_active"/>
+                                </tree>
+                            </field>
+                        </page>
                     </notebook>
                 </sheet>
             </form>

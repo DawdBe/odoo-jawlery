@@ -8,6 +8,10 @@ ALL_TRANSLATIONS = {
         'jewelry_core.model_gold_price_api_config': "Configuration API Or",
         'jewelry_core.model_gold_price_api_log': "Journal API Or",
         'jewelry_core.model_gold_price_overview': "Aperçu des Prix Or",
+        'jewelry_core.model_silver_rate_history': "Cours de l'Argent",
+        'jewelry_core.model_silver_price_api_config': "Configuration API Argent",
+        'jewelry_core.model_silver_price_api_log': "Journal API Argent",
+
         'jewelry_core.model_metal_type': 'Type de Métal / Casse',
         'jewelry_core.model_stock_inventory_weight': 'Inventaire Physique des Poids',
         'jewelry_core.model_stock_inventory_weight_line': "Ligne d'Inventaire Poids",
@@ -36,6 +40,17 @@ ALL_TRANSLATIONS = {
         'jewelry_core.field_gold_price_overview__market_24k_dzd': 'Marché 24k (DZD/g)',
         'jewelry_core.field_gold_price_overview__market_21k_dzd': 'Marché 21k (DZD/g)',
         'jewelry_core.field_gold_price_overview__market_18k_dzd': 'Marché 18k (DZD/g)',
+
+        'jewelry_core.field_silver_rate_history__base_silver_usd': 'Base Argent (USD/oz)',
+        'jewelry_core.field_silver_rate_history__base_silver_dzd': 'Base Argent (DZD/g)',
+        'jewelry_core.field_silver_rate_history__bursa_rate': 'Cours Bourse (Référence)',
+        'jewelry_core.field_silver_rate_history__currency_id': 'Devise',
+        'jewelry_core.field_silver_rate_history__dzd_parallel_rate': 'Taux Parallèle DZD',
+        'jewelry_core.field_silver_rate_history__effective_date': "Date d'Effet",
+        'jewelry_core.field_silver_rate_history__market_rate': 'Cours Marché (Utilisé)',
+        'jewelry_core.field_silver_rate_history__market_spread': 'Écart Bourse→Marché',
+        'jewelry_core.field_silver_rate_history__metal_type_id': 'Type de Métal',
+        'jewelry_core.field_silver_rate_history__notes': 'Remarques',
         'jewelry_core.field_gold_price_overview__last_update': 'Dernière MAJ',
         'jewelry_core.field_gold_rate_history__base_24k_usd': 'Base 24k (USD/oz)',
         'jewelry_core.field_gold_rate_history__base_24k_dzd': 'Base 24k (DZD/g)',
@@ -133,6 +148,9 @@ ALL_TRANSLATIONS = {
     },
     'ir.actions.act_window': {
         'jewelry_core.action_gold_rate': "Cours de l'Or",
+        'jewelry_core.action_silver_rate': "Cours de l'Argent",
+
+        'jewelry_core.action_silver_price_api_config': "Configuration API Argent",
         'jewelry_core.action_metal_type': 'Types de Métal',
         'jewelry_core.action_stock_inventory_weight': 'Inventaires des Poids',
         'jewelry_transactions.action_jewelry_ticket': 'Tickets de Bijouterie',
@@ -147,6 +165,8 @@ ALL_TRANSLATIONS = {
         'jewelry_core.menu_jewelry_core': 'Base',
         'jewelry_core.menu_metal_type': 'Types de Métal',
         'jewelry_core.menu_gold_rate': "Cours de l'Or",
+        'jewelry_core.menu_silver_rate': "Cours de l'Argent",
+        'jewelry_core.menu_silver_price_api_config': "Configuration API Argent",
         'jewelry_core.menu_weight_inventory': 'Inventaires des Poids',
         'jewelry_transactions.menu_jewelry_transactions': 'Transactions',
         'jewelry_transactions.menu_jewelry_ticket': 'Tickets',
@@ -171,6 +191,7 @@ ALL_TRANSLATIONS = {
     'ir.ui.view_arch_db': {
         'jewelry_core.view_metal_type_form': [
             ('Gold Rates', "Cours de l'Or"),
+            ('Silver Rates', "Cours de l'Argent"),
             ('Active', 'Actif'),
         ],
         'jewelry_core.view_metal_type_search': [

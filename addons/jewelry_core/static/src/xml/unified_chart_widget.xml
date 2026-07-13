@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="jewelry_core.UnifiedChartWidget">
+        <div class="o_unified_chart_container" style="margin-top: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <strong style="font-size: 15px;">Market Price History</strong>
+                <div style="display: flex; gap: 6px;">
+                    <t t-foreach="['today','7d','30d','90d','1y','all']" t-as="r" t-key="r">
+                        <button
+                            t-attf-class="btn btn-sm #{state.range == r ? 'btn-secondary' : 'btn-light'}"
+                            t-on-click="() => this.onFilter(r)"
+                            t-esc="r === 'all' ? 'All' : r"
+                            style="min-width: 40px;"
+                        />
+                    </t>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 16px;">
+                <!-- ═══ Gold Column ═══ -->
+                <div style="flex: 1; min-width: 0;">
+                    <div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+                        <div style="font-size: 13px; font-weight: 600; color: #1a1a2e; margin-bottom: 6px;">
+                            Gold — Bourse History (24k)
+                        </div>
+                        <div style="height: 220px; width: 100%; position: relative;">
+                            <canvas t-ref="canvasGoldBourse"/>
+                        </div>
+                    </div>
+                    <div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px;">
+                        <div style="font-size: 13px; font-weight: 600; color: #c9a84c; margin-bottom: 6px;">
+                            Gold — Market Price History (24k)
+                        </div>
+                        <div style="height: 220px; width: 100%; position: relative;">
+                            <canvas t-ref="canvasGoldMarket"/>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══ Silver Column ═══ -->
+                <div style="flex: 1; min-width: 0;">
+                    <div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+                        <div style="font-size: 13px; font-weight: 600; color: #4a4a6e; margin-bottom: 6px;">
+                            Silver — Bourse History (1000)
+                        </div>
+                        <div style="height: 220px; width: 100%; position: relative;">
+                            <canvas t-ref="canvasSilverBourse"/>
+                        </div>
+                    </div>
+                    <div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px;">
+                        <div style="font-size: 13px; font-weight: 600; color: #8a8a9e; margin-bottom: 6px;">
+                            Silver — Market Price History (1000)
+                        </div>
+                        <div style="height: 220px; width: 100%; position: relative;">
+                            <canvas t-ref="canvasSilverMarket"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div t-if="state.loading"
+                 style="text-align: center; margin-top: 8px; font-size: 13px; color: #888;">
+                Loading…
+            </div>
+        </div>
+    </t>
+
+</templates>

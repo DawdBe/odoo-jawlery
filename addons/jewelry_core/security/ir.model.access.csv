@@ -10,3 +10,9 @@ access_gold_price_api_config_user,gold.price.api.config.user,model_gold_price_ap
 access_gold_price_api_config_admin,gold.price.api.config.admin,model_gold_price_api_config,base.group_system,1,1,1,1
 access_gold_price_api_log_user,gold.price.api.log.user,model_gold_price_api_log,base.group_system,1,0,0,0
 access_gold_price_overview_user,gold.price.overview.user,model_gold_price_overview,base.group_user,1,1,1,1
+access_silver_rate_user,silver.rate.history.user,model_silver_rate_history,,1,0,0,0
+access_silver_rate_admin,silver.rate.history.admin,model_silver_rate_history,base.group_system,1,1,1,1
+access_silver_price_api_config_user,silver.price.api.config.user,model_silver_price_api_config,base.group_system,1,0,0,0
+access_silver_price_api_config_admin,silver.price.api.config.admin,model_silver_price_api_config,base.group_system,1,1,1,1
+access_silver_price_api_log_user,silver.price.api.log.user,model_silver_price_api_log,base.group_system,1,0,0,0
+

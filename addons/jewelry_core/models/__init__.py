@@ -1,5 +1,7 @@
 from . import metal_type
+from . import metal_rate_helper
 from . import gold_rate_history
+from . import silver_rate_history
 from . import product_template
 from . import product_category
 from . import stock_quant
@@ -7,5 +9,6 @@ from . import stock_move
 from . import stock_inventory_weight
 from . import res_partner
 from . import gold_price_api
+from . import silver_price_api
 from . import gold_price_overview
 from . import ir_actions_report

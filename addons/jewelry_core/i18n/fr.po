@@ -14,6 +14,26 @@ msgid "Gold Rate History"
 msgstr "Cours de l'Or"
 
 #. module: jewelry_core
+#: model:ir.model,name:jewelry_core.model_silver_rate_history
+msgid "Silver Rate History"
+msgstr "Cours de l'Argent"
+
+#. module: jewelry_core
+#: model:ir.model,name:jewelry_core.model_silver_price_api_config
+msgid "Silver Price API Configuration"
+msgstr "Configuration API Argent"
+
+#. module: jewelry_core
+#: model:ir.model,name:jewelry_core.model_silver_price_api_log
+msgid "Silver API Fetch Log"
+msgstr "Journal API Argent"
+
+#. module: jewelry_core
+#: model:ir.model,name:jewelry_core.model_silver_price_overview
+msgid "Silver Price Overview"
+msgstr "Aperçu des Prix Argent"
+
+#. module: jewelry_core
 #: model:ir.model,name:jewelry_core.model_metal_type
 msgid "Metal Type / Casse"
 msgstr "Type de Métal / Casse"
@@ -52,6 +72,76 @@ msgstr "Mouvement de Stock"
 #: model:ir.model,name:jewelry_core.model_stock_quant
 msgid "Quants"
 msgstr "Quantité en Stock"
+
+#. module: jewelry_core
+#: model:ir.model.fields,field_description:jewelry_core.field_silver_price_overview__base_silver_usd_oz
+msgid "Silver USD/oz"
+msgstr "Argent (USD/oz)"
+
+#. module: jewelry_core
+#: model:ir.model.fields,field_description:jewelry_core.field_silver_price_overview__dzd_parallel_rate
+msgid "DZD Parallel"
+msgstr "Taux Parallèle DZD"
+
+#. module: jewelry_core
+#: model:ir.model.fields,field_description:jewelry_core.field_silver_price_overview__market_1000_dzd
+msgid "Market 1000/g"
+msgstr "Marché 1000 (DZD/g)"
+
+#. module: jewelry_core
+#: model:ir.model.fields,field_description:jewelry_core.field_silver_price_overview__last_update
+msgid "Last Update"
+msgstr "Dernière MAJ"
+
+#. module: jewelry_core
+#: model:ir.model.fields,field_description:jewelry_core.field_silver_rate_history__base_silver_usd
+msgid "Silver Base (USD/oz)"
+msgstr "Base Argent (USD/oz)"
+
+#. module: jewelry_core
+#: model:ir.model.fields,field_description:jewelry_core.field_silver_rate_history__base_silver_dzd
+msgid "Silver Base (DZD/g)"
+msgstr "Base Argent (DZD/g)"
+
+#. module: jewelry_core
+#: model:ir.model.fields,field_description:jewelry_core.field_silver_rate_history__bursa_rate
+msgid "Bursa Rate (Reference)"
+msgstr "Cours Bourse (Référence)"
+
+#. module: jewelry_core
+#: model:ir.model.fields,field_description:jewelry_core.field_silver_rate_history__currency_id
+msgid "Currency"
+msgstr "Devise"
+
+#. module: jewelry_core
+#: model:ir.model.fields,field_description:jewelry_core.field_silver_rate_history__dzd_parallel_rate
+msgid "DZD Parallel Rate"
+msgstr "Taux Parallèle DZD"
+
+#. module: jewelry_core
+#: model:ir.model.fields,field_description:jewelry_core.field_silver_rate_history__effective_date
+msgid "Effective Date"
+msgstr "Date d'Effet"
+
+#. module: jewelry_core
+#: model:ir.model.fields,field_description:jewelry_core.field_silver_rate_history__market_rate
+msgid "Market Rate (Used)"
+msgstr "Cours Marché (Utilisé)"
+
+#. module: jewelry_core
+#: model:ir.model.fields,field_description:jewelry_core.field_silver_rate_history__market_spread
+msgid "Spread (Bursa→Market)"
+msgstr "Écart Bourse→Marché"
+
+#. module: jewelry_core
+#: model:ir.model.fields,field_description:jewelry_core.field_silver_rate_history__metal_type_id
+msgid "Metal Type"
+msgstr "Type de Métal"
+
+#. module: jewelry_core
+#: model:ir.model.fields,field_description:jewelry_core.field_silver_rate_history__notes
+msgid "Notes"
+msgstr "Remarques"
 
 #. module: jewelry_core
 #: model:ir.model.fields,field_description:jewelry_core.field_gold_rate_history__bursa_rate
@@ -154,6 +244,11 @@ msgid "Gold Rates"
 msgstr "Cours de l'Or"
 
 #. module: jewelry_core
+#: model_terms:ir.ui.view,arch_db:jewelry_core.view_metal_type_form
+msgid "Silver Rates"
+msgstr "Cours de l'Argent"
+
+#. module: jewelry_core
 #: model_terms:ir.ui.view,arch_db:jewelry_core.view_metal_type_search
 msgid "Active"
 msgstr "Actif"
@@ -184,6 +279,21 @@ msgid "Gold Rates"
 msgstr "Cours de l'Or"
 
 #. module: jewelry_core
+#: model:ir.actions.act_window,name:jewelry_core.action_silver_rate
+msgid "Silver Rates"
+msgstr "Cours de l'Argent"
+
+#. module: jewelry_core
+#: model:ir.actions.act_window,name:jewelry_core.action_silver_price_overview
+msgid "Silver Price Overview"
+msgstr "Aperçu des Prix Argent"
+
+#. module: jewelry_core
+#: model:ir.actions.act_window,name:jewelry_core.action_silver_price_api_config
+msgid "Silver API Config"
+msgstr "Configuration API Argent"
+
+#. module: jewelry_core
 #: model:ir.actions.act_window,name:jewelry_core.action_metal_type
 msgid "Metal Types"
 msgstr "Types de Métal"
@@ -197,6 +307,16 @@ msgstr "Inventaires des Poids"
 #: model:ir.ui.menu,name:jewelry_core.menu_gold_rate
 msgid "Gold Rates"
 msgstr "Cours de l'Or"
+
+#. module: jewelry_core
+#: model:ir.ui.menu,name:jewelry_core.menu_silver_rate
+msgid "Silver Price"
+msgstr "Cours de l'Argent"
+
+#. module: jewelry_core
+#: model:ir.ui.menu,name:jewelry_core.menu_silver_price_api_config
+msgid "Silver API Config"
+msgstr "Configuration API Argent"
 
 #. module: jewelry_core
 #: model:ir.ui.menu,name:jewelry_core.menu_jewelry_core

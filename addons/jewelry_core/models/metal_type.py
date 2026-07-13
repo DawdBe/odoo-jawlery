@@ -21,6 +21,7 @@ class MetalType(models.Model):
     sequence = fields.Integer(default=10)
     active = fields.Boolean(default=True)
     gold_rate_ids = fields.One2many('gold.rate.history', 'metal_type_id', string='Gold Rates')
+    silver_rate_ids = fields.One2many('silver.rate.history', 'metal_type_id', string='Silver Rates')
 
     @api.constrains('karat_value')
     def _check_karat(self):

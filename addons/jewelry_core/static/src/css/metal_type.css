@@ -39,3 +39,30 @@
 #price_box .o_field_monetary .o_currency_symbol {
     display: none !important;
 }
+
+/* Silver Price Overview — same styling as gold price box */
+#silver_price_box .o_field_monetary {
+    display: inline-flex !important;
+    flex: 0 1 auto !important;
+    min-width: 0 !important;
+    flex-wrap: nowrap !important;
+    white-space: nowrap !important;
+}
+#silver_price_box .o_field_monetary .o_input_group {
+    display: inline-flex !important;
+    flex: 1;
+    min-width: 0;
+    align-items: center;
+}
+#silver_price_box .o_field_monetary .o_input,
+#silver_price_box .o_field_monetary input {
+    font-size: 32px !important;
+    font-weight: bold !important;
+    height: 48px !important;
+    width: auto !important;
+    padding: 4px 8px !important;
+    box-sizing: border-box !important;
+}
+#silver_price_box .o_field_monetary .o_currency_symbol {
+    display: none !important;
+}

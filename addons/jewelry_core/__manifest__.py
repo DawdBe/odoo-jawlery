@@ -11,7 +11,9 @@
         'data/cron_data.xml',
         'views/metal_type_views.xml',
         'views/gold_rate_views.xml',
+        'views/silver_rate_views.xml',
         'views/gold_price_api_views.xml',
+        'views/silver_price_api_views.xml',
         'views/gold_price_overview_views.xml',
         'reports/product_barcode_label.xml',
         'views/product_views.xml',
@@ -22,8 +24,8 @@
     'assets': {
         'web.assets_backend': [
             'jewelry_core/static/src/js/clipboard_fix.js',
-            'jewelry_core/static/src/js/gold_chart_widget.js',
-            'jewelry_core/static/src/xml/gold_chart_widget.xml',
+            'jewelry_core/static/src/js/unified_chart_widget.js',
+            'jewelry_core/static/src/xml/unified_chart_widget.xml',
             'jewelry_core/static/src/css/metal_type.css',
             'jewelry_core/static/src/css/hide_chat.css',
 

@@ -58,6 +58,18 @@
         <field name="sequence">70</field>
     </record>
 
+    <record id="metal_argent_1000" model="metal.type">
+        <field name="name">Argent 1000</field>
+        <field name="purity_percentage">100.0</field>
+        <field name="sequence">40</field>
+    </record>
+
+    <record id="metal_argent_500" model="metal.type">
+        <field name="name">Argent 500</field>
+        <field name="purity_percentage">50.0</field>
+        <field name="sequence">45</field>
+    </record>
+
     <record id="metal_plaque_or" model="metal.type">
         <field name="name">Plaqué Or</field>
         <field name="sequence">80</field>

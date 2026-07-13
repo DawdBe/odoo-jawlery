@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_silver_rate_tree" model="ir.ui.view">
+        <field name="name">silver.rate.history.tree</field>
+        <field name="model">silver.rate.history</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="metal_type_id"/>
+                <field name="effective_date"/>
+                <field name="base_silver_dzd" widget="monetary"/>
+                <field name="bursa_rate" widget="monetary"/>
+                <field name="market_rate" widget="monetary"/>
+                <field name="market_spread" widget="monetary"/>
+                <field name="is_active"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_silver_rate_form" model="ir.ui.view">
+        <field name="name">silver.rate.history.form</field>
+        <field name="model">silver.rate.history</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group string="Fine Silver Reference (1000)">
+                        <group>
+                            <field name="base_silver_usd" widget="monetary"/>
+                            <field name="dzd_parallel_rate"/>
+                        </group>
+                        <group>
+                            <field name="base_silver_dzd" widget="monetary"/>
+                        </group>
+                    </group>
+                    <group string="Rate for this Metal">
+                        <group>
+                            <field name="metal_type_id"/>
+                            <field name="effective_date"/>
+                        </group>
+                        <group>
+                            <field name="bursa_rate" widget="monetary"/>
+                            <field name="market_rate" widget="monetary"/>
+                            <field name="market_spread" widget="monetary"/>
+                            <field name="is_active"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="notes" colspan="2"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_silver_rate_history_graph" model="ir.ui.view">
+        <field name="name">silver.rate.history.graph</field>
+        <field name="model">silver.rate.history</field>
+        <field name="arch" type="xml">
+            <graph type="line">
+                <field name="effective_date" interval="day"/>
+                <field name="bursa_rate" type="measure"/>
+                <field name="market_rate" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="action_silver_rate" model="ir.actions.act_window">
+        <field name="name">Silver Rates</field>
+        <field name="res_model">silver.rate.history</field>
+        <field name="view_mode">tree,form,graph</field>
+    </record>
+
+    <record id="view_silver_rate_history_search" model="ir.ui.view">
+        <field name="name">silver.rate.history.search</field>
+        <field name="model">silver.rate.history</field>
+        <field name="arch" type="xml">
+            <search>
+                <filter name="last_30_days" string="Last 30 Days"
+                        date="effective_date"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_silver_rate_chart" model="ir.actions.act_window">
+        <field name="name">30-Day Chart (Silver 1000)</field>
+        <field name="res_model">silver.rate.history</field>
+        <field name="view_mode">graph</field>
+        <field name="domain">[('metal_type_id.purity_percentage', '=', 100.0)]</field>
+        <field name="context">{'search_default_last_30_days': 1}</field>
+        <field name="target">new</field>
+    </record>
+</odoo>
