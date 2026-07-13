@@ -276,9 +276,53 @@ vente, achat, service, fasonage, versé, solde, remise. Pas de modèles séparé
 #### 5.2.4 Caisse
 
 - `daily.cash.register` — Registre de caisse journalier avec décompte billets intégré
-- `cash.register.line` — Ligne de caisse (transaction liée à un ticket)
+- `cash.register.line` — Ligne de caisse universelle (mouvement d'argent, pas seulement paiement ticket)
+  - `category_id` → `cash.movement.category` — Catégorie métier (loyer, salaire, vente, etc.)
+  - `origin` — `ticket` | `manual` | `system` (lecture seule, défini automatiquement)
+  - `ticket_id` optionnel — Facultatif; les mouvements manuels n'ont pas de ticket
+- `cash.movement.category` — Catégorie hiérarchique configurable (revenus/dépenses)
+  - Définit la direction par défaut (`entree`/`sortie`)
+  - Arborescence: `Expenses > Utilities > Electricity`
+  - Administration via menu Configuration
 - Caisse de voyage: via champ `is_travel_cash` sur `cash.register.line` + `account.journal` dédié
   (pas de modèle `travel.cash` séparé — trop de complexité pour un besoin niche)
+
+**Nouveau: Mouvements de caisse manuels**
+
+Les utilisateurs peuvent maintenant enregistrer des mouvements de caisse sans créer de ticket:
+
+- **Add Income** / **Add Expense** — boutons rapides sur le registre de caisse
+- Popup léger: montant, catégorie, partenaire, description, moyen de paiement
+- Catégorie obligatoire pour les écritures manuelles
+- Mouvement enregistré immédiatement, solde du registre mis à jour
+- Menu dédié **Cash Movements** avec historique, recherche et filtres
+
+**Architecture: Un seul livre de caisse universel**
+
+```
+Daily Cash Register
+        │
+        ▼
+cash.register.line  ← UNIQUE modèle central
+        ▲
+        │
+ ┌──────┴────────────┐
+ │                   │
+Ticket Payment    Manual Entry
+(origin=ticket)   (origin=manual)
+ │                   │
+ │                   │
+Vente             Loyer
+Achat             Salaire
+Service           Électricité
+Versé             Voyage
+Solde             Carburant
+                  Impôts
+                  Apport Capital
+                  Retrait Banque
+```
+
+Tous les flux d'argent passent par `cash.register.line`. Les tickets ne sont qu'une source parmi d'autres.
 
 #### 5.2.5 Fonte de Casse (`casse.melting`)
 

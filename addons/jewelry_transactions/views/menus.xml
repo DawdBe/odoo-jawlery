@@ -19,6 +19,10 @@
               parent="menu_jewelry_transactions" action="action_associate_account" sequence="35"/>
     <menuitem id="menu_associate_transactions" name="Associate Transactions"
               parent="menu_jewelry_transactions" action="action_associate_transaction" sequence="36"/>
+    <menuitem id="menu_cash_movement" name="Cash Movements"
+              parent="menu_jewelry_transactions" action="action_cash_register_line" sequence="55"/>
+    <menuitem id="menu_cash_movement_category" name="Cash Movement Categories"
+              parent="jewelry_core.menu_jewelry_config" action="action_cash_movement_category" sequence="30"/>
     <menuitem id="menu_product_promotion" name="Promotions"
               parent="menu_jewelry_transactions" action="action_product_promotion" sequence="60"/>
 </odoo>

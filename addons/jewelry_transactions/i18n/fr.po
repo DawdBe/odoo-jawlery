@@ -109,11 +109,6 @@ msgid "Transactions"
 msgstr "Opérations"
 
 #. module: jewelry_transactions
-#: model:ir.model.fields,field_description:jewelry_transactions.field_casse_melting__karat_result
-msgid "Result Karat"
-msgstr "Carat Résultat"
-
-#. module: jewelry_transactions
 #: model:ir.model.fields,field_description:jewelry_transactions.field_casse_melting__line_ids
 msgid "Lines"
 msgstr "Lignes"
@@ -212,11 +207,6 @@ msgstr "Solde"
 #: model:ir.model.fields,field_description:jewelry_transactions.field_jewelry_ticket__barcode
 msgid "Barcode"
 msgstr "Code-barres"
-
-#. module: jewelry_transactions
-#: model:ir.model.fields,field_description:jewelry_transactions.field_jewelry_ticket_line__casse_melting_line_ids
-msgid "Melting Lines"
-msgstr "Lignes Fonte"
 
 #. module: jewelry_transactions
 #: model:ir.model.fields,field_description:jewelry_transactions.field_jewelry_ticket_line__description

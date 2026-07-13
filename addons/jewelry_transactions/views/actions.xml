@@ -5,4 +5,35 @@
         <field name="res_model">jewelry.ticket.line</field>
         <field name="view_mode">tree,form</field>
     </record>
+
+    <record id="action_cash_register_quick_income" model="ir.actions.act_window">
+        <field name="name">Add Income</field>
+        <field name="res_model">cash.register.line</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="view_cash_register_line_quick_form"/>
+    </record>
+
+    <record id="action_cash_register_quick_expense" model="ir.actions.act_window">
+        <field name="name">Add Expense</field>
+        <field name="res_model">cash.register.line</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="view_cash_register_line_quick_form"/>
+    </record>
+
+    <record id="action_cash_register_line" model="ir.actions.act_window">
+        <field name="name">Cash Movements</field>
+        <field name="res_model">cash.register.line</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Record cash movements directly without creating a ticket.
+            </p>
+            <p>
+                Every cash movement — whether from ticket payments, manual expenses,
+                or income — is recorded here in the central cash ledger.
+            </p>
+        </field>
+    </record>
 </odoo>

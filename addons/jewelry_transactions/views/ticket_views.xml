@@ -32,10 +32,15 @@
                     <field name="product_status" widget="clickable_statusbar" options="{'clickable': True}"/>
                 </header>
                 <sheet>
+                    <field name="melting_ids" invisible="1"/>
                     <div class="oe_button_box" name="button_box">
                         <button name="%(action_jewelry_ticket_line)d" type="action"
                                 string="Lines" class="oe_stat_button"
                                 icon="fa-list" context="{'default_ticket_id': active_id}"/>
+                        <button name="action_open_melting" type="object"
+                                string="Melting" class="oe_stat_button"
+                                icon="fa-fire"
+                                invisible="not melting_ids"/>
                     </div>
                     <group>
                         <field name="name"/>

@@ -30,7 +30,7 @@ class JewelryTicket(models.Model):
         ('termine', 'Terminé'),
         ('en_fasonage', 'En Fasonage'),
         ('en_stock', 'En Stock'),
-    ], string='Product Status', default='donne_au_client', tracking=True)
+    ], string='Product Status', default='en_stock', tracking=True)
     # Product status tracks the physical goods:
     # Items can be in stock, sent for fasonage (workshop), finished, or given to customer.
     total_cash_in = fields.Monetary(string='Total Cash In', compute='_compute_totals', store=True)
@@ -56,6 +56,36 @@ class JewelryTicket(models.Model):
     notes = fields.Text()
 
     ticket_line_ids = fields.One2many('jewelry.ticket.line', 'ticket_id', string='Ticket Lines')
+
+    # Supplier running account fields (visible only when partner has a supplier.account)
+    has_supplier_account = fields.Boolean(
+        compute='_compute_supplier_balances',
+        help='Whether the partner has an associated supplier account')
+    partner_cash_balance_before = fields.Monetary(
+        string='Partner Cash Balance Before',
+        compute='_compute_supplier_balances',
+        currency_field='currency_id',
+        help="Partner's cash balance excluding this ticket")
+    partner_weight_balance_before = fields.Float(
+        string='Partner Gold Balance Before (g)',
+        compute='_compute_supplier_balances',
+        help="Partner's gold weight balance excluding this ticket")
+    ticket_gold_effect = fields.Float(
+        string='Gold Effect (g)',
+        compute='_compute_supplier_balances',
+        help='Net gold weight impact of this ticket')
+    partner_weight_balance_after = fields.Float(
+        string='Partner Gold Balance After (g)',
+        compute='_compute_supplier_balances',
+        help="Partner's projected gold weight balance after this ticket")
+    melting_id = fields.Many2one(
+        'casse.melting', string='Melting Batch',
+        readonly=True, copy=False, index=True,
+        help='Melting batch that consumed all Achat Casse lines from this ticket')
+    melting_ids = fields.Many2many(
+        'casse.melting', string='Melting Batches',
+        compute='_compute_melting_ids',
+        help='Melting batches that consumed Achat Casse lines from this ticket')
     associate_transaction_ids = fields.One2many('associate.transaction', 'ticket_id', string='Associate Transactions')
     service_order_ids = fields.One2many('service.order', 'ticket_id', string='Service Orders')
     cash_line_ids = fields.One2many('cash.register.line', 'ticket_id', string='Cash Lines')
@@ -83,6 +113,15 @@ class JewelryTicket(models.Model):
         currency_field='currency_id',
     )
 
+    @api.depends('melting_id', 'ticket_line_ids.melting_id')
+    def _compute_melting_ids(self):
+        for ticket in self:
+            ids = set()
+            if ticket.melting_id:
+                ids.add(ticket.melting_id.id)
+            ids.update(ticket.ticket_line_ids.mapped('melting_id').ids)
+            ticket.melting_ids = [(6, 0, list(ids))]
+
     @api.depends('ticket_line_ids.price_subtotal', 'ticket_line_ids.line_type', 'ticket_line_ids.remise_amount')
     def _compute_totals(self):
         for ticket in self:
@@ -92,8 +131,10 @@ class JewelryTicket(models.Model):
             for line in ticket.ticket_line_ids:
                 if line.line_type in ('vente', 'solde', 'service', 'fasonage'):
                     cash_in += line.price_subtotal or 0.0
-                elif line.line_type in ('achat_casse', 'achat', 'verse'):
+                elif line.line_type in ('achat_casse', 'achat', 'verse', 'personnel', 'fixe'):
                     cash_out += line.price_subtotal or 0.0
+                elif line.line_type == 'remise':
+                    cash_in -= line.price_subtotal or 0.0
                 if line.remise_type != 'none':
                     remise += line.remise_amount or 0.0
             ticket.total_cash_in = cash_in
@@ -172,16 +213,67 @@ class JewelryTicket(models.Model):
                 [('date', '=', ticket_date)], limit=1)
             ticket.related_register_id = register.id if register else False
 
+    @api.depends(
+        'partner_id',
+        'client_cash_balance',
+        'contrib_to_cash_balance',
+        'ticket_line_ids.line_type',
+        'ticket_line_ids.weight',
+        'ticket_line_ids.metal_type_id',
+    )
+    def _compute_supplier_balances(self):
+        for ticket in self:
+            account = self.env['supplier.account'].search(
+                [('partner_id', '=', ticket.partner_id.id)], limit=1)
+            if account:
+                ticket.has_supplier_account = True
+                ticket.partner_cash_balance_before = \
+                    (ticket.client_cash_balance or 0.0) \
+                    - (ticket.contrib_to_cash_balance or 0.0)
+                ticket.partner_weight_balance_before = account.weight_balance or 0.0
+            else:
+                ticket.has_supplier_account = False
+                ticket.partner_cash_balance_before = 0.0
+                ticket.partner_weight_balance_before = 0.0
+            gold_in = sum(
+                line.weight or 0.0
+                for line in ticket.ticket_line_ids
+                if line.line_type in ('achat_casse', 'achat')
+                and line.metal_type_id)
+            gold_out = sum(
+                line.weight or 0.0
+                for line in ticket.ticket_line_ids
+                if line.line_type == 'vente'
+                and line.metal_type_id)
+            ticket.ticket_gold_effect = gold_in - gold_out
+            ticket.partner_weight_balance_after = \
+                (ticket.partner_weight_balance_before or 0.0) \
+                + (ticket.ticket_gold_effect or 0.0)
+
     @api.model
     def create(self, vals):
         if vals.get('name', 'New') == 'New':
             vals['name'] = self.env['ir.sequence'].next_by_code('jewelry.ticket') or 'New'
         if not vals.get('barcode'):
             vals['barcode'] = self.env['ir.sequence'].next_by_code('jewelry.ticket.barcode') or vals['name']
-        return super().create(vals)
+        ticket = super().create(vals)
+        ticket._sync_to_melting()
+        return ticket
 
     def write(self, vals):
-        return super().write(vals)
+        res = super().write(vals)
+        for ticket in self:
+            ticket._sync_to_melting()
+        return res
+
+    def _sync_to_melting(self):
+        self.ensure_one()
+        if self.melting_id:
+            return
+        draft = self.env['casse.melting']._get_current_draft()
+        if not draft:
+            return
+        draft._add_ticket(self)
 
     def action_register_payment(self):
         self.ensure_one()
@@ -218,6 +310,7 @@ class JewelryTicket(models.Model):
                 'date': fields.Datetime.now(),
                 'user_id': self.env.user.id,
                 'description': _('Paiement ticket %s') % self.name,
+                'origin': 'ticket',
             })]
         })
 
@@ -241,6 +334,26 @@ class JewelryTicket(models.Model):
             'views': [(self.env.ref('jewelry_transactions.view_jewelry_ticket_cash_balance_tree').id, 'tree')],
             'domain': [('partner_id', '=', self.partner_id.id), ('payment_status', '!=', 'paye')],
             'target': 'new',
+        }
+
+    def action_open_melting(self):
+        self.ensure_one()
+        if not self.melting_ids:
+            return
+        if len(self.melting_ids) == 1:
+            return {
+                'type': 'ir.actions.act_window',
+                'res_model': 'casse.melting',
+                'res_id': self.melting_ids.id,
+                'view_mode': 'form',
+                'target': 'current',
+            }
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'casse.melting',
+            'domain': [('id', 'in', self.melting_ids.ids)],
+            'view_mode': 'tree,form',
+            'target': 'current',
         }
 
 

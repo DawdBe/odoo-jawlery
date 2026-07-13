@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from odoo import api, models, fields, _
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 
 
 class CashRegisterLine(models.Model):
@@ -16,6 +16,15 @@ class CashRegisterLine(models.Model):
         ('entree', 'Entrée'),
         ('sortie', 'Sortie'),
     ], string='Type', required=True)
+    category_id = fields.Many2one(
+        'cash.movement.category', string='Category',
+        help='Business category. Selecting a category auto-fills the direction.')
+    origin = fields.Selection([
+        ('ticket', 'Ticket Payment'),
+        ('manual', 'Manual Entry'),
+        ('system', 'System Generated'),
+    ], string='Origin', required=True, default='manual',
+        help='How this movement was created. Set automatically by the system.')
     payment_method = fields.Selection([
         ('cash', 'Cash'),
         ('card', 'Card'),
@@ -35,21 +44,52 @@ class CashRegisterLine(models.Model):
     reversed = fields.Boolean(string='Reversed', default=False, help="This payment has been reversed")
     reversal_id = fields.Many2one('cash.register.line', string='Reversal', ondelete='set null', help="The reversal entry for this payment")
 
+    @api.onchange('category_id')
+    def _onchange_category_id(self):
+        if self.category_id:
+            self.type = self.category_id.direction
+
+    @api.constrains('amount')
+    def _check_positive_amount(self):
+        for line in self:
+            if line.amount < 0:
+                raise ValidationError(_("Amount must be positive. Use 'type' to indicate direction."))
+
+    @api.constrains('category_id', 'ticket_id')
+    def _check_category_or_ticket(self):
+        for line in self:
+            if line.origin == 'manual' and not line.category_id:
+                raise ValidationError(_("Manual cash movements require a category."))
+
+    @api.model
+    def _find_or_create_register(self, date_val):
+        Register = self.env['daily.cash.register']
+        register = Register.search([('date', '=', date_val)], limit=1)
+        if not register:
+            register = Register.create({
+                'date': date_val,
+                'cashier_id': self.env.user.id,
+            })
+        return register
+
     @api.model_create_multi
     def create(self, vals_list):
         Register = self.env['daily.cash.register']
         register_ids = set()
         for vals in vals_list:
+            if vals.get('amount', 0) < 0:
+                raise UserError(_("Amount must be positive. Use 'type' to indicate direction."))
             if not vals.get('register_id'):
                 date_val = vals.get('date', fields.Datetime.now())
                 if isinstance(date_val, datetime):
                     date_val = date_val.date()
-                register = Register.search([('date', '=', date_val)], limit=1)
-                if register:
-                    vals['register_id'] = register.id
-                    register_ids.add(register.id)
+                register = self._find_or_create_register(date_val)
+                vals['register_id'] = register.id
+                register_ids.add(register.id)
             else:
                 register_ids.add(vals['register_id'])
+            if vals.get('ticket_id') and not vals.get('origin'):
+                vals['origin'] = 'ticket'
         lines = super().create(vals_list)
         if register_ids:
             register_ids.discard(False)
@@ -60,6 +100,8 @@ class CashRegisterLine(models.Model):
     def write(self, vals):
         Register = self.env['daily.cash.register']
         old_registers = self.mapped('register_id')
+        if vals.get('amount', 0) < 0:
+            raise UserError(_("Amount must be positive. Use 'type' to indicate direction."))
         if any(f in vals for f in ('amount', 'type')):
             for record in self:
                 if record.register_id and record.register_id.state == 'closed':
@@ -111,11 +153,23 @@ class CashRegisterLine(models.Model):
             registers._compute_balances()
         return result
 
+    def action_quick_save(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Saved'),
+                'message': _('Cash movement recorded successfully.'),
+                'sticky': False,
+                'type': 'success',
+                'next': {'type': 'ir.actions.client', 'tag': 'reload'},
+            },
+        }
+
     def action_reverse_payment(self):
         self.ensure_one()
         if self.reversed:
-            return
-        if not self.ticket_id:
             return
         if self.register_id and self.register_id.state == 'closed':
             raise UserError(_(
@@ -129,17 +183,20 @@ class CashRegisterLine(models.Model):
                 "Impossible d'inverser un paiement aujourd'hui car le registre du %s "
                 "est déjà clôturé. Rouvrez-le d'abord."
             ) % today)
-        ticket = self.ticket_id
+        description = _('Reversal: %s') % (
+            self.description or (self.ticket_id.name if self.ticket_id else ''))
         reversal = self.create({
-            'ticket_id': ticket.id,
+            'ticket_id': self.ticket_id.id if self.ticket_id else False,
             'partner_id': self.partner_id.id,
-            'amount': -self.amount,
-            'type': self.type,
+            'category_id': self.category_id.id,
+            'amount': self.amount,
+            'type': 'sortie' if self.type == 'entree' else 'entree',
             'payment_method': self.payment_method,
             'date': fields.Datetime.now(),
             'user_id': self.env.user.id,
-            'description': _('Reversal: %s') % (self.description or self.ticket_id.name),
+            'description': description,
             'reference': self.reference,
+            'origin': self.origin,
         })
         self.reversed = True
         self.reversal_id = reversal.id

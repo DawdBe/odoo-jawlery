@@ -23,6 +23,9 @@
         <field name="arch" type="xml">
             <form>
                 <header>
+                    <button name="action_confirm" type="object"
+                            string="Confirm Melting" class="btn-primary"
+                            invisible="state != 'draft'"/>
                     <field name="state" widget="statusbar"/>
                 </header>
                 <sheet>
@@ -33,28 +36,34 @@
                         </group>
                         <group>
                             <field name="metal_type_result"/>
-                            <field name="karat_result"/>
                         </group>
                     </group>
-                    <group string="Weights">
+                    <group string="Weights &amp; Costs">
                         <group>
-                            <field name="weight_before"/>
-                            <field name="weight_after"/>
-                            <field name="wastage_weight"/>
+                            <field name="weight_before" readonly="1"/>
+                            <field name="weight_after"
+                                   readonly="state == 'done'"/>
+                            <field name="wastage_weight" readonly="1"/>
                         </group>
                         <group>
-                            <field name="total_cost" widget="monetary"/>
-                            <field name="refined_value" widget="monetary"/>
-                            <field name="profit" widget="monetary"/>
+                            <field name="total_cost" widget="monetary" readonly="1"/>
+                            <field name="refined_value" widget="monetary" readonly="1"/>
+                            <field name="profit" widget="monetary" readonly="1"/>
                         </group>
                     </group>
-                    <field name="line_ids">
-                        <tree editable="bottom">
-                            <field name="ticket_line_id"/>
-                            <field name="weight"/>
-                            <field name="cost" widget="monetary"/>
+                    <field name="line_ids" readonly="state == 'done'">
+                        <tree>
+                            <field name="ticket_id" readonly="1"/>
+                            <field name="partner_id" readonly="1"/>
+                            <field name="weight" string="Weight (g)" readonly="1"/>
+                            <field name="cost" string="Cost" widget="monetary" readonly="1"/>
+                            <button name="action_open_ticket" type="object"
+                                    string=" " icon="fa-external-link" class="btn-link"/>
                         </tree>
                     </field>
+                    <group>
+                        <field name="notes" colspan="2"/>
+                    </group>
                 </sheet>
             </form>
         </field>

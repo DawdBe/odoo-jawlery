@@ -17,6 +17,7 @@
         </field>
     </record>
 
+    <!-- Full Register Form -->
     <record id="view_daily_cash_register_form" model="ir.ui.view">
         <field name="name">daily.cash.register.form</field>
         <field name="model">daily.cash.register</field>
@@ -68,13 +69,28 @@
                         </tree>
                     </field>
                     <separator string="Today's Cash Movements"/>
+                    <div class="oe_button_box" name="quick_cash_buttons"
+                         invisible="state != 'open'">
+                        <button name="%(action_cash_register_quick_income)d"
+                                type="action" string="Add Income"
+                                class="btn-primary oe_stat_button"
+                                icon="fa-plus-circle"
+                                context="{'default_register_id': active_id, 'default_type': 'entree', 'default_origin': 'manual'}"/>
+                        <button name="%(action_cash_register_quick_expense)d"
+                                type="action" string="Add Expense"
+                                class="btn-secondary oe_stat_button"
+                                icon="fa-minus-circle"
+                                context="{'default_register_id': active_id, 'default_type': 'sortie', 'default_origin': 'manual'}"/>
+                    </div>
                     <field name="line_ids" nolabel="1">
                         <tree>
                             <field name="date" string="Time"/>
                             <field name="description" string="Description"/>
+                            <field name="category_id" string="Category" optional="show"/>
                             <field name="ticket_id" string="Ticket" optional="show"/>
                             <field name="partner_id" string="Partner" optional="show"/>
-                            <field name="payment_method" string="Method"/>
+                            <field name="payment_method" string="Method" optional="show"/>
+                            <field name="origin" string="Origin" optional="show"/>
                             <field name="type" invisible="1"/>
                             <field name="amount" string="In" widget="monetary"
                                    invisible="type != 'entree'"/>
@@ -85,6 +101,93 @@
                     </field>
                 </sheet>
             </form>
+        </field>
+    </record>
+
+
+
+    <!-- Cash Movement Tree (standalone menu) -->
+    <record id="view_cash_register_line_tree" model="ir.ui.view">
+        <field name="name">cash.register.line.tree</field>
+        <field name="model">cash.register.line</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="date" string="Date"/>
+                <field name="description" string="Description"/>
+                <field name="category_id" string="Category"/>
+                <field name="type" invisible="1"/>
+                <field name="amount" string="In" widget="monetary"
+                       invisible="type != 'entree'"/>
+                <field name="amount" string="Out" widget="monetary"
+                       invisible="type != 'sortie'"/>
+                <field name="partner_id" string="Partner"/>
+                <field name="payment_method" string="Method"/>
+                <field name="origin" string="Origin"/>
+                <field name="register_id" string="Register"/>
+                <field name="reversed" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Cash Movement Form (standalone) -->
+    <record id="view_cash_register_line_form" model="ir.ui.view">
+        <field name="name">cash.register.line.form</field>
+        <field name="model">cash.register.line</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="amount" widget="monetary"/>
+                            <field name="type"/>
+                            <field name="category_id" options="{'no_create': True}"/>
+                            <field name="partner_id"/>
+                            <field name="description"/>
+                        </group>
+                        <group>
+                            <field name="origin"/>
+                            <field name="ticket_id"/>
+                            <field name="payment_method"/>
+                            <field name="date"/>
+                            <field name="register_id"/>
+                            <field name="reference"/>
+                        </group>
+                    </group>
+                    <group string="Reversal" invisible="not reversed">
+                        <field name="reversed"/>
+                        <field name="reversal_id"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Cash Movement Search -->
+    <record id="view_cash_register_line_search" model="ir.ui.view">
+        <field name="name">cash.register.line.search</field>
+        <field name="model">cash.register.line</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="description"/>
+                <field name="partner_id"/>
+                <field name="category_id"/>
+                <field name="register_id"/>
+                <filter name="entree" string="Entrée" domain="[('type','=','entree')]"/>
+                <filter name="sortie" string="Sortie" domain="[('type','=','sortie')]"/>
+                <separator/>
+                <filter name="origin_ticket" string="Ticket" domain="[('origin','=','ticket')]"/>
+                <filter name="origin_manual" string="Manual" domain="[('origin','=','manual')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_category" string="Category"
+                            context="{'group_by': 'category_id'}"/>
+                    <filter name="group_origin" string="Origin"
+                            context="{'group_by': 'origin'}"/>
+                    <filter name="group_register" string="Register"
+                            context="{'group_by': 'register_id'}"/>
+                    <filter name="group_date" string="Date"
+                            context="{'group_by': 'date'}"/>
+                </group>
+            </search>
         </field>
     </record>
 

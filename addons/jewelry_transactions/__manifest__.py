@@ -1,6 +1,6 @@
 {
     'name': 'Jewelry Transactions',
-    'version': '17.0.1.2.0',
+    'version': '17.0.1.3.0',
     'category': 'Sales',
     'summary': 'Cœur métier — tickets, achats, services, caisse, fonte casse',
     'depends': ['mail', 'jewelry_core', 'account', 'purchase'],
@@ -9,6 +9,7 @@
         'data/atelier_price_data.xml',
         'data/sequence_data.xml',
         'views/wizard_views.xml',
+        'views/cash_movement_views.xml',
         'views/actions.xml',
         'views/ticket_views.xml',
         'views/partner_views.xml',
@@ -19,7 +20,9 @@
         'views/casse_melting_views.xml',
         'views/service_views.xml',
         'views/cash_register_views.xml',
+        'views/cash_movement_category_views.xml',
         'views/menus.xml',
+        'data/cash_movement_category_data.xml',
     ],
     'assets': {
         'web.assets_backend': [

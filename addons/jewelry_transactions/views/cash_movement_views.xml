@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Quick Cash Movement Form (lightweight popup — used by Add Income & Add Expense) -->
+    <record id="view_cash_register_line_quick_form" model="ir.ui.view">
+        <field name="name">cash.register.line.quick.form</field>
+        <field name="model">cash.register.line</field>
+        <field name="arch" type="xml">
+            <form create="1" edit="0" delete="0">
+                <group>
+                    <field name="register_id" invisible="1"/>
+                    <field name="origin" invisible="1"/>
+                    <field name="type" widget="radio" class="mb-0"/>
+                    <field name="amount" widget="monetary" class="mb-0">
+                        <field name="currency_id" invisible="1"/>
+                    </field>
+                    <field name="category_id" placeholder="Select category..."
+                           options="{'no_create': True}" required="1"/>
+                    <field name="partner_id"/>
+                    <field name="description"/>
+                    <field name="payment_method"/>
+                </group>
+                <footer>
+                    <button string="Save" type="object" name="action_quick_save"
+                            class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Cash Movement Tree (standalone menu) -->
+    <record id="view_cash_register_line_tree" model="ir.ui.view">
+        <field name="name">cash.register.line.tree</field>
+        <field name="model">cash.register.line</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="date" string="Date"/>
+                <field name="description" string="Description"/>
+                <field name="category_id" string="Category"/>
+                <field name="type" invisible="1"/>
+                <field name="amount" string="In" widget="monetary"
+                       invisible="type != 'entree'"/>
+                <field name="amount" string="Out" widget="monetary"
+                       invisible="type != 'sortie'"/>
+                <field name="partner_id" string="Partner"/>
+                <field name="payment_method" string="Method"/>
+                <field name="origin" string="Origin"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Cash Movement Form (standalone) -->
+    <record id="view_cash_register_line_form" model="ir.ui.view">
+        <field name="name">cash.register.line.form</field>
+        <field name="model">cash.register.line</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="amount" widget="monetary"/>
+                            <field name="type" widget="radio"/>
+                            <field name="category_id" options="{'no_create': True}"/>
+                            <field name="partner_id"/>
+                            <field name="description"/>
+                        </group>
+                        <group>
+                            <field name="origin"/>
+                            <field name="ticket_id"/>
+                            <field name="payment_method"/>
+                            <field name="date"/>
+                            <field name="register_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <group string="Reversal" invisible="not reversed">
+                        <field name="reversed"/>
+                        <field name="reversal_id"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Cash Movement Search -->
+    <record id="view_cash_register_line_search" model="ir.ui.view">
+        <field name="name">cash.register.line.search</field>
+        <field name="model">cash.register.line</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="description"/>
+                <field name="partner_id"/>
+                <field name="category_id"/>
+                <filter name="entree" string="Entrée" domain="[('type','=','entree')]"/>
+                <filter name="sortie" string="Sortie" domain="[('type','=','sortie')]"/>
+                <separator/>
+                <filter name="origin_ticket" string="Ticket" domain="[('origin','=','ticket')]"/>
+                <filter name="origin_manual" string="Manual" domain="[('origin','=','manual')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_category" string="Category"
+                            context="{'group_by': 'category_id'}"/>
+                    <filter name="group_origin" string="Origin"
+                            context="{'group_by': 'origin'}"/>
+                    <filter name="group_date" string="Date"
+                            context="{'group_by': 'date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+</odoo>
