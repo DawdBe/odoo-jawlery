@@ -15,3 +15,5 @@ from . import daily_cash_register
 from . import cash_register_line
 from . import gold_movement
 from . import cash_movement_category
+from . import cash_safe
+from . import cash_safe_movement

@@ -29,6 +29,7 @@ class DailyCashRegister(models.Model):
         for reg in registers:
             _logger.info("=== POST _init_from_existing_data register=%s line_ids.ids=%s tickets.ids=%s",
                          reg.id, reg.line_ids.ids, reg.ticket_ids.ids)
+            reg._create_safe_float_movement()
         return registers
 
     def _init_from_existing_data(self):
@@ -191,3 +192,32 @@ class DailyCashRegister(models.Model):
     def close_register(self):
         self.closing_balance = self.closing_balance or self.expected_balance
         self.state = 'closed'
+        self._create_safe_return_movement()
+
+    def _create_safe_float_movement(self):
+        if not self.opening_balance:
+            return
+        safe = self.env['cash.safe']._get_main_safe()
+        self.env['cash.safe.movement'].create({
+            'safe_id': safe.id,
+            'type': 'out',
+            'amount': self.opening_balance,
+            'reason': 'register_float',
+            'register_id': self.id,
+            'date': fields.Datetime.now(),
+            'notes': _('Float for %s') % self.name,
+        })
+
+    def _create_safe_return_movement(self):
+        if not self.closing_balance:
+            return
+        safe = self.env['cash.safe']._get_main_safe()
+        self.env['cash.safe.movement'].create({
+            'safe_id': safe.id,
+            'type': 'in',
+            'amount': self.closing_balance,
+            'reason': 'register_return',
+            'register_id': self.id,
+            'date': fields.Datetime.now(),
+            'notes': _('Return from %s') % self.name,
+        })

@@ -25,4 +25,8 @@ access_gold_movement_admin,gold.movement.admin,model_gold_movement,base.group_sy
 access_cash_movement_category_user,cash.movement.category.user,model_cash_movement_category,base.group_user,1,0,0,0
 access_cash_movement_category_manager,cash.movement.category.manager,model_cash_movement_category,base.group_system,1,1,1,1
 access_product_barcode_scan_wizard,product.barcode.scan.wizard,model_product_barcode_scan_wizard,base.group_user,1,1,1,1
+access_cash_safe_user,cash.safe.user,model_cash_safe,base.group_user,1,0,0,0
+access_cash_safe_manager,cash.safe.manager,model_cash_safe,base.group_system,1,1,1,1
+access_cash_safe_movement_user,cash.safe.movement.user,model_cash_safe_movement,base.group_user,1,0,0,0
+access_cash_safe_movement_manager,cash.safe.movement.manager,model_cash_safe_movement,base.group_system,1,1,1,1
 

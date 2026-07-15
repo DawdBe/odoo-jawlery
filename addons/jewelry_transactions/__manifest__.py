@@ -21,6 +21,7 @@
         'views/service_views.xml',
         'views/cash_register_views.xml',
         'views/cash_movement_category_views.xml',
+        'views/cash_safe_views.xml',
         'views/menus.xml',
         'data/cash_movement_category_data.xml',
     ],

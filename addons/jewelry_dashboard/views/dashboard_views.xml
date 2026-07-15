@@ -8,22 +8,38 @@
         <field name="name">dashboard.360.form</field>
         <field name="model">dashboard.360</field>
         <field name="arch" type="xml">
-            <form>
+            <form periodic_refresh="30">
                 <sheet>
+                    <field name="currency_id" invisible="1"/>
                     <group string="Overview">
                         <group>
-                            <field name="total_cash" widget="monetary"/>
+                            <field name="safe_balance" widget="monetary" string="Solde du Coffre"/>
+                            <field name="register_balance" widget="monetary" string="Solde des Caisses"/>
+                            <field name="total_physical_cash" widget="monetary" string="Total Physique"/>
+                        </group>
+                        <group>
                             <field name="today_sales" widget="monetary"/>
                             <field name="today_profit" widget="monetary"/>
                         </group>
                         <group>
                             <field name="today_remise" widget="monetary"/>
                             <field name="pending_payments" widget="monetary"/>
+                            <field name="total_suppliers_credit" widget="monetary"/>
+                            <field name="total_suppliers_gold_weight"/>
                             <field name="pending_fasonages"/>
                         </group>
                     </group>
-                    <group string="Weights by Metal">
-                        <field name="weight_by_metal_type" nolabel="1"/>
+                    <group string="Or — Poids et Valeur">
+                        <group>
+                            <field name="total_shop_gold_weight"/>
+                        </group>
+                        <group>
+                            <field name="total_gold_weight" string="Stock Physique (g)"/>
+                            <field name="poids_or_en_fonte_total" string="En Fonte (cours)"/>
+                        </group>
+                        <group>
+                            <field name="poids_or_fabrique_by_metal_type" string="Fabriqué en stock"/>
+                        </group>
                     </group>
                     <footer>
                         <button name="%(action_dashboard_360)d" string="Refresh" type="action" class="btn-primary"/>

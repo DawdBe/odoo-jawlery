@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Safe Form View -->
+    <record id="view_cash_safe_form" model="ir.ui.view">
+        <field name="name">cash.safe.form</field>
+        <field name="model">cash.safe</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="current_balance" widget="monetary"/>
+                        </group>
+                    </group>
+                    <separator string="Movements"/>
+                    <field name="movement_ids" nolabel="1">
+                        <tree>
+                            <field name="date" string="Date"/>
+                            <field name="reason" string="Reason"/>
+                            <field name="type" invisible="1"/>
+                            <field name="amount" string="IN" widget="monetary"
+                                   invisible="type != 'in'"/>
+                            <field name="amount" string="OUT" widget="monetary"
+                                   invisible="type != 'out'"/>
+                            <field name="register_id" string="Register"/>
+                            <field name="notes" string="Notes"/>
+                        </tree>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Safe Tree View -->
+    <record id="view_cash_safe_tree" model="ir.ui.view">
+        <field name="name">cash.safe.tree</field>
+        <field name="model">cash.safe</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="current_balance" widget="monetary"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Safe Movement Tree View -->
+    <record id="view_cash_safe_movement_tree" model="ir.ui.view">
+        <field name="name">cash.safe.movement.tree</field>
+        <field name="model">cash.safe.movement</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="date" string="Date"/>
+                <field name="reason" string="Reason"/>
+                <field name="type" invisible="1"/>
+                <field name="amount" string="IN" widget="monetary"
+                       invisible="type != 'in'"/>
+                <field name="amount" string="OUT" widget="monetary"
+                       invisible="type != 'out'"/>
+                <field name="register_id" string="Register"/>
+                <field name="notes" string="Notes"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Safe Movement Form View -->
+    <record id="view_cash_safe_movement_form" model="ir.ui.view">
+        <field name="name">cash.safe.movement.form</field>
+        <field name="model">cash.safe.movement</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="safe_id" options="{'no_create': True}"/>
+                            <field name="type"/>
+                            <field name="amount" widget="monetary"/>
+                            <field name="reason"/>
+                        </group>
+                        <group>
+                            <field name="register_id"/>
+                            <field name="date"/>
+                            <field name="notes"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Safe Movement Search -->
+    <record id="view_cash_safe_movement_search" model="ir.ui.view">
+        <field name="name">cash.safe.movement.search</field>
+        <field name="model">cash.safe.movement</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="notes"/>
+                <field name="register_id"/>
+                <filter name="type_in" string="IN" domain="[('type','=','in')]"/>
+                <filter name="type_out" string="OUT" domain="[('type','=','out')]"/>
+                <separator/>
+                <filter name="reason_register" string="Register"
+                        domain="[('reason','in',('register_float','register_return'))]"/>
+                <filter name="reason_owner" string="Owner"
+                        domain="[('reason','in',('owner_deposit','owner_withdrawal'))]"/>
+                <filter name="reason_bank" string="Bank"
+                        domain="[('reason','in',('bank_deposit','bank_withdrawal'))]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_reason" string="Reason"
+                            context="{'group_by': 'reason'}"/>
+                    <filter name="group_register" string="Register"
+                            context="{'group_by': 'register_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action: Open Safe -->
+    <record id="action_cash_safe" model="ir.actions.act_window">
+        <field name="name">Safe / Coffre</field>
+        <field name="res_model">cash.safe</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

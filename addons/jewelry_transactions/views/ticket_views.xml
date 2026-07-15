@@ -150,6 +150,17 @@
                 <field name="cashier_id"/>
                 <filter name="impaye" string="Impayé" domain="[('payment_status','=','impaye')]"/>
                 <filter name="today" string="Today" domain="[('date','&gt;=',context_today().strftime('%Y-%m-%d 00:00:00'))]"/>
+                <separator/>
+                <filter name="type_vente" string="Vente" domain="[('ticket_line_ids.line_type','=','vente')]"/>
+                <filter name="type_achat" string="Achat" domain="[('ticket_line_ids.line_type','=','achat')]"/>
+                <filter name="type_achat_casse" string="Achat Casse" domain="[('ticket_line_ids.line_type','=','achat_casse')]"/>
+                <filter name="type_fasonage" string="Fasonage" domain="[('ticket_line_ids.line_type','=','fasonage')]"/>
+                <filter name="type_service" string="Service" domain="[('ticket_line_ids.line_type','=','service')]"/>
+                <filter name="type_verse" string="Versé" domain="[('ticket_line_ids.line_type','=','verse')]"/>
+                <filter name="type_solde" string="Solde" domain="[('ticket_line_ids.line_type','=','solde')]"/>
+                <filter name="type_remise" string="Remise" domain="[('ticket_line_ids.line_type','=','remise')]"/>
+                <filter name="type_personnel" string="Personnel" domain="[('ticket_line_ids.line_type','=','personnel')]"/>
+                <filter name="type_fixe" string="Fixe" domain="[('ticket_line_ids.line_type','=','fixe')]"/>
             </search>
         </field>
     </record>

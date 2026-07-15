@@ -64,6 +64,21 @@ msgid "Today's Sales"
 msgstr "Ventes du Jour"
 
 #. module: jewelry_dashboard
+#: model:ir.model.fields,field_description:jewelry_dashboard.field_dashboard_360__safe_balance
+msgid "Solde du Coffre"
+msgstr "Solde du Coffre"
+
+#. module: jewelry_dashboard
+#: model:ir.model.fields,field_description:jewelry_dashboard.field_dashboard_360__register_balance
+msgid "Solde des Caisses"
+msgstr "Solde des Caisses"
+
+#. module: jewelry_dashboard
+#: model:ir.model.fields,field_description:jewelry_dashboard.field_dashboard_360__total_physical_cash
+msgid "Total Physique"
+msgstr "Total Physique"
+
+#. module: jewelry_dashboard
 #: model:ir.model.fields,field_description:jewelry_dashboard.field_dashboard_360__total_cash
 msgid "Total Cash"
 msgstr "Total Caisse"

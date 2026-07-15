@@ -439,6 +439,155 @@ msgid "Supplier Accounts"
 msgstr "Comptes Fournisseurs"
 
 #. module: jewelry_transactions
+#: model:ir.model,name:jewelry_transactions.model_cash_safe
+msgid "Safe / Coffre"
+msgstr "Coffre"
+
+#. module: jewelry_transactions
+#: model:ir.model,name:jewelry_transactions.model_cash_safe_movement
+msgid "Safe Movement"
+msgstr "Mouvement Coffre"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_cash_safe__name
+msgid "Name"
+msgstr "Coffre"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_cash_safe__current_balance
+msgid "Current Balance"
+msgstr "Solde Actuel"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_cash_safe__movement_ids
+msgid "Movements"
+msgstr "Mouvements"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_cash_safe__company_id
+msgid "Company"
+msgstr "Société"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_cash_safe_movement__safe_id
+msgid "Safe"
+msgstr "Coffre"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_cash_safe_movement__type
+msgid "Type"
+msgstr "Sens"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_cash_safe_movement__amount
+msgid "Amount"
+msgstr "Montant"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_cash_safe_movement__reason
+msgid "Reason"
+msgstr "Motif"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_cash_safe_movement__register_id
+msgid "Register"
+msgstr "Caisse"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_cash_safe_movement__date
+msgid "Date"
+msgstr "Date"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields,field_description:jewelry_transactions.field_cash_safe_movement__notes
+msgid "Notes"
+msgstr "Remarques"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields.selection,name:jewelry_transactions.field_cash_safe_movement__type__in
+msgid "In"
+msgstr "Entrée"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields.selection,name:jewelry_transactions.field_cash_safe_movement__type__out
+msgid "Out"
+msgstr "Sortie"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields.selection,name:jewelry_transactions.field_cash_safe_movement__reason__register_float
+msgid "Register Float"
+msgstr "Fond de Caisse"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields.selection,name:jewelry_transactions.field_cash_safe_movement__reason__register_return
+msgid "Register Return"
+msgstr "Retour Caisse"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields.selection,name:jewelry_transactions.field_cash_safe_movement__reason__owner_deposit
+msgid "Owner Deposit"
+msgstr "Dépôt Propriétaire"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields.selection,name:jewelry_transactions.field_cash_safe_movement__reason__owner_withdrawal
+msgid "Owner Withdrawal"
+msgstr "Retrait Propriétaire"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields.selection,name:jewelry_transactions.field_cash_safe_movement__reason__bank_deposit
+msgid "Bank Deposit"
+msgstr "Dépôt Banque"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields.selection,name:jewelry_transactions.field_cash_safe_movement__reason__bank_withdrawal
+msgid "Bank Withdrawal"
+msgstr "Retrait Banque"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields.selection,name:jewelry_transactions.field_cash_safe_movement__reason__sale_revenue
+msgid "Sale Revenue"
+msgstr "Recette Vente"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields.selection,name:jewelry_transactions.field_cash_safe_movement__reason__purchase_expense
+msgid "Purchase Expense"
+msgstr "Dépense Achat"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields.selection,name:jewelry_transactions.field_cash_safe_movement__reason__service_payment
+msgid "Service Payment"
+msgstr "Paiement Service"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields.selection,name:jewelry_transactions.field_cash_safe_movement__reason__other_in
+msgid "Other In"
+msgstr "Autre Entrée"
+
+#. module: jewelry_transactions
+#: model:ir.model.fields.selection,name:jewelry_transactions.field_cash_safe_movement__reason__other_out
+msgid "Other Out"
+msgstr "Autre Sortie"
+
+#. module: jewelry_transactions
+#: model:ir.model.constraint,name:jewelry_transactions.constraint_cash_safe_movement_positive_amount
+msgid "The amount must be positive."
+msgstr "Le montant doit être positif."
+
+#. module: jewelry_transactions
+#. odoo-python
+#: code:addons/jewelry_transactions/models/daily_cash_register.py:0
+#, python-format
+msgid "Float for %s"
+msgstr "Fond de caisse pour %s"
+
+#. module: jewelry_transactions
+#. odoo-python
+#: code:addons/jewelry_transactions/models/daily_cash_register.py:0
+#, python-format
+msgid "Return from %s"
+msgstr "Retour de caisse de %s"
+
+#. module: jewelry_transactions
 #. odoo-python
 #: code:addons/jewelry_transactions/models/jewelry_ticket.py:0
 #, python-format
