@@ -1,6 +1,6 @@
 {
     'name': 'Jewelry Transactions',
-    'version': '17.0.1.3.0',
+    'version': '17.0.2.0.0',
     'category': 'Sales',
     'summary': 'Cœur métier — tickets, achats, services, caisse, fonte casse',
     'depends': ['mail', 'jewelry_core', 'account', 'purchase'],

@@ -14,7 +14,9 @@
     <menuitem id="menu_supplier_account" name="Supplier Accounts"
               parent="menu_jewelry_transactions" action="action_supplier_account" sequence="40"/>
     <menuitem id="menu_daily_cash_register" name="Cash Registers"
-              parent="menu_jewelry_transactions" action="action_daily_cash_register" sequence="50"/>
+               parent="menu_jewelry_transactions" action="action_daily_cash_register" sequence="50"/>
+    <menuitem id="menu_cash_safe" name="Safe / Coffre"
+               parent="menu_jewelry_transactions" action="action_cash_safe" sequence="52"/>
     <menuitem id="menu_associates" name="Associates"
               parent="menu_jewelry_transactions" action="action_associate_account" sequence="35"/>
     <menuitem id="menu_associate_transactions" name="Associate Transactions"

@@ -11,6 +11,8 @@ class ResPartner(models.Model):
         partner = super().create(vals)
         if vals.get('partner_type') in ('frs', 'atelier'):
             partner._ensure_supplier_account()
+        if vals.get('partner_type') == 'associe':
+            partner._ensure_associate_account()
         return partner
 
     def write(self, vals):
@@ -18,6 +20,9 @@ class ResPartner(models.Model):
         if vals.get('partner_type') in ('frs', 'atelier'):
             for partner in self:
                 partner._ensure_supplier_account()
+        if vals.get('partner_type') == 'associe':
+            for partner in self:
+                partner._ensure_associate_account()
         return result
 
     def _ensure_supplier_account(self):
@@ -31,9 +36,19 @@ class ResPartner(models.Model):
                 'partner_type': partner_type_map.get(self.partner_type),
             })
 
+    def _ensure_associate_account(self):
+        self.ensure_one()
+        existing = self.env['associate.account'].search(
+            [('partner_id', '=', self.id)], limit=1)
+        if not existing:
+            self.env['associate.account'].create({
+                'partner_id': self.id,
+            })
+
     def action_open_supplier_account(self):
         self.ensure_one()
-        account = self.env['supplier.account'].search([('partner_id', '=', self.id)], limit=1)
+        account = self.env['supplier.account'].search(
+            [('partner_id', '=', self.id)], limit=1)
         if not account:
             return
         return {
@@ -43,4 +58,19 @@ class ResPartner(models.Model):
             'res_id': account.id,
             'target': 'current',
             'name': _('Supplier Account'),
+        }
+
+    def action_open_associate_account(self):
+        self.ensure_one()
+        account = self.env['associate.account'].search(
+            [('partner_id', '=', self.id)], limit=1)
+        if not account:
+            return
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'associate.account',
+            'view_mode': 'form',
+            'res_id': account.id,
+            'target': 'current',
+            'name': _('Associate Account'),
         }

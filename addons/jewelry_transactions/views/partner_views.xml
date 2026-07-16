@@ -40,6 +40,11 @@
                         class="oe_stat_button"
                         icon="fa-balance-scale"
                         invisible="partner_type not in ('frs', 'atelier')"/>
+                <button name="action_open_associate_account" type="object"
+                        string="Associate Account"
+                        class="oe_stat_button"
+                        icon="fa-users"
+                        invisible="partner_type != 'associe'"/>
             </xpath>
         </field>
     </record>

@@ -19,6 +19,31 @@ def _deactivate_menus(env):
             pass
 
 
+def _migrate_associate_transactions(env):
+    Transaction = env['associate.transaction']
+    Account = env['associate.account']
+    existing = Transaction.search([])
+    if not existing:
+        return
+
+    for t in existing:
+        vals = {}
+        if not t.account_id and t.partner_id:
+            account = Account.search([('partner_id', '=', t.partner_id.id)], limit=1)
+            if not account:
+                account = Account.create({'partner_id': t.partner_id.id})
+            vals['account_id'] = account.id
+        if not t.state:
+            vals['state'] = 'posted'
+        if not t.origin:
+            vals['origin'] = 'manual'
+        if not t.user_id:
+            vals['user_id'] = env.ref('base.user_admin').id
+        if vals:
+            t.write(vals)
+
+
 def apply_translations(env):
     apply_module_translations(env, 'jewelry_transactions')
     _deactivate_menus(env)
+    _migrate_associate_transactions(env)

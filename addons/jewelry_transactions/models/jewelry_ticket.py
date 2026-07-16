@@ -395,6 +395,23 @@ class JewelryTicket(models.Model):
             'target': 'new',
         }
 
+    def action_open_associate_account(self):
+        self.ensure_one()
+        if not self.partner_id:
+            return
+        account = self.env['associate.account'].search(
+            [('partner_id', '=', self.partner_id.id)], limit=1)
+        if not account:
+            return
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'associate.account',
+            'view_mode': 'form',
+            'res_id': account.id,
+            'target': 'current',
+            'name': _('Associate Account'),
+        }
+
     def action_open_melting(self):
         self.ensure_one()
         if not self.melting_ids:

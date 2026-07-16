@@ -41,6 +41,10 @@
                                 string="Melting" class="oe_stat_button"
                                 icon="fa-fire"
                                 invisible="not melting_ids"/>
+                        <button name="action_open_associate_account" type="object"
+                                string="Associate" class="oe_stat_button"
+                                icon="fa-users"
+                                invisible="partner_id.partner_type != 'associe'"/>
                     </div>
                     <group>
                         <field name="name"/>

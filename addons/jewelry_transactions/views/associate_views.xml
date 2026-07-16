@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+
+    <!-- ── Actions ──────────────────────────────────────────────────────── -->
+
     <record id="action_associate_account" model="ir.actions.act_window">
         <field name="name">Associates</field>
         <field name="res_model">associate.account</field>
@@ -12,6 +15,8 @@
         <field name="res_model">associate.transaction</field>
         <field name="view_mode">tree,form</field>
     </record>
+
+    <!-- ── Associate Account Tree ───────────────────────────────────────── -->
 
     <record id="view_associate_account_tree" model="ir.ui.view">
         <field name="name">associate.account.tree</field>
@@ -26,29 +31,52 @@
         </field>
     </record>
 
+    <!-- ── Associate Account Form ───────────────────────────────────────── -->
+
     <record id="view_associate_account_form" model="ir.ui.view">
         <field name="name">associate.account.form</field>
         <field name="model">associate.account</field>
         <field name="arch" type="xml">
             <form>
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_transactions" type="object"
+                                class="oe_stat_button" icon="fa-exchange"
+                                string="Transactions">
+                            <div class="o_stat_info">
+                                <field name="transaction_ids" widget="field_count"/>
+                            </div>
+                        </button>
+                        <button name="action_view_tickets" type="object"
+                                class="oe_stat_button" icon="fa-ticket"
+                                string="Tickets"/>
+                    </div>
                     <group>
                         <group>
                             <field name="partner_id"/>
-                            <field name="capital_balance" widget="monetary"/>
                         </group>
                         <group>
-                            <field name="advance_balance" widget="monetary"/>
+                            <field name="capital_balance" widget="monetary"
+                                   class="font-weight-bold"/>
+                            <field name="advance_balance" widget="monetary"
+                                   class="font-weight-bold"/>
+                        </group>
+                        <group>
                             <field name="last_transaction_date"/>
                         </group>
                     </group>
                     <notebook>
                         <page name="transactions" string="Transactions">
-                            <field name="transaction_ids">
-                                <tree editable="bottom">
+                            <field name="transaction_ids" nolabel="1">
+                                <tree editable="bottom" default_order="date desc">
                                     <field name="date"/>
                                     <field name="transaction_type"/>
                                     <field name="amount" widget="monetary"/>
+                                    <field name="state"
+                                           decoration-success="state == 'posted'"
+                                           decoration-warning="state == 'draft'"
+                                           decoration-muted="state == 'cancelled'"/>
+                                    <field name="origin"/>
                                     <field name="notes"/>
                                 </tree>
                             </field>
@@ -59,37 +87,83 @@
         </field>
     </record>
 
+    <!-- ── Associate Transaction Tree ───────────────────────────────────── -->
+
     <record id="view_associate_transaction_tree" model="ir.ui.view">
         <field name="name">associate.transaction.tree</field>
         <field name="model">associate.transaction</field>
         <field name="arch" type="xml">
-            <tree>
+            <tree default_order="date desc">
                 <field name="date"/>
+                <field name="account_id" optional="show"/>
                 <field name="partner_id"/>
                 <field name="transaction_type"/>
                 <field name="amount" widget="monetary"/>
-                <field name="fiscal_year"/>
-                <field name="notes"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'posted'"
+                       decoration-warning="state == 'draft'"
+                       decoration-muted="state == 'cancelled'"/>
+                <field name="origin"/>
+                <field name="user_id"/>
+                <field name="source_model" optional="show"/>
+                <field name="fiscal_year" optional="show"/>
+                <field name="notes" optional="show"/>
+                <button name="action_post" type="object"
+                        string="Post" icon="fa-check"
+                        invisible="state != 'draft'"/>
+                <button name="action_cancel" type="object"
+                        string="Cancel" icon="fa-ban"
+                        confirm="Cancel this transaction?"
+                        invisible="state != 'posted'"/>
             </tree>
         </field>
     </record>
+
+    <!-- ── Associate Transaction Form ───────────────────────────────────── -->
 
     <record id="view_associate_transaction_form" model="ir.ui.view">
         <field name="name">associate.transaction.form</field>
         <field name="model">associate.transaction</field>
         <field name="arch" type="xml">
             <form>
+                <header>
+                    <field name="state" widget="statusbar"/>
+                    <button name="action_post" type="object"
+                            string="Post" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_cancel" type="object"
+                            string="Cancel" class="btn-danger"
+                            confirm="Cancel this transaction?"
+                            invisible="state != 'posted'"/>
+                    <button name="action_draft" type="object"
+                            string="Reset to Draft" class="btn-secondary"
+                            invisible="state != 'cancelled'"/>
+                </header>
                 <sheet>
                     <group>
                         <group>
+                            <field name="account_id" required="1"/>
                             <field name="partner_id"/>
                             <field name="transaction_type"/>
-                            <field name="amount" widget="monetary"/>
                         </group>
                         <group>
+                            <field name="amount" widget="monetary"/>
                             <field name="date"/>
                             <field name="fiscal_year"/>
+                        </group>
+                        <group>
+                            <field name="origin"/>
+                        </group>
+                    </group>
+                    <group string="Source Document">
+                        <group>
+                            <field name="source_model"/>
+                            <field name="source_id"/>
                             <field name="ticket_id"/>
+                        </group>
+                        <group>
+                            <field name="account_move_id"/>
+                            <field name="user_id"/>
                         </group>
                     </group>
                     <field name="notes"/>
@@ -97,4 +171,45 @@
             </form>
         </field>
     </record>
+
+    <!-- ── Associate Transaction Search ─────────────────────────────────── -->
+
+    <record id="view_associate_transaction_search" model="ir.ui.view">
+        <field name="name">associate.transaction.search</field>
+        <field name="model">associate.transaction</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="partner_id"/>
+                <field name="transaction_type"/>
+                <field name="origin"/>
+                <field name="state"/>
+                <field name="fiscal_year"/>
+                <filter name="state_draft" string="Draft"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter name="state_posted" string="Posted"
+                        domain="[('state', '=', 'posted')]"/>
+                <filter name="state_cancelled" string="Cancelled"
+                        domain="[('state', '=', 'cancelled')]"/>
+                <separator/>
+                <filter name="origin_manual" string="Manual"
+                        domain="[('origin', '=', 'manual')]"/>
+                <filter name="origin_ticket" string="From Ticket"
+                        domain="[('origin', '=', 'ticket')]"/>
+                <separator/>
+                <group expand="0" string="Group by">
+                    <filter name="group_state" string="State"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_type" string="Type"
+                            context="{'group_by': 'transaction_type'}"/>
+                    <filter name="group_origin" string="Origin"
+                            context="{'group_by': 'origin'}"/>
+                    <filter name="group_fiscal_year" string="Fiscal Year"
+                            context="{'group_by': 'fiscal_year'}"/>
+                    <filter name="group_date" string="Date"
+                            context="{'group_by': 'date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
 </odoo>

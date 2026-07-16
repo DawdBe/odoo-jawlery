@@ -4,10 +4,6 @@ from odoo import models, fields, api
 class Dashboard360(models.TransientModel):
     _name = 'dashboard.360'
     _description = 'Dashboard 360°'
-    # Transient (non-persisted) model that aggregates KPIs from all modules
-    # in real-time. All fields are computed, none are stored.
-    # Provides a single-page overview: cash positions, today's sales/profit,
-    # pending payments, pending fasonages, and weight breakdown by metal type.
 
     total_cash = fields.Monetary(string='Total Cash', compute='_compute_values')
     safe_balance = fields.Monetary(string='Solde du Coffre', compute='_compute_values')
@@ -24,6 +20,17 @@ class Dashboard360(models.TransientModel):
     poids_or_en_fonte_total = fields.Char(string='Poids Or en Fonte (total)', compute='_compute_values')
     poids_or_fabrique_by_metal_type = fields.Text(string='Poids Or Fabriqué', compute='_compute_values')
     total_shop_gold_weight = fields.Float(string='Total Or en Boutique (g)', compute='_compute_values')
+
+    total_associate_capital = fields.Monetary(
+        string='Capital Associés', compute='_compute_values',
+        help="Total des comptes de capital des associés.")
+    total_associate_advances = fields.Monetary(
+        string='Avances Associés', compute='_compute_values',
+        help="Total des avances aux associés.")
+    associate_count = fields.Integer(
+        string="Nombre d'Associés", compute='_compute_values',
+        help="Nombre d'associés actifs.")
+
     last_update = fields.Datetime(string='Dashboard Last Update', compute='_compute_values')
     currency_id = fields.Many2one('res.currency', default=lambda self: self.env.company.currency_id)
 
@@ -32,13 +39,6 @@ class Dashboard360(models.TransientModel):
         for record in self:
             today_dt = fields.Datetime.now().replace(hour=0, minute=0, second=0)
 
-            # -----------------------------------------------------------
-            # 2. Today's KPIs — read_group aggregation, no Python loops
-            # Junior Developer Note: read_group() performs SQL-level GROUP BY
-            # aggregation directly in PostgreSQL. This is MUCH faster than
-            # fetching every ticket and summing in Python, especially with
-            # thousands of records.
-            # -----------------------------------------------------------
             today_data = self.env['jewelry.ticket'].read_group(
                 [('date', '>=', today_dt)],
                 ['total_cash_in:sum', 'balance:sum', 'total_remise:sum'],
@@ -53,9 +53,6 @@ class Dashboard360(models.TransientModel):
                 record.today_profit = 0.0
                 record.today_remise = 0.0
 
-            # -----------------------------------------------------------
-            # 3. Pending payments
-            # -----------------------------------------------------------
             pending_data = self.env['jewelry.ticket'].read_group(
                 [('payment_status', 'in', ('impaye', 'partiel')), ('balance', '>', 0)],
                 ['balance:sum'],
@@ -63,78 +60,39 @@ class Dashboard360(models.TransientModel):
             )
             record.pending_payments = pending_data[0]['balance'] or 0.0 if pending_data else 0.0
 
-            # -----------------------------------------------------------
-            # 4. Pending fasonages
-            # -----------------------------------------------------------
             fasonage_tickets = self.env['jewelry.ticket'].search([
                 ('ticket_line_ids.line_type', '=', 'fasonage'),
             ])
             record.pending_fasonages = len(fasonage_tickets)
 
-            # -----------------------------------------------------------
-            # 5. Cash in Safe — ledger-based, computed from safe movements.
-            #    The safe is the canonical source for the store's actual cash.
-            # -----------------------------------------------------------
             safe = self.env['cash.safe']._get_main_safe()
             record.safe_balance = safe.current_balance or 0.0
 
-            # -----------------------------------------------------------
-            # 5a. Cash in all open registers — sum of expected_balances.
-            #    Represents cash temporarily in cashiers' drawers.
-            # -----------------------------------------------------------
             open_regs = self.env['daily.cash.register'].search([
                 ('state', '=', 'open'),
             ])
             record.register_balance = sum(open_regs.mapped('expected_balance')) or 0.0
 
-            # -----------------------------------------------------------
-            # 5b. Total Physical Cash = Safe + Registers
-            # -----------------------------------------------------------
             record.total_physical_cash = record.safe_balance + record.register_balance
 
-            # -----------------------------------------------------------
-            # 5d. Keep total_cash for backward compatibility
-            # -----------------------------------------------------------
             record.total_cash = record.safe_balance
 
-            # -----------------------------------------------------------
-            # 5b. Total Suppliers Credit — aggregates supplier.account.balance
-            #     which is itself computed via _compute_balance() on that model.
-            #     We do NOT reimplement the balance math here.
-            # -----------------------------------------------------------
             accounts = self.env['supplier.account'].search([])
             record.total_suppliers_credit = sum(accounts.mapped('balance')) or 0.0
 
-            # -----------------------------------------------------------
-            # 5c. Total Gold Créance Fournisseurs — net gold weight
-            #     across all supplier accounts. Positive = suppliers owe us
-            #     gold, negative = we owe suppliers gold.
-            # -----------------------------------------------------------
             record.total_suppliers_gold_weight = sum(accounts.mapped('weight_balance')) or 0.0
 
-            # -----------------------------------------------------------
-            # 5d. Total Gold Stock — reads stock.quant.weight_total
-            # -----------------------------------------------------------
             quants = self.env['stock.quant'].search([('weight_total', '>', 0)])
             record.total_gold_weight = sum(quants.mapped('weight_total')) or 0.0
 
-            # -----------------------------------------------------------
-            # 6. Metal type name lookup — reused across weight sections
-            # -----------------------------------------------------------
             metal_names = {m.id: m.name for m in self.env['metal.type'].search([])}
 
-            # -----------------------------------------------------------
-            # 6a. Poids Or en Fonte — weight_before from open draft casse
-            # -----------------------------------------------------------
             draft = self.env['casse.melting']._get_current_draft()
             if draft:
                 record.poids_or_en_fonte_total = f"{draft.weight_before:.2f}g"
             else:
                 record.poids_or_en_fonte_total = 'No open casse/fonte'
 
-            # -----------------------------------------------------------
-            # 6b. Poids Or Fabriqué — finished gold products in stock
-            # -----------------------------------------------------------
             fabrique_data = self.env['stock.quant'].read_group(
                 [('metal_type_id', '!=', False),
                  ('product_id.product_tmpl_id.jewelry_category', '=', 'fini'),
@@ -150,10 +108,20 @@ class Dashboard360(models.TransientModel):
                     fabrique_lines.append(f"{name}: {g['weight_total']:.2f}g")
             record.poids_or_fabrique_by_metal_type = '\n'.join(fabrique_lines) if fabrique_lines else 'No finished gold in stock'
 
-            # -----------------------------------------------------------
-            # 6c. Total Or en Boutique — stock + casse weight
-            # -----------------------------------------------------------
             fonte_weight = draft.weight_before if draft else 0.0
             record.total_shop_gold_weight = (record.total_gold_weight + fonte_weight) or 0.0
+
+            assoc_data = self.env['associate.account'].read_group(
+                [],
+                ['capital_balance:sum', 'advance_balance:sum'],
+                []
+            )
+            if assoc_data:
+                record.total_associate_capital = assoc_data[0]['capital_balance'] or 0.0
+                record.total_associate_advances = assoc_data[0]['advance_balance'] or 0.0
+            else:
+                record.total_associate_capital = 0.0
+                record.total_associate_advances = 0.0
+            record.associate_count = self.env['associate.account'].search_count([])
 
             record.last_update = fields.Datetime.now()
