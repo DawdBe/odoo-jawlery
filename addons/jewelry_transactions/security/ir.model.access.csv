@@ -22,6 +22,7 @@ access_daily_cash_register_admin,daily.cash.register.admin,model_daily_cash_regi
 access_cash_register_line_user,cash.register.line.user,model_cash_register_line,base.group_user,1,1,1,1
 access_gold_movement_user,gold.movement.user,model_gold_movement,base.group_user,1,1,1,1
 access_gold_movement_admin,gold.movement.admin,model_gold_movement,base.group_system,1,1,1,1
+access_supplier_gold_balance_user,supplier.gold.balance.user,model_supplier_gold_balance,base.group_user,1,0,0,0
 access_cash_movement_category_user,cash.movement.category.user,model_cash_movement_category,base.group_user,1,0,0,0
 access_cash_movement_category_manager,cash.movement.category.manager,model_cash_movement_category,base.group_system,1,1,1,1
 access_product_barcode_scan_wizard,product.barcode.scan.wizard,model_product_barcode_scan_wizard,base.group_user,1,1,1,1

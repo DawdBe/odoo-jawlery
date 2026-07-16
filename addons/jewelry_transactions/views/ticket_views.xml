@@ -18,10 +18,6 @@
         </field>
     </record>
 
-    <!-- Jewelry Ticket form view — the primary business document.
-         Header has status bars for payment and product tracking.
-         Notebook pages: Lines (editable list of ticket lines) and Totals.
-         Supports multi-operation tickets (sale + purchase on same ticket). -->
     <record id="view_jewelry_ticket_form" model="ir.ui.view">
         <field name="name">jewelry.ticket.form</field>
         <field name="model">jewelry.ticket</field>
@@ -33,6 +29,7 @@
                 </header>
                 <sheet>
                     <field name="melting_ids" invisible="1"/>
+                    <field name="is_supplier_ticket" invisible="1"/>
                     <div class="oe_button_box" name="button_box">
                         <button name="%(action_jewelry_ticket_line)d" type="action"
                                 string="Lines" class="oe_stat_button"
@@ -58,39 +55,68 @@
                             <field name="line_type"/>
                             <field name="product_id"/>
                             <field name="quantity"/>
-                            <field name="weight"/>
+                            <field name="weight" string="Poids mesuré (g)"/>
+                            <field name="measured_purity" string="Pureté mesurée (‰)"/>
                             <field name="metal_type_id"/>
-                            <field name="price_unit" widget="monetary"/>
-                            <field name="price_subtotal" widget="monetary"/>
+                            <field name="working_purity" string="Pureté travail (‰)"/>
+                            <field name="working_weight" string="Poids travail (g)"/>
+                            <field name="price_unit" widget="monetary"
+                                   attrs="{'invisible': [('settlement_type', '=', 'gold_credit')]}"/>
+                            <field name="price_subtotal" widget="monetary"
+                                   attrs="{'invisible': [('settlement_type', '=', 'gold_credit')]}"/>
+                            <field name="settlement_type" widget="radio"
+                                   attrs="{'invisible': [('is_supplier_line', '=', False)]}"/>
                             <field name="remise_type"/>
                             <field name="remise_value"/>
                             <field name="remise_amount" widget="monetary"/>
+                            <field name="is_supplier_line" invisible="1"/>
                         </tree>
                     </field>
                     <group string="Totaux">
                         <field name="has_supplier_account" invisible="1"/>
-                        <group>
+                        <group invisible="is_supplier_ticket">
                             <field name="balance" string="Total Ticket" widget="monetary"/>
                             <field name="total_remise" string="Remise" widget="monetary"/>
                             <field name="paid_amount" string="Payé" widget="monetary"/>
                             <field name="remaining_amount" string="Restant dû" widget="monetary"/>
+                        </group>
+                        <group string="Récapitulatif Fournisseur" invisible="not is_supplier_ticket">
+                            <separator string="Total Espèces" colspan="2"/>
+                            <field name="balance" string="Total Espèces" widget="monetary"/>
+                            <field name="total_remise" string="Remise" widget="monetary"/>
+                            <field name="paid_amount" string="Payé" widget="monetary"/>
+                            <field name="remaining_amount" string="Restant Espèces" widget="monetary"/>
+                            <separator string="Crédit Or (travail)" colspan="2"/>
+                            <field name="ticket_gold_effect" string="Variation Or travail (g)"/>
                         </group>
                         <group string="Solde Fournisseur" invisible="not has_supplier_account">
                             <separator string="Compte Espèces" colspan="2"/>
                             <field name="partner_cash_balance_before" string="Solde Espèces Actuel" widget="monetary"/>
                             <field name="contrib_to_cash_balance" string="Variation Espèces" widget="monetary"/>
                             <field name="partner_cash_balance_after" string="Nouveau Solde Espèces" widget="monetary" class="o_stat_info"/>
-                            <separator string="Compte Or" colspan="2"/>
-                            <field name="partner_weight_balance_before" string="Solde Or Actuel (g)"/>
-                            <field name="ticket_gold_effect" string="Variation Or (g)"/>
-                            <field name="partner_weight_balance_after" string="Nouveau Solde Or (g)" class="o_stat_info"/>
+                            <separator string="Compte Or travail" colspan="2"/>
+                            <field name="partner_weight_balance_before" string="Solde Or travail Actuel (g)"/>
+                            <field name="ticket_gold_effect" string="Variation Or travail (g)"/>
+                            <field name="partner_weight_balance_after" string="Nouveau Solde Or travail (g)" class="o_stat_info"/>
                         </group>
-                        <group string="Solde" invisible="has_supplier_account">
+                        <group string="Solde" invisible="has_supplier_account or is_supplier_ticket">
                             <field name="client_cash_balance" widget="monetary"/>
                             <button name="action_open_cash_balance_lines" type="object"
                                     string="Détails" class="btn-link oe_inline ml-2"/>
                         </group>
                     </group>
+                    <separator string="Achat Or — Crédit Or" colspan="2"
+                               invisible="not is_supplier_ticket"/>
+                    <field name="gold_credit_line_ids" nolabel="1"
+                           invisible="not is_supplier_ticket">
+                        <tree>
+                            <field name="metal_type_id" string="Métal"/>
+                            <field name="weight" string="Poids mesuré (g)"/>
+                            <field name="measured_purity" string="Pureté mesurée (‰)"/>
+                            <field name="working_purity" string="Pureté travail (‰)"/>
+                            <field name="working_weight" string="Poids travail (g)" sum="Total"/>
+                        </tree>
+                    </field>
                     <group string="Payment">
                         <field name="payment_amount" widget="monetary"
                                placeholder="Enter amount to pay"

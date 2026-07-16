@@ -21,8 +21,12 @@ class CasseMelting(models.Model):
         return super().create(vals)
 
     metal_type_result = fields.Many2one('metal.type', string='Result Metal Type')
+    working_purity = fields.Float(string='Pureté de travail (‰)', default=750.0)
     weight_before = fields.Float(
         string='Weight Before (g)',
+        compute='_compute_lines_totals', store=True)
+    weight_before_working = fields.Float(
+        string='Working Weight Before (g)',
         compute='_compute_lines_totals', store=True)
     weight_after = fields.Float(string='Weight After (g)')
     wastage_weight = fields.Float(string='Wastage (g)', compute='_compute_values', store=True)
@@ -40,10 +44,11 @@ class CasseMelting(models.Model):
 
     line_ids = fields.One2many('casse.melting.line', 'melting_id', string='Lines')
 
-    @api.depends('line_ids.weight', 'line_ids.cost')
+    @api.depends('line_ids.weight', 'line_ids.working_weight', 'line_ids.cost')
     def _compute_lines_totals(self):
         for record in self:
             record.weight_before = sum(record.line_ids.mapped('weight') or [0.0])
+            record.weight_before_working = sum(record.line_ids.mapped('working_weight') or [0.0])
             record.total_cost = sum(record.line_ids.mapped('cost') or [0.0])
 
     @api.depends('weight_before', 'weight_after', 'total_cost', 'metal_type_result',
@@ -70,9 +75,22 @@ class CasseMelting(models.Model):
             lambda l: l.line_type == 'achat_casse')
         weight = sum(achat_lines.mapped('weight') or [0.0])
         cost = sum(achat_lines.mapped('price_subtotal') or [0.0])
+        # Average measured purity weighted by weight from ticket lines
+        total_weight = sum(l.weight or 0.0 for l in achat_lines)
+        if total_weight:
+            avg_measured_purity = sum((l.weight or 0.0) * (l.measured_purity or 0.0) for l in achat_lines) / total_weight
+            avg_working_purity = sum((l.weight or 0.0) * (l.working_purity or 0.0) for l in achat_lines) / total_weight
+        else:
+            avg_measured_purity = 750.0
+            avg_working_purity = 750.0
         existing = self.line_ids.filtered(lambda l: l.ticket_id == ticket)
         if weight:
-            vals = {'weight': weight, 'cost': cost}
+            vals = {
+                'weight': weight,
+                'measured_purity': avg_measured_purity,
+                'working_purity': avg_working_purity,
+                'cost': cost,
+            }
             if existing:
                 existing.write(vals)
             else:

@@ -1,4 +1,5 @@
-from odoo import models, fields, _
+from odoo import models, fields, api, _
+from odoo.exceptions import UserError
 
 
 class GoldMovement(models.Model):
@@ -25,40 +26,43 @@ class GoldMovement(models.Model):
         ('sortie', 'Rendu'),
     ], string='Sens', required=True)
 
-    weight = fields.Float(string='Poids (g)', required=True)
+    weight = fields.Float(
+        string='Poids de travail (g)', required=True,
+        help='Poids utilisé pour les calculs ERP (soldes fournisseur, reports).')
+    measured_weight = fields.Float(
+        string='Poids mesuré (g)',
+        help='Poids physique réel mesuré. Donnée historique conservée à titre d\'audit.')
+    measured_purity = fields.Float(
+        string='Pureté mesurée (‰)',
+        help='Titre réel mesuré (ex: 875, 750). Donnée physique conservée pour l\'audit.')
+    working_purity = fields.Float(
+        string='Pureté de travail (‰)',
+        help='Titre utilisé par l\'ERP pour les calculs de solde et de valorisation.')
     metal_type_id = fields.Many2one('metal.type', string='Type de Métal')
     date = fields.Datetime(default=fields.Datetime.now, required=True)
     description = fields.Char(string='Description')
 
-    reversed = fields.Boolean(default=False)
-    reversal_id = fields.Many2one('gold.movement', string='Contre-passation', ondelete='set null')
+    active = fields.Boolean(default=True)
+    inactive_reason = fields.Selection([
+        ('ticket_update', 'Mise à jour du ticket'),
+        ('ticket_deleted', 'Suppression du ticket'),
+        ('conversion', 'Conversion Or → Espèces'),
+        ('manual', 'Ajustement manuel'),
+    ], string='Motif d\'archivage', readonly=True)
     currency_id = fields.Many2one('res.currency', default=lambda self: self.env.company.currency_id)
-    ticket_id = fields.Many2one('jewelry.ticket', string='Linked Ticket', ondelete='set null', index=True)
 
-    def action_reverse(self):
-        self.ensure_one()
-        if self.reversed:
-            return
-        reversal = self.create({
-            'supplier_account_id': self.supplier_account_id.id,
-            'partner_id': self.partner_id.id,
-            'purpose': self.purpose,
-            'type': 'sortie' if self.type == 'entree' else 'entree',
-            'weight': self.weight,
-            'metal_type_id': self.metal_type_id.id if self.metal_type_id else False,
-            'date': fields.Datetime.now(),
-            'description': _('Contre-passation: %s') % (self.description or ''),
-        })
-        self.reversed = True
-        self.reversal_id = reversal.id
-        return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': _('Gold Movement Reversed'),
-                'message': _('The gold movement has been reversed.'),
-                'sticky': False,
-                'type': 'success',
-                'next': {'type': 'ir.actions.client', 'tag': 'reload'},
-            },
-        }
+    origin_model = fields.Char(string='Document d\'origine')
+    origin_id = fields.Integer(string='ID du document d\'origine')
+    ticket_id = fields.Many2one('jewelry.ticket', string='Ticket lié', ondelete='set null', index=True)
+
+    def write(self, vals):
+        protected = {'purpose', 'type', 'weight', 'measured_weight', 'measured_purity', 'working_purity',
+                     'metal_type_id', 'date', 'description', 'supplier_account_id', 'partner_id', 'ticket_id'}
+        changes = protected & set(vals)
+        if changes:
+            raise UserError(_(
+                'Les champs suivants ne peuvent pas être modifiés après création : %s\n'
+                'Cette écriture fait partie d\'un grand livre immutable. '
+                'Archivez-la (active=False) si elle est erronée.'
+            ) % ', '.join(changes))
+        return super().write(vals)

@@ -7,11 +7,40 @@
             <tree>
                 <field name="partner_id"/>
                 <field name="partner_type"/>
-                <field name="weight_balance"/>
-                <field name="balance" widget="monetary"/>
+                <field name="balance" widget="monetary" string="Solde Espèces"/>
                 <field name="last_transaction_date"/>
             </tree>
         </field>
+    </record>
+
+    <record id="view_supplier_gold_balance_tree" model="ir.ui.view">
+        <field name="name">supplier.gold.balance.tree</field>
+        <field name="model">supplier.gold.balance</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="supplier_account_id"/>
+                <field name="working_purity" string="Pureté travail (‰)"/>
+                <field name="balance_weight" string="Solde (g)"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_supplier_gold_balance_search" model="ir.ui.view">
+        <field name="name">supplier.gold.balance.search</field>
+        <field name="model">supplier.gold.balance</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="supplier_account_id"/>
+                <field name="working_purity"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_supplier_gold_balance" model="ir.actions.act_window">
+        <field name="name">Gold Balances</field>
+        <field name="res_model">supplier.gold.balance</field>
+        <field name="view_mode">tree</field>
+        <field name="context">{'search_default_supplier_account_id': active_id}</field>
     </record>
 
     <record id="view_supplier_account_form" model="ir.ui.view">
@@ -20,15 +49,31 @@
         <field name="arch" type="xml">
             <form>
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="%(action_supplier_gold_balance)d" type="action"
+                                string="Gold Balances" class="oe_stat_button"
+                                icon="fa-balance-scale"
+                                context="{'search_default_supplier_account_id': active_id}"/>
+                        <button name="action_open_gold_movements" type="object"
+                                string="Gold Movements" class="oe_stat_button"
+                                icon="fa-exchange"/>
+                    </div>
                     <group>
                         <group>
                             <field name="partner_id"/>
                             <field name="partner_type"/>
                         </group>
                         <group>
-                            <field name="weight_balance"/>
-                            <field name="balance" widget="monetary"/>
+                            <field name="balance" widget="monetary" string="Solde Espèces"/>
                         </group>
+                    </group>
+                    <group string="Solde Or par Pureté de Travail">
+                        <field name="gold_balance_ids" nolabel="1">
+                            <tree>
+                                <field name="working_purity" string="Pureté travail (‰)"/>
+                                <field name="balance_weight" string="Solde (g)"/>
+                            </tree>
+                        </field>
                     </group>
                     <notebook>
                         <page name="tickets" string="Ventes &amp; Achats">
@@ -53,23 +98,68 @@
                             </field>
                         </page>
                         <page name="gold_movements" string="Gold Movements">
-                            <field name="gold_movement_ids">
-                                <tree editable="bottom">
+                            <field name="gold_movement_ids" context="{'active_test': False}">
+                                <tree>
+                                    <field name="date"/>
                                     <field name="purpose"/>
                                     <field name="type"/>
-                                    <field name="weight"/>
-                                    <field name="metal_type_id"/>
-                                    <field name="date"/>
+                                    <field name="weight" string="Poids travail (g)"/>
+                                    <field name="working_purity" string="Pureté travail (‰)"/>
+                                    <field name="metal_type_id" optional="show"/>
+                                    <field name="measured_weight" string="Poids mesuré (g)" optional="show"/>
+                                    <field name="measured_purity" string="Pureté mesurée (‰)" optional="show"/>
                                     <field name="description"/>
-                                    <field name="reversed" invisible="1"/>
-                                    <button name="action_reverse" type="object"
-                                            string="Reverse" icon="fa-undo"
-                                            confirm="Are you sure you want to reverse this movement?"
-                                            invisible="reversed"/>
+                                    <field name="inactive_reason" optional="show"/>
+                                    <field name="active" invisible="1"/>
                                 </tree>
                             </field>
                         </page>
                     </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_gold_movement_form" model="ir.ui.view">
+        <field name="name">gold.movement.form</field>
+        <field name="model">gold.movement</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="supplier_account_id"/>
+                            <field name="partner_id"/>
+                            <field name="purpose"/>
+                            <field name="type"/>
+                            <field name="date"/>
+                            <field name="description"/>
+                        </group>
+                    </group>
+                    <group string="Or mesuré (données physiques)">
+                        <group>
+                            <field name="measured_weight" string="Poids mesuré (g)"/>
+                            <field name="measured_purity" string="Pureté mesurée (‰)"/>
+                        </group>
+                    </group>
+                    <group string="Or de travail (calculs ERP)">
+                        <group>
+                            <field name="weight" string="Poids de travail (g)"/>
+                            <field name="working_purity" string="Pureté de travail (‰)"/>
+                            <field name="metal_type_id"/>
+                        </group>
+                    </group>
+                    <group string="Audit">
+                        <group>
+                            <field name="active"/>
+                            <field name="inactive_reason"/>
+                        </group>
+                        <group>
+                            <field name="ticket_id"/>
+                            <field name="origin_model"/>
+                            <field name="origin_id"/>
+                        </group>
+                    </group>
                 </sheet>
             </form>
         </field>
@@ -80,4 +170,5 @@
         <field name="res_model">supplier.account</field>
         <field name="view_mode">tree,form</field>
     </record>
+
 </odoo>

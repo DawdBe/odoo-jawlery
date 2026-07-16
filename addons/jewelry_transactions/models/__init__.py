@@ -14,6 +14,7 @@ from . import atelier_price_table
 from . import daily_cash_register
 from . import cash_register_line
 from . import gold_movement
+from . import supplier_gold_balance
 from . import cash_movement_category
 from . import cash_safe
 from . import cash_safe_movement

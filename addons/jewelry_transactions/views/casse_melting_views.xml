@@ -8,9 +8,9 @@
                 <field name="name"/>
                 <field name="date"/>
                 <field name="metal_type_result"/>
-                <field name="weight_before"/>
-                <field name="weight_after"/>
-                <field name="wastage_weight"/>
+                <field name="weight_before" string="Poids mesuré avant (g)"/>
+                <field name="weight_after" string="Poids après (g)"/>
+                <field name="wastage_weight" string="Perte (g)"/>
                 <field name="profit" widget="monetary"/>
                 <field name="state"/>
             </tree>
@@ -36,31 +36,44 @@
                         </group>
                         <group>
                             <field name="metal_type_result"/>
+                            <field name="working_purity" string="Pureté de travail (‰)"/>
                         </group>
                     </group>
-                    <group string="Weights &amp; Costs">
+                    <group string="Or mesuré">
                         <group>
-                            <field name="weight_before" readonly="1"/>
-                            <field name="weight_after"
-                                   readonly="state == 'done'"/>
-                            <field name="wastage_weight" readonly="1"/>
+                            <field name="weight_before" string="Poids total mesuré avant (g)" readonly="1"/>
                         </group>
                         <group>
+                            <field name="weight_after" string="Poids après fusion (g)"
+                                   readonly="state == 'done'"/>
+                        </group>
+                    </group>
+                    <group string="Or de travail (calculs ERP)">
+                        <group>
+                            <field name="weight_before_working" string="Poids travail avant (g)" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="wastage_weight" string="Perte (g)" readonly="1"/>
                             <field name="total_cost" widget="monetary" readonly="1"/>
                             <field name="refined_value" widget="monetary" readonly="1"/>
                             <field name="profit" widget="monetary" readonly="1"/>
                         </group>
                     </group>
-                    <field name="line_ids" readonly="state == 'done'">
-                        <tree>
-                            <field name="ticket_id" readonly="1"/>
-                            <field name="partner_id" readonly="1"/>
-                            <field name="weight" string="Weight (g)" readonly="1"/>
-                            <field name="cost" string="Cost" widget="monetary" readonly="1"/>
-                            <button name="action_open_ticket" type="object"
-                                    string=" " icon="fa-external-link" class="btn-link"/>
-                        </tree>
-                    </field>
+                    <group string="Lignes de fusion">
+                        <field name="line_ids" readonly="state == 'done'" nolabel="1">
+                            <tree>
+                                <field name="ticket_id" readonly="1"/>
+                                <field name="partner_id" readonly="1"/>
+                                <field name="weight" string="Poids mesuré (g)" readonly="1"/>
+                                <field name="measured_purity" string="Pureté mesurée (‰)" readonly="1"/>
+                                <field name="working_purity" string="Pureté travail (‰)" readonly="1"/>
+                                <field name="working_weight" string="Poids travail (g)" readonly="1"/>
+                                <field name="cost" string="Coût" widget="monetary" readonly="1"/>
+                                <button name="action_open_ticket" type="object"
+                                        string=" " icon="fa-external-link" class="btn-link"/>
+                            </tree>
+                        </field>
+                    </group>
                     <group>
                         <field name="notes" colspan="2"/>
                     </group>
