@@ -36,7 +36,6 @@ class JewelryTicketLine(models.Model):
         ('cash_credit', 'Cash Credit'),
         ('gold_credit', 'Gold Credit'),
     ], string='Settlement', default='immediate_cash')
-    is_supplier_line = fields.Boolean(related='ticket_id.is_supplier_ticket', string='Is Supplier Line')
     notes = fields.Text()
 
     melting_id = fields.Many2one(

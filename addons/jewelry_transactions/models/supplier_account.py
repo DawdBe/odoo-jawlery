@@ -10,10 +10,14 @@ class SupplierAccount(models.Model):
         ('fournisseur', 'Fournisseur'),
         ('atelier', 'Atelier'),
     ], string='Partner Type')
+    working_purity = fields.Float(
+        string='Pureté de travail (‰)', default=750.0,
+        help='Pureté utilisée pour normaliser tous les soldes or de ce fournisseur. '
+             'Les poids des mouvements sont convertis dynamiquement vers cette pureté.')
     weight_balance = fields.Float(
         string='Weight Balance (g)',
         compute='_compute_total_weight_balance',
-        help='Total gold weight across all purities')
+        help='Total gold weight converted to supplier working purity')
     balance = fields.Monetary(string='Solde', compute='_compute_balance')
     last_transaction_date = fields.Datetime(string='Last Transaction')
     currency_id = fields.Many2one('res.currency', default=lambda self: self.env.company.currency_id)
@@ -25,7 +29,7 @@ class SupplierAccount(models.Model):
     gold_balance_ids = fields.One2many(
         'supplier.gold.balance',
         compute='_compute_gold_balances',
-        string='Gold Balances per Purity')
+        string='Gold Balance')
 
     @api.depends('partner_id', 'partner_id.ticket_ids')
     def _compute_ticket_ids(self):
@@ -34,36 +38,36 @@ class SupplierAccount(models.Model):
             account.ticket_ids = tickets
             account.ticket_count = len(tickets)
 
-    @api.depends('gold_movement_ids.active', 'gold_movement_ids.type', 'gold_movement_ids.weight', 'gold_movement_ids.working_purity')
+    @api.depends('gold_movement_ids.active', 'gold_movement_ids.type', 'gold_movement_ids.weight',
+                 'gold_movement_ids.purity', 'working_purity')
     def _compute_gold_balances(self):
-        GoldMovement = self.env['gold.movement']
         for account in self:
-            movements = GoldMovement.search([
-                ('supplier_account_id', '=', account.id),
-                ('active', '=', True),
-            ])
-            by_purity = {}
-            for gm in movements:
-                key = gm.working_purity or 0.0
-                sign = 1 if gm.type == 'entree' else -1
-                by_purity[key] = by_purity.get(key, 0.0) + sign * gm.weight
-            balances = self.env['supplier.gold.balance']
-            for purity, balance in by_purity.items():
-                if balance:
-                    balances |= self.env['supplier.gold.balance'].new({
-                        'supplier_account_id': account.id,
-                        'metal_type_id': False,
-                        'working_purity': purity,
-                        'balance_weight': balance,
-                    })
-            account.gold_balance_ids = balances
-
-    @api.depends('gold_movement_ids.active', 'gold_movement_ids.type', 'gold_movement_ids.weight')
-    def _compute_total_weight_balance(self):
-        for account in self:
+            wp = account.working_purity or 1.0
             total = 0.0
             for gm in account.gold_movement_ids:
-                if gm.active:
+                if gm.active and gm.weight and gm.purity:
+                    converted = gm.weight * gm.purity / wp
+                    total += -converted if gm.type == 'entree' else converted
+            if total:
+                account.gold_balance_ids = self.env['supplier.gold.balance'].new({
+                    'supplier_account_id': account.id,
+                    'working_purity': wp,
+                    'balance_weight': total,
+                })
+            else:
+                account.gold_balance_ids = self.env['supplier.gold.balance']
+
+    @api.depends('gold_movement_ids.active', 'gold_movement_ids.type', 'gold_movement_ids.weight',
+                 'gold_movement_ids.purity', 'working_purity')
+    def _compute_total_weight_balance(self):
+        for account in self:
+            wp = account.working_purity or 1.0
+            total = 0.0
+            for gm in account.gold_movement_ids:
+                if gm.active and gm.weight and gm.purity:
+                    converted = gm.weight * gm.purity / wp
+                    total += -converted if gm.type == 'entree' else converted
+                elif gm.active and gm.weight:
                     total += gm.weight if gm.type == 'entree' else -gm.weight
             account.weight_balance = total
 
@@ -107,6 +111,6 @@ class SupplierAccount(models.Model):
             'res_model': 'gold.movement',
             'view_mode': 'tree,form',
             'domain': [('supplier_account_id', '=', self.id)],
-            'context': {'default_supplier_account_id': self.id},
+            'context': {'default_supplier_account_id': self.id, 'create': False},
             'target': 'current',
         }

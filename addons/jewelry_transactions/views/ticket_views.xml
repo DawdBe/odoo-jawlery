@@ -63,9 +63,8 @@
                             <field name="price_subtotal" widget="monetary"
                                    attrs="{'invisible': [('settlement_type', '=', 'gold_credit')]}"/>
                             <field name="settlement_type" widget="radio"
-                                   attrs="{'invisible': [('is_supplier_line', '=', False)]}"/>
+                                   attrs="{'invisible': [('parent.is_supplier_ticket', '=', False)]}"/>
                             <field name="remise_amount" widget="monetary"/>
-                            <field name="is_supplier_line" invisible="1"/>
                         </tree>
                     </field>
                     <group string="Totaux">

@@ -75,20 +75,20 @@ class CasseMelting(models.Model):
             lambda l: l.line_type == 'achat_casse')
         weight = sum(achat_lines.mapped('weight') or [0.0])
         cost = sum(achat_lines.mapped('price_subtotal') or [0.0])
-        # Average measured purity weighted by weight from ticket lines
         total_weight = sum(l.weight or 0.0 for l in achat_lines)
+        account = self.env['supplier.account'].search(
+            [('partner_id', '=', ticket.partner_id.id)], limit=1)
+        working = account.working_purity if account else self.working_purity
         if total_weight:
-            avg_measured_purity = sum((l.weight or 0.0) * (l.measured_purity or 0.0) for l in achat_lines) / total_weight
-            avg_working_purity = sum((l.weight or 0.0) * (l.working_purity or 0.0) for l in achat_lines) / total_weight
+            avg_measured_purity = sum((l.weight or 0.0) * (l.purity or 0.0) for l in achat_lines) / total_weight
         else:
             avg_measured_purity = 750.0
-            avg_working_purity = 750.0
         existing = self.line_ids.filtered(lambda l: l.ticket_id == ticket)
         if weight:
             vals = {
                 'weight': weight,
                 'measured_purity': avg_measured_purity,
-                'working_purity': avg_working_purity,
+                'working_purity': working,
                 'cost': cost,
             }
             if existing:

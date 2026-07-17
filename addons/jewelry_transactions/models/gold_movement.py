@@ -27,17 +27,11 @@ class GoldMovement(models.Model):
     ], string='Sens', required=True)
 
     weight = fields.Float(
-        string='Poids de travail (g)', required=True,
-        help='Poids utilisé pour les calculs ERP (soldes fournisseur, reports).')
-    measured_weight = fields.Float(
-        string='Poids mesuré (g)',
-        help='Poids physique réel mesuré. Donnée historique conservée à titre d\'audit.')
-    measured_purity = fields.Float(
-        string='Pureté mesurée (‰)',
-        help='Titre réel mesuré (ex: 875, 750). Donnée physique conservée pour l\'audit.')
-    working_purity = fields.Float(
-        string='Pureté de travail (‰)',
-        help='Titre utilisé par l\'ERP pour les calculs de solde et de valorisation.')
+        string='Poids (g)', required=True,
+        help='Poids physique reçu/rendu.')
+    purity = fields.Float(
+        string='Pureté (‰)',
+        help='Titre de l\'or au moment du mouvement (ex: 875, 750).')
     metal_type_id = fields.Many2one('metal.type', string='Type de Métal')
     date = fields.Datetime(default=fields.Datetime.now, required=True)
     description = fields.Char(string='Description')
@@ -56,8 +50,9 @@ class GoldMovement(models.Model):
     ticket_id = fields.Many2one('jewelry.ticket', string='Ticket lié', ondelete='set null', index=True)
 
     def write(self, vals):
-        protected = {'purpose', 'type', 'weight', 'measured_weight', 'measured_purity', 'working_purity',
-                     'metal_type_id', 'date', 'description', 'supplier_account_id', 'partner_id', 'ticket_id'}
+        protected = {'purpose', 'type', 'weight', 'purity',
+                     'metal_type_id', 'date', 'description',
+                     'supplier_account_id', 'partner_id', 'ticket_id'}
         changes = protected & set(vals)
         if changes:
             raise UserError(_(
