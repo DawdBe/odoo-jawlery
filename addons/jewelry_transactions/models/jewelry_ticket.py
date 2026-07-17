@@ -162,7 +162,7 @@ class JewelryTicket(models.Model):
             ids.update(ticket.ticket_line_ids.mapped('melting_id').ids)
             ticket.melting_ids = [(6, 0, list(ids))]
 
-    @api.depends('ticket_line_ids.price_subtotal', 'ticket_line_ids.line_type', 'ticket_line_ids.remise_amount', 'ticket_line_ids.settlement_type')
+    @api.depends('ticket_line_ids.price_subtotal', 'ticket_line_ids.line_type', 'ticket_line_ids.remise_amount', 'ticket_line_ids.settlement_type', 'ticket_line_ids.remise_amount')
     def _compute_totals(self):
         for ticket in self:
             cash_in = 0.0
@@ -177,7 +177,7 @@ class JewelryTicket(models.Model):
                     cash_out += line.price_subtotal or 0.0
                 elif line.line_type == 'remise':
                     cash_in -= line.price_subtotal or 0.0
-                if line.remise_type != 'none':
+                if line.remise_amount:
                     remise += line.remise_amount or 0.0
             ticket.total_cash_in = cash_in
             ticket.total_cash_out = cash_out
@@ -259,7 +259,7 @@ class JewelryTicket(models.Model):
         'partner_id',
         'contrib_to_cash_balance',
         'ticket_line_ids.line_type',
-        'ticket_line_ids.working_weight',
+        'ticket_line_ids.weight',
         'ticket_line_ids.metal_type_id',
         'ticket_line_ids.settlement_type',
     )
@@ -291,13 +291,13 @@ class JewelryTicket(models.Model):
                 ticket.partner_cash_balance_after = 0.0
                 ticket.partner_weight_balance_before = 0.0
             gold_in = sum(
-                line.working_weight or 0.0
+                line.weight or 0.0
                 for line in ticket.ticket_line_ids
                 if line.line_type in ('achat_casse', 'achat')
                 and line.metal_type_id
                 and line.settlement_type == 'gold_credit')
             gold_out = sum(
-                line.working_weight or 0.0
+                line.weight or 0.0
                 for line in ticket.ticket_line_ids
                 if line.line_type == 'vente'
                 and line.metal_type_id
@@ -373,10 +373,8 @@ class JewelryTicket(models.Model):
                 move = move[0]
                 used_move_ids.add(move.id)
                 changed = (
-                    abs(move.weight - line.working_weight) > 0.001
-                    or abs(move.measured_weight - (line.weight or 0.0)) > 0.001
-                    or abs(move.measured_purity - (line.measured_purity or 0.0)) > 0.001
-                    or abs(move.working_purity - (line.working_purity or 0.0)) > 0.001
+                    abs(move.weight - (line.weight or 0.0)) > 0.001
+                    or abs(move.purity - (line.purity or 0.0)) > 0.001
                 )
                 if changed:
                     move.write({'active': False, 'inactive_reason': 'ticket_update'})
@@ -384,10 +382,8 @@ class JewelryTicket(models.Model):
                         'supplier_account_id': account.id,
                         'purpose': 'deposit' if desc['direction'] == 'entree' else 'payment',
                         'type': desc['direction'],
-                        'weight': line.working_weight,
-                        'measured_weight': line.weight,
-                        'measured_purity': line.measured_purity,
-                        'working_purity': line.working_purity,
+                        'weight': line.weight,
+                        'purity': line.purity,
                         'metal_type_id': line.metal_type_id.id,
                         'date': fields.Datetime.now(),
                         'description': _('Ticket %s') % self.name,
@@ -400,10 +396,8 @@ class JewelryTicket(models.Model):
                     'supplier_account_id': account.id,
                     'purpose': 'deposit' if desc['direction'] == 'entree' else 'payment',
                     'type': desc['direction'],
-                    'weight': line.working_weight,
-                    'measured_weight': line.weight,
-                    'measured_purity': line.measured_purity,
-                    'working_purity': line.working_purity,
+                    'weight': line.weight,
+                    'purity': line.purity,
                     'metal_type_id': line.metal_type_id.id,
                     'date': fields.Datetime.now(),
                     'description': _('Ticket %s') % self.name,

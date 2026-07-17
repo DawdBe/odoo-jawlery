@@ -55,19 +55,15 @@
                             <field name="line_type"/>
                             <field name="product_id"/>
                             <field name="quantity"/>
-                            <field name="weight" string="Poids mesuré (g)"/>
-                            <field name="measured_purity" string="Pureté mesurée (‰)"/>
+                            <field name="weight" string="Poids (g)"/>
+                            <field name="purity" string="Pureté (‰)"/>
                             <field name="metal_type_id"/>
-                            <field name="working_purity" string="Pureté travail (‰)"/>
-                            <field name="working_weight" string="Poids travail (g)"/>
                             <field name="price_unit" widget="monetary"
                                    attrs="{'invisible': [('settlement_type', '=', 'gold_credit')]}"/>
                             <field name="price_subtotal" widget="monetary"
                                    attrs="{'invisible': [('settlement_type', '=', 'gold_credit')]}"/>
                             <field name="settlement_type" widget="radio"
                                    attrs="{'invisible': [('is_supplier_line', '=', False)]}"/>
-                            <field name="remise_type"/>
-                            <field name="remise_value"/>
                             <field name="remise_amount" widget="monetary"/>
                             <field name="is_supplier_line" invisible="1"/>
                         </tree>
@@ -86,18 +82,18 @@
                             <field name="total_remise" string="Remise" widget="monetary"/>
                             <field name="paid_amount" string="Payé" widget="monetary"/>
                             <field name="remaining_amount" string="Restant Espèces" widget="monetary"/>
-                            <separator string="Crédit Or (travail)" colspan="2"/>
-                            <field name="ticket_gold_effect" string="Variation Or travail (g)"/>
+                            <separator string="Crédit Or" colspan="2"/>
+                            <field name="ticket_gold_effect" string="Variation Or (g)"/>
                         </group>
                         <group string="Solde Fournisseur" invisible="not has_supplier_account">
                             <separator string="Compte Espèces" colspan="2"/>
                             <field name="partner_cash_balance_before" string="Solde Espèces Actuel" widget="monetary"/>
                             <field name="contrib_to_cash_balance" string="Variation Espèces" widget="monetary"/>
                             <field name="partner_cash_balance_after" string="Nouveau Solde Espèces" widget="monetary" class="o_stat_info"/>
-                            <separator string="Compte Or travail" colspan="2"/>
-                            <field name="partner_weight_balance_before" string="Solde Or travail Actuel (g)"/>
-                            <field name="ticket_gold_effect" string="Variation Or travail (g)"/>
-                            <field name="partner_weight_balance_after" string="Nouveau Solde Or travail (g)" class="o_stat_info"/>
+                            <separator string="Compte Or" colspan="2"/>
+                            <field name="partner_weight_balance_before" string="Solde Or Actuel (g)"/>
+                            <field name="ticket_gold_effect" string="Variation Or (g)"/>
+                            <field name="partner_weight_balance_after" string="Nouveau Solde Or (g)" class="o_stat_info"/>
                         </group>
                         <group string="Solde" invisible="has_supplier_account or is_supplier_ticket">
                             <field name="client_cash_balance" widget="monetary"/>
@@ -111,10 +107,8 @@
                            invisible="not is_supplier_ticket">
                         <tree>
                             <field name="metal_type_id" string="Métal"/>
-                            <field name="weight" string="Poids mesuré (g)"/>
-                            <field name="measured_purity" string="Pureté mesurée (‰)"/>
-                            <field name="working_purity" string="Pureté travail (‰)"/>
-                            <field name="working_weight" string="Poids travail (g)" sum="Total"/>
+                            <field name="weight" string="Poids (g)"/>
+                            <field name="purity" string="Pureté (‰)"/>
                         </tree>
                     </field>
                     <group string="Payment">
