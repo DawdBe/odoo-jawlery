@@ -14,11 +14,15 @@ class SupplierAccount(models.Model):
         string='Pureté de travail (‰)', default=750.0,
         help='Pureté utilisée pour normaliser tous les soldes or de ce fournisseur. '
              'Les poids des mouvements sont convertis dynamiquement vers cette pureté.')
-    weight_balance = fields.Float(
-        string='Weight Balance (g)',
-        compute='_compute_total_weight_balance',
-        help='Total gold weight converted to supplier working purity')
-    balance = fields.Monetary(string='Solde', compute='_compute_balance')
+
+    cash_creance = fields.Monetary(string='Créance', compute='_compute_cash_ledger')
+    cash_dette = fields.Monetary(string='Dette', compute='_compute_cash_ledger')
+    cash_solde = fields.Monetary(string='Solde Espèces', compute='_compute_cash_ledger')
+
+    gold_creance = fields.Float(string='Or Créance (g)', compute='_compute_gold_ledger')
+    gold_dette = fields.Float(string='Or Dette (g)', compute='_compute_gold_ledger')
+    gold_solde = fields.Float(string='Or Solde (g)', compute='_compute_gold_ledger')
+
     last_transaction_date = fields.Datetime(string='Last Transaction')
     currency_id = fields.Many2one('res.currency', default=lambda self: self.env.company.currency_id)
 
@@ -40,68 +44,90 @@ class SupplierAccount(models.Model):
 
     @api.depends('gold_movement_ids.active', 'gold_movement_ids.type', 'gold_movement_ids.weight',
                  'gold_movement_ids.purity', 'working_purity')
-    def _compute_gold_balances(self):
+    def _compute_gold_ledger(self):
         for account in self:
             wp = account.working_purity or 1.0
-            total = 0.0
+            creance = 0.0
+            dette = 0.0
             for gm in account.gold_movement_ids:
                 if gm.active and gm.weight and gm.purity:
                     converted = gm.weight * gm.purity / wp
-                    total += -converted if gm.type == 'entree' else converted
-            if total:
-                account.gold_balance_ids = self.env['supplier.gold.balance'].new({
-                    'supplier_account_id': account.id,
-                    'working_purity': wp,
-                    'balance_weight': total,
-                })
-            else:
-                account.gold_balance_ids = self.env['supplier.gold.balance']
+                    if gm.type == 'entree':
+                        creance += converted
+                    else:
+                        dette += converted
+                elif gm.active and gm.weight:
+                    if gm.type == 'entree':
+                        creance += gm.weight
+                    else:
+                        dette += gm.weight
+            account.gold_creance = creance
+            account.gold_dette = dette
+            account.gold_solde = creance - dette
 
     @api.depends('gold_movement_ids.active', 'gold_movement_ids.type', 'gold_movement_ids.weight',
                  'gold_movement_ids.purity', 'working_purity')
-    def _compute_total_weight_balance(self):
+    def _compute_gold_balances(self):
         for account in self:
             wp = account.working_purity or 1.0
-            total = 0.0
+            creance = 0.0
+            dette = 0.0
             for gm in account.gold_movement_ids:
                 if gm.active and gm.weight and gm.purity:
                     converted = gm.weight * gm.purity / wp
-                    total += -converted if gm.type == 'entree' else converted
+                    if gm.type == 'entree':
+                        creance += converted
+                    else:
+                        dette += converted
                 elif gm.active and gm.weight:
-                    total += gm.weight if gm.type == 'entree' else -gm.weight
-            account.weight_balance = total
+                    if gm.type == 'entree':
+                        creance += gm.weight
+                    else:
+                        dette += gm.weight
+            if creance or dette:
+                account.gold_balance_ids = self.env['supplier.gold.balance'].new({
+                    'supplier_account_id': account.id,
+                    'working_purity': wp,
+                    'gold_creance': creance,
+                    'gold_dette': dette,
+                    'gold_solde': creance - dette,
+                })
+            else:
+                account.gold_balance_ids = self.env['supplier.gold.balance']
 
     @api.depends('partner_id', 'partner_id.ticket_ids.cash_line_ids.amount',
                  'partner_id.ticket_ids.cash_line_ids.type',
                  'partner_id.ticket_ids.ticket_line_ids.price_subtotal',
                  'partner_id.ticket_ids.ticket_line_ids.line_type',
-                 'partner_id.ticket_ids.ticket_line_ids.settlement_type')
-    def _compute_balance(self):
+                 'partner_id.ticket_ids.ticket_line_ids.settlement_type',
+                 'partner_id.ticket_ids.ticket_line_ids.remise_amount')
+    def _compute_cash_ledger(self):
         for account in self:
-            total = 0.0
+            creance_total = 0.0
+            dette_total = 0.0
             for ticket in account.ticket_ids:
                 if not ticket.is_supplier_ticket:
                     entree = sum(ticket.cash_line_ids.filtered(lambda l: l.type == 'entree').mapped('amount'))
                     sortie = sum(ticket.cash_line_ids.filtered(lambda l: l.type == 'sortie').mapped('amount'))
-                    total += ticket.balance - (entree - sortie)
+                    contribution = (ticket.balance or 0.0) - (entree - sortie)
                 else:
-                    cash_balance = 0.0
-                    for line in ticket.ticket_line_ids:
-                        if line.settlement_type != 'gold_credit' and line.line_type not in ('remise',):
-                            if line.line_type in ('vente', 'solde', 'service', 'fasonage'):
-                                cash_balance += line.price_subtotal or 0.0
-                            elif line.line_type in ('achat_casse', 'achat', 'verse', 'personnel', 'fixe'):
-                                cash_balance -= line.price_subtotal or 0.0
-                        elif line.line_type == 'remise':
-                            cash_balance += line.price_subtotal or 0.0
+                    cash_balance = sum(
+                        line._get_account_effects()['cash_delta']
+                        for line in ticket.ticket_line_ids)
                     entree = sum(ticket.cash_line_ids.filtered(lambda l: l.type == 'entree').mapped('amount'))
                     sortie = sum(ticket.cash_line_ids.filtered(lambda l: l.type == 'sortie').mapped('amount'))
-                    total += cash_balance - (entree - sortie)
-            account.balance = total
+                    contribution = cash_balance - (entree - sortie)
+                if contribution > 0:
+                    dette_total += contribution
+                else:
+                    creance_total += abs(contribution)
+            account.cash_creance = creance_total
+            account.cash_dette = dette_total
+            account.cash_solde = creance_total - dette_total
 
     def compute_weight_value(self, current_rate):
         self.ensure_one()
-        return self.weight_balance * current_rate
+        return self.gold_creance * current_rate
 
     def action_open_gold_movements(self):
         self.ensure_one()

@@ -15,9 +15,6 @@ class JewelryTicketLine(models.Model):
         ('fasonage', 'Fasonage'),
         ('verse', 'Versé'),
         ('solde', 'Solde'),
-        ('remise', 'Remise'),
-        ('personnel', 'Personnel'),
-        ('fixe', 'Fixe'),
     ], string='Line Type', required=True)
     product_id = fields.Many2one('product.product', string='Product')
     quantity = fields.Float(string='Quantity', default=1.0)
@@ -42,6 +39,23 @@ class JewelryTicketLine(models.Model):
         'casse.melting', string='Melting Batch',
         readonly=True, copy=False, index=True,
         help='The melting batch that consumed this ticket line')
+
+    def _get_account_effects(self):
+        cash_delta = 0.0
+        gold_creance = 0.0
+        gold_dette = 0.0
+        net = (self.price_subtotal or 0.0) - (self.remise_amount or 0.0)
+        if self.settlement_type == 'gold_credit' and self.metal_type_id:
+            if self.line_type in ('achat', 'achat_casse'):
+                gold_creance = self.weight or 0.0
+            elif self.line_type == 'vente':
+                gold_dette = self.weight or 0.0
+        elif self.settlement_type != 'gold_credit':
+            if self.line_type in ('vente', 'solde', 'service', 'fasonage'):
+                cash_delta = net
+            elif self.line_type in ('achat', 'achat_casse', 'verse'):
+                cash_delta = -net
+        return {'cash_delta': cash_delta, 'gold_creance': gold_creance, 'gold_dette': gold_dette}
 
     @api.onchange('product_id')
     def _onchange_product_id(self):

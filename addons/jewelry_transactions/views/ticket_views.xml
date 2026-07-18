@@ -82,17 +82,40 @@
                             <field name="paid_amount" string="Payé" widget="monetary"/>
                             <field name="remaining_amount" string="Restant Espèces" widget="monetary"/>
                             <separator string="Crédit Or" colspan="2"/>
-                            <field name="ticket_gold_effect" string="Variation Or (g)"/>
+                            <field name="ticket_gold_creance_delta" string="Or Créance (g)"/>
+                            <field name="ticket_gold_dette_delta" string="Or Dette (g)"/>
                         </group>
                         <group string="Solde Fournisseur" invisible="not has_supplier_account">
                             <separator string="Compte Espèces" colspan="2"/>
-                            <field name="partner_cash_balance_before" string="Solde Espèces Actuel" widget="monetary"/>
-                            <field name="contrib_to_cash_balance" string="Variation Espèces" widget="monetary"/>
-                            <field name="partner_cash_balance_after" string="Nouveau Solde Espèces" widget="monetary" class="o_stat_info"/>
+                            <group string="Avant">
+                                <field name="partner_cash_creance_before" string="Créance" widget="monetary"/>
+                                <field name="partner_cash_dette_before" string="Dette" widget="monetary"/>
+                                <field name="partner_cash_solde_before" string="Solde" widget="monetary" class="o_stat_info"/>
+                            </group>
+                            <group string="Ce Ticket">
+                                <field name="ticket_cash_creance_delta" string="Créance" widget="monetary"/>
+                                <field name="ticket_cash_dette_delta" string="Dette" widget="monetary"/>
+                            </group>
+                            <group string="Après">
+                                <field name="partner_cash_creance_after" string="Créance" widget="monetary"/>
+                                <field name="partner_cash_dette_after" string="Dette" widget="monetary"/>
+                                <field name="partner_cash_solde_after" string="Solde" widget="monetary" class="o_stat_info"/>
+                            </group>
                             <separator string="Compte Or" colspan="2"/>
-                            <field name="partner_weight_balance_before" string="Solde Or Actuel (g)"/>
-                            <field name="ticket_gold_effect" string="Variation Or (g)"/>
-                            <field name="partner_weight_balance_after" string="Nouveau Solde Or (g)" class="o_stat_info"/>
+                            <group string="Avant">
+                                <field name="partner_gold_creance_before" string="Créance (g)"/>
+                                <field name="partner_gold_dette_before" string="Dette (g)"/>
+                                <field name="partner_gold_solde_before" string="Solde (g)"/>
+                            </group>
+                            <group string="Ce Ticket">
+                                <field name="ticket_gold_creance_delta" string="Créance (g)"/>
+                                <field name="ticket_gold_dette_delta" string="Dette (g)"/>
+                            </group>
+                            <group string="Après">
+                                <field name="partner_gold_creance_after" string="Créance (g)"/>
+                                <field name="partner_gold_dette_after" string="Dette (g)"/>
+                                <field name="partner_gold_solde_after" string="Solde (g)"/>
+                            </group>
                         </group>
                         <group string="Solde" invisible="has_supplier_account or is_supplier_ticket">
                             <field name="client_cash_balance" widget="monetary"/>
@@ -157,7 +180,6 @@
                 <field name="payment_status" string="Payment"/>
                 <field name="balance" string="Ticket Amount" widget="monetary"/>
                 <field name="paid_amount" string="Paid" widget="monetary"/>
-                <field name="contrib_to_cash_balance" string="Contribution" widget="monetary" sum="Total Contribution"/>
             </tree>
         </field>
     </record>
@@ -181,9 +203,7 @@
                 <filter name="type_service" string="Service" domain="[('ticket_line_ids.line_type','=','service')]"/>
                 <filter name="type_verse" string="Versé" domain="[('ticket_line_ids.line_type','=','verse')]"/>
                 <filter name="type_solde" string="Solde" domain="[('ticket_line_ids.line_type','=','solde')]"/>
-                <filter name="type_remise" string="Remise" domain="[('ticket_line_ids.line_type','=','remise')]"/>
-                <filter name="type_personnel" string="Personnel" domain="[('ticket_line_ids.line_type','=','personnel')]"/>
-                <filter name="type_fixe" string="Fixe" domain="[('ticket_line_ids.line_type','=','fixe')]"/>
+
             </search>
         </field>
     </record>

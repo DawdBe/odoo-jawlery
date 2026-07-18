@@ -61,28 +61,40 @@ class JewelryTicket(models.Model):
     has_supplier_account = fields.Boolean(
         compute='_compute_supplier_balances',
         help='Whether the partner has an associated supplier account')
-    partner_cash_balance_before = fields.Monetary(
-        string='Partner Cash Balance Before',
-        compute='_compute_supplier_balances',
-        currency_field='currency_id',
-        help="Partner's cash balance excluding this ticket")
-    partner_weight_balance_before = fields.Float(
-        string='Partner Gold Balance Before (g)',
-        compute='_compute_supplier_balances',
-        help="Partner's gold weight balance excluding this ticket")
-    ticket_gold_effect = fields.Float(
-        string='Gold Effect (g)',
-        compute='_compute_supplier_balances',
-        help='Net gold weight impact of this ticket')
-    partner_cash_balance_after = fields.Monetary(
-        string='Partner Cash Balance After',
-        compute='_compute_supplier_balances',
-        currency_field='currency_id',
-        help="Partner's projected cash balance after this ticket")
-    partner_weight_balance_after = fields.Float(
-        string='Partner Gold Balance After (g)',
-        compute='_compute_supplier_balances',
-        help="Partner's projected gold weight balance after this ticket")
+
+    partner_cash_creance_before = fields.Monetary(
+        string='Créance Avant', compute='_compute_supplier_balances', currency_field='currency_id')
+    partner_cash_dette_before = fields.Monetary(
+        string='Dette Avant', compute='_compute_supplier_balances', currency_field='currency_id')
+    partner_cash_solde_before = fields.Monetary(
+        string='Solde Espèces Avant', compute='_compute_supplier_balances', currency_field='currency_id')
+    partner_cash_creance_after = fields.Monetary(
+        string='Créance Après', compute='_compute_supplier_balances', currency_field='currency_id')
+    partner_cash_dette_after = fields.Monetary(
+        string='Dette Après', compute='_compute_supplier_balances', currency_field='currency_id')
+    partner_cash_solde_after = fields.Monetary(
+        string='Solde Espèces Après', compute='_compute_supplier_balances', currency_field='currency_id')
+    ticket_cash_creance_delta = fields.Monetary(
+        string='Variation Créance', compute='_compute_supplier_balances', currency_field='currency_id')
+    ticket_cash_dette_delta = fields.Monetary(
+        string='Variation Dette', compute='_compute_supplier_balances', currency_field='currency_id')
+
+    partner_gold_creance_before = fields.Float(
+        string='Or Créance Avant (g)', compute='_compute_supplier_balances')
+    partner_gold_dette_before = fields.Float(
+        string='Or Dette Avant (g)', compute='_compute_supplier_balances')
+    partner_gold_solde_before = fields.Float(
+        string='Or Solde Avant (g)', compute='_compute_supplier_balances')
+    partner_gold_creance_after = fields.Float(
+        string='Or Créance Après (g)', compute='_compute_supplier_balances')
+    partner_gold_dette_after = fields.Float(
+        string='Or Dette Après (g)', compute='_compute_supplier_balances')
+    partner_gold_solde_after = fields.Float(
+        string='Or Solde Après (g)', compute='_compute_supplier_balances')
+    ticket_gold_creance_delta = fields.Float(
+        string='Variation Or Créance (g)', compute='_compute_supplier_balances')
+    ticket_gold_dette_delta = fields.Float(
+        string='Variation Or Dette (g)', compute='_compute_supplier_balances')
     is_supplier_ticket = fields.Boolean(
         compute='_compute_is_supplier_ticket',
         help='Whether the partner is a supplier/atelier')
@@ -151,7 +163,7 @@ class JewelryTicket(models.Model):
         for ticket in self:
             ticket.gold_credit_line_ids = ticket.ticket_line_ids.filtered(
                 lambda l: l.settlement_type == 'gold_credit'
-                and l.line_type in ('achat_casse', 'achat'))
+                and l.metal_type_id)
 
     @api.depends('melting_id', 'ticket_line_ids.melting_id')
     def _compute_melting_ids(self):
@@ -162,27 +174,24 @@ class JewelryTicket(models.Model):
             ids.update(ticket.ticket_line_ids.mapped('melting_id').ids)
             ticket.melting_ids = [(6, 0, list(ids))]
 
-    @api.depends('ticket_line_ids.price_subtotal', 'ticket_line_ids.line_type', 'ticket_line_ids.remise_amount', 'ticket_line_ids.settlement_type', 'ticket_line_ids.remise_amount')
+    @api.depends('ticket_line_ids.price_subtotal', 'ticket_line_ids.line_type', 'ticket_line_ids.settlement_type', 'ticket_line_ids.remise_amount')
     def _compute_totals(self):
         for ticket in self:
             cash_in = 0.0
             cash_out = 0.0
-            remise = 0.0
             for line in ticket.ticket_line_ids:
                 if line.settlement_type == 'gold_credit':
                     continue
                 if line.line_type in ('vente', 'solde', 'service', 'fasonage'):
                     cash_in += line.price_subtotal or 0.0
-                elif line.line_type in ('achat_casse', 'achat', 'verse', 'personnel', 'fixe'):
+                elif line.line_type in ('achat_casse', 'achat', 'verse'):
                     cash_out += line.price_subtotal or 0.0
-                elif line.line_type == 'remise':
-                    cash_in -= line.price_subtotal or 0.0
-                if line.remise_amount:
-                    remise += line.remise_amount or 0.0
             ticket.total_cash_in = cash_in
             ticket.total_cash_out = cash_out
             ticket.balance = cash_in - cash_out
-            ticket.total_remise = remise
+            ticket.total_remise = sum(
+                line.remise_amount or 0.0
+                for line in ticket.ticket_line_ids)
 
     @api.depends('cash_line_ids.amount', 'cash_line_ids.type', 'balance')
     def _compute_payment_info(self):
@@ -257,55 +266,103 @@ class JewelryTicket(models.Model):
 
     @api.depends(
         'partner_id',
-        'contrib_to_cash_balance',
         'ticket_line_ids.line_type',
         'ticket_line_ids.weight',
         'ticket_line_ids.metal_type_id',
         'ticket_line_ids.settlement_type',
+        'ticket_line_ids.price_subtotal',
+        'ticket_line_ids.remise_amount',
+        'cash_line_ids.amount',
+        'cash_line_ids.type',
     )
     def _compute_supplier_balances(self):
         for ticket in self:
             account = self.env['supplier.account'].search(
                 [('partner_id', '=', ticket.partner_id.id)], limit=1)
-            ticket_contribution = ticket.contrib_to_cash_balance or 0.0
             if account:
                 ticket.has_supplier_account = True
-                account_balance = account.balance or 0.0
                 is_saved = bool(ticket.exists())
+
+                cash_creance_delta = 0.0
+                cash_dette_delta = 0.0
+                for line in ticket.ticket_line_ids:
+                    effects = line._get_account_effects()
+                    if effects['cash_delta'] > 0:
+                        cash_dette_delta += effects['cash_delta']
+                    elif effects['cash_delta'] < 0:
+                        cash_creance_delta += abs(effects['cash_delta'])
+
+                entree = sum(l.amount for l in ticket.cash_line_ids if l.type == 'entree')
+                sortie = sum(l.amount for l in ticket.cash_line_ids if l.type == 'sortie')
+                cash_creance_delta = max(0.0, cash_creance_delta - sortie)
+                cash_dette_delta = max(0.0, cash_dette_delta - entree)
+
+                gold_creance_delta = 0.0
+                gold_dette_delta = 0.0
+                for line in ticket.ticket_line_ids:
+                    effects = line._get_account_effects()
+                    gold_creance_delta += effects['gold_creance']
+                    gold_dette_delta += effects['gold_dette']
+
                 if is_saved:
-                    ticket.partner_cash_balance_before = \
-                        account_balance - ticket_contribution
+                    ticket.partner_cash_creance_before = \
+                        (account.cash_creance or 0.0) - cash_creance_delta
+                    ticket.partner_cash_dette_before = \
+                        (account.cash_dette or 0.0) - cash_dette_delta
                 else:
-                    ticket.partner_cash_balance_before = account_balance
-                ticket.partner_cash_balance_after = \
-                    ticket.partner_cash_balance_before + ticket_contribution
+                    ticket.partner_cash_creance_before = account.cash_creance or 0.0
+                    ticket.partner_cash_dette_before = account.cash_dette or 0.0
+                ticket.partner_cash_solde_before = \
+                    ticket.partner_cash_creance_before - ticket.partner_cash_dette_before
+
+                ticket.partner_cash_creance_after = \
+                    ticket.partner_cash_creance_before + cash_creance_delta
+                ticket.partner_cash_dette_after = \
+                    ticket.partner_cash_dette_before + cash_dette_delta
+                ticket.partner_cash_solde_after = \
+                    ticket.partner_cash_creance_after - ticket.partner_cash_dette_after
+
+                ticket.ticket_cash_creance_delta = cash_creance_delta
+                ticket.ticket_cash_dette_delta = cash_dette_delta
+
                 existing_gold = 0.0
                 for gm in account.gold_movement_ids:
                     if gm.ticket_id and gm.ticket_id.id == ticket.id and gm.active:
                         existing_gold += gm.weight if gm.type == 'entree' else -gm.weight
-                ticket.partner_weight_balance_before = \
-                    (account.weight_balance or 0.0) - existing_gold
+                ticket.partner_gold_creance_before = \
+                    (account.gold_creance or 0.0) - (existing_gold if existing_gold > 0 else 0.0)
+                ticket.partner_gold_dette_before = \
+                    (account.gold_dette or 0.0) - (abs(existing_gold) if existing_gold < 0 else 0.0)
+                ticket.partner_gold_solde_before = \
+                    ticket.partner_gold_creance_before - ticket.partner_gold_dette_before
+
+                ticket.partner_gold_creance_after = \
+                    ticket.partner_gold_creance_before + gold_creance_delta
+                ticket.partner_gold_dette_after = \
+                    ticket.partner_gold_dette_before + gold_dette_delta
+                ticket.partner_gold_solde_after = \
+                    ticket.partner_gold_creance_after - ticket.partner_gold_dette_after
+
+                ticket.ticket_gold_creance_delta = gold_creance_delta
+                ticket.ticket_gold_dette_delta = gold_dette_delta
             else:
                 ticket.has_supplier_account = False
-                ticket.partner_cash_balance_before = 0.0
-                ticket.partner_cash_balance_after = 0.0
-                ticket.partner_weight_balance_before = 0.0
-            gold_in = sum(
-                line.weight or 0.0
-                for line in ticket.ticket_line_ids
-                if line.line_type in ('achat_casse', 'achat')
-                and line.metal_type_id
-                and line.settlement_type == 'gold_credit')
-            gold_out = sum(
-                line.weight or 0.0
-                for line in ticket.ticket_line_ids
-                if line.line_type == 'vente'
-                and line.metal_type_id
-                and line.settlement_type == 'gold_credit')
-            ticket.ticket_gold_effect = gold_in - gold_out
-            ticket.partner_weight_balance_after = \
-                (ticket.partner_weight_balance_before or 0.0) \
-                + (ticket.ticket_gold_effect or 0.0)
+                ticket.partner_cash_creance_before = 0.0
+                ticket.partner_cash_dette_before = 0.0
+                ticket.partner_cash_solde_before = 0.0
+                ticket.partner_cash_creance_after = 0.0
+                ticket.partner_cash_dette_after = 0.0
+                ticket.partner_cash_solde_after = 0.0
+                ticket.ticket_cash_creance_delta = 0.0
+                ticket.ticket_cash_dette_delta = 0.0
+                ticket.partner_gold_creance_before = 0.0
+                ticket.partner_gold_dette_before = 0.0
+                ticket.partner_gold_solde_before = 0.0
+                ticket.partner_gold_creance_after = 0.0
+                ticket.partner_gold_dette_after = 0.0
+                ticket.partner_gold_solde_after = 0.0
+                ticket.ticket_gold_creance_delta = 0.0
+                ticket.ticket_gold_dette_delta = 0.0
 
     @api.model
     def create(self, vals):

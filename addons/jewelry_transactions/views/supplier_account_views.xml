@@ -7,7 +7,7 @@
             <tree>
                 <field name="partner_id"/>
                 <field name="partner_type"/>
-                <field name="balance" widget="monetary" string="Solde Espèces"/>
+                <field name="cash_solde" widget="monetary" string="Solde Espèces"/>
                 <field name="last_transaction_date"/>
             </tree>
         </field>
@@ -20,7 +20,9 @@
             <tree>
                 <field name="supplier_account_id"/>
                 <field name="working_purity" string="Pureté travail (‰)"/>
-                <field name="balance_weight" string="Solde converti (g)"/>
+                <field name="gold_creance" string="Créance (g)"/>
+                <field name="gold_dette" string="Dette (g)"/>
+                <field name="gold_solde" string="Solde Or (g)"/>
             </tree>
         </field>
     </record>
@@ -63,18 +65,24 @@
                             <field name="partner_id"/>
                             <field name="partner_type"/>
                         </group>
-                        <group>
-                            <field name="balance" widget="monetary" string="Solde Espèces"/>
+                        <group string="Espèces">
+                            <field name="cash_creance" string="Créance" widget="monetary"/>
+                            <field name="cash_dette" string="Dette" widget="monetary"/>
+                            <field name="cash_solde" string="Solde" widget="monetary" class="o_stat_info"/>
                         </group>
                     </group>
-                    <group string="Normalisation Or">
+                    <group string="Or">
                         <field name="working_purity" string="Pureté de travail (‰)"
                                help="Tous les soldes or de ce fournisseur sont convertis vers cette pureté. Modifiez cette valeur pour recalculer instantanément tous les soldes sans modifier les écritures historiques."/>
-                        <field name="weight_balance" string="Solde Or converti (g)" readonly="1"/>
+                        <field name="gold_creance" string="Créance (g)" readonly="1"/>
+                        <field name="gold_dette" string="Dette (g)" readonly="1"/>
+                        <field name="gold_solde" string="Solde (g)" readonly="1" class="o_stat_info"/>
                         <field name="gold_balance_ids" nolabel="1">
                             <tree>
                                 <field name="working_purity" string="Pureté travail (‰)"/>
-                                <field name="balance_weight" string="Solde converti (g)"/>
+                                <field name="gold_creance" string="Créance (g)"/>
+                                <field name="gold_dette" string="Dette (g)"/>
+                                <field name="gold_solde" string="Solde (g)"/>
                             </tree>
                         </field>
                     </group>
