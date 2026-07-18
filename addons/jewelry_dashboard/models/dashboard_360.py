@@ -78,9 +78,9 @@ class Dashboard360(models.TransientModel):
             record.total_cash = record.safe_balance
 
             accounts = self.env['supplier.account'].search([])
-            record.total_suppliers_credit = sum(accounts.mapped('balance')) or 0.0
+            record.total_suppliers_credit = sum(accounts.mapped('cash_solde')) or 0.0
 
-            record.total_suppliers_gold_weight = sum(accounts.mapped('weight_balance')) or 0.0
+            record.total_suppliers_gold_weight = sum(accounts.mapped('gold_solde')) or 0.0
 
             quants = self.env['stock.quant'].search([('weight_total', '>', 0)])
             record.total_gold_weight = sum(quants.mapped('weight_total')) or 0.0
