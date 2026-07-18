@@ -11,6 +11,7 @@ class CashRegisterLine(models.Model):
 
     register_id = fields.Many2one('daily.cash.register', string='Register', ondelete='set null')
     ticket_id = fields.Many2one('jewelry.ticket', string='Linked Ticket')
+    supplier_account_id = fields.Many2one('supplier.account', string='Supplier Account')
     amount = fields.Monetary(string='Amount', required=True)
     type = fields.Selection([
         ('entree', 'Entrée'),
@@ -21,6 +22,7 @@ class CashRegisterLine(models.Model):
         help='Business category. Selecting a category auto-fills the direction.')
     origin = fields.Selection([
         ('ticket', 'Ticket Payment'),
+        ('settlement', 'Supplier Settlement'),
         ('manual', 'Manual Entry'),
         ('system', 'System Generated'),
     ], string='Origin', required=True, default='manual',
@@ -90,6 +92,8 @@ class CashRegisterLine(models.Model):
                 register_ids.add(vals['register_id'])
             if vals.get('ticket_id') and not vals.get('origin'):
                 vals['origin'] = 'ticket'
+            if vals.get('supplier_account_id') and not vals.get('origin'):
+                vals['origin'] = 'settlement'
         lines = super().create(vals_list)
         if register_ids:
             register_ids.discard(False)
@@ -104,6 +108,10 @@ class CashRegisterLine(models.Model):
             raise UserError(_("Amount must be positive. Use 'type' to indicate direction."))
         if any(f in vals for f in ('amount', 'type')):
             for record in self:
+                if record.origin == 'settlement':
+                    raise UserError(_(
+                        "Les écritures de règlement fournisseur sont immuables. "
+                        "Créez un règlement inverse si nécessaire."))
                 if record.register_id and record.register_id.state == 'closed':
                     raise UserError(_(
                         "Impossible de modifier une ligne dans un registre clôturé. "
@@ -142,6 +150,10 @@ class CashRegisterLine(models.Model):
     def unlink(self):
         registers = self.mapped('register_id')
         for record in self:
+            if record.origin == 'settlement':
+                raise UserError(_(
+                    "Les écritures de règlement fournisseur ne peuvent pas être supprimées. "
+                    "Créez un règlement inverse si nécessaire."))
             if record.register_id and record.register_id.state == 'closed':
                 raise UserError(_(
                     "Impossible de supprimer une ligne dans un registre clôturé. "

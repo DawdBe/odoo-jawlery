@@ -54,4 +54,68 @@
         <field name="target">new</field>
     </record>
 
+    <!-- Supplier Settlement Wizard -->
+    <record id="view_supplier_settlement_wizard" model="ir.ui.view">
+        <field name="name">supplier.settlement.wizard.form</field>
+        <field name="model">supplier.settlement.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <group>
+                        <field name="supplier_account_id" invisible="1"/>
+                        <field name="partner_id"/>
+                    </group>
+                </group>
+                <group string="Situation actuelle">
+                    <group string="Espèces">
+                        <field name="current_cash_creance" widget="monetary"/>
+                        <field name="current_cash_dette" widget="monetary"/>
+                        <field name="current_cash_solde" widget="monetary"/>
+                    </group>
+                    <group string="Or">
+                        <field name="current_gold_creance" string="Créance Or (g)"/>
+                        <field name="current_gold_dette" string="Dette Or (g)"/>
+                        <field name="current_gold_solde" string="Solde Or (g)"/>
+                    </group>
+                </group>
+                <group string="Règlement">
+                    <group string="Espèces">
+                        <field name="cash_direction"/>
+                        <field name="cash_amount" widget="monetary"/>
+                        <field name="payment_method"/>
+                    </group>
+                    <group string="Or">
+                        <field name="gold_direction"/>
+                        <field name="gold_weight" string="Poids (g)"/>
+                        <field name="gold_purity" string="Pureté (‰)"/>
+                        <field name="gold_metal_type_id"/>
+                    </group>
+                </group>
+                <group>
+                    <field name="description" placeholder="Motif du règlement..."/>
+                </group>
+                <group string="Aperçu après règlement">
+                    <group>
+                        <field name="projected_cash_solde" widget="monetary"/>
+                    </group>
+                    <group>
+                        <field name="projected_gold_solde" string="Solde Or Après (g)"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_confirm" string="Confirmer le règlement"
+                            type="object" class="btn-primary"/>
+                    <button string="Annuler" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_supplier_settlement_wizard" model="ir.actions.act_window">
+        <field name="name">Règlement Fournisseur</field>
+        <field name="res_model">supplier.settlement.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
 </odoo>

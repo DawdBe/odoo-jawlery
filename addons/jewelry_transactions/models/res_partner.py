@@ -11,7 +11,7 @@ class ResPartner(models.Model):
         partner = super().create(vals)
         if vals.get('partner_type') in ('frs', 'atelier'):
             partner._ensure_supplier_account()
-        if vals.get('partner_type') == 'associe':
+        elif vals.get('partner_type') == 'associe':
             partner._ensure_associate_account()
         return partner
 
@@ -20,7 +20,7 @@ class ResPartner(models.Model):
         if vals.get('partner_type') in ('frs', 'atelier'):
             for partner in self:
                 partner._ensure_supplier_account()
-        if vals.get('partner_type') == 'associe':
+        elif vals.get('partner_type') == 'associe':
             for partner in self:
                 partner._ensure_associate_account()
         return result

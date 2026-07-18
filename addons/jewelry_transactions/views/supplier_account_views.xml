@@ -52,14 +52,12 @@
             <form>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
-                        <button name="%(action_supplier_gold_balance)d" type="action"
-                                string="Gold Balances" class="oe_stat_button"
-                                icon="fa-balance-scale"
-                                context="{'search_default_supplier_account_id': active_id}"/>
-                        <button name="action_open_gold_movements" type="object"
-                                string="Gold Movements" class="oe_stat_button"
-                                icon="fa-exchange"/>
+                        <button name="action_open_settlement" type="object"
+                                string="Règlement" class="oe_stat_button"
+                                icon="fa-credit-card"/>
                     </div>
+                    <field name="cash_settlement_count" invisible="1"/>
+                    <field name="gold_settlement_count" invisible="1"/>
                     <group>
                         <group>
                             <field name="partner_id"/>
@@ -77,14 +75,6 @@
                         <field name="gold_creance" string="Créance (g)" readonly="1"/>
                         <field name="gold_dette" string="Dette (g)" readonly="1"/>
                         <field name="gold_solde" string="Solde (g)" readonly="1" class="o_stat_info"/>
-                        <field name="gold_balance_ids" nolabel="1">
-                            <tree>
-                                <field name="working_purity" string="Pureté travail (‰)"/>
-                                <field name="gold_creance" string="Créance (g)"/>
-                                <field name="gold_dette" string="Dette (g)"/>
-                                <field name="gold_solde" string="Solde (g)"/>
-                            </tree>
-                        </field>
                     </group>
                     <notebook>
                         <page name="tickets" string="Ventes &amp; Achats">
@@ -122,6 +112,36 @@
                                     <field name="active" invisible="1"/>
                                 </tree>
                             </field>
+                        </page>
+                        <page name="settlements" string="Règlements">
+                            <group string="Règlements Espèces">
+                                <button name="action_open_cash_settlements" type="object"
+                                        string="Voir tout l'historique" class="btn-secondary"/>
+                                <field name="cash_settlement_ids" nolabel="1" create="0" delete="0">
+                                    <tree limit="10">
+                                        <field name="date"/>
+                                        <field name="amount" widget="monetary"/>
+                                        <field name="type"/>
+                                        <field name="payment_method"/>
+                                        <field name="description"/>
+                                    </tree>
+                                </field>
+                            </group>
+                            <group string="Règlements Or">
+                                <button name="action_open_gold_settlements" type="object"
+                                        string="Voir tout l'historique" class="btn-secondary"/>
+                                <field name="gold_movement_ids" nolabel="1"
+                                       domain="[('purpose', '=', 'settlement')]"
+                                       context="{'active_test': False}" create="0" delete="0">
+                                    <tree limit="10">
+                                        <field name="date"/>
+                                        <field name="weight" string="Poids (g)"/>
+                                        <field name="purity" string="Pureté (‰)"/>
+                                        <field name="metal_type_id"/>
+                                        <field name="description"/>
+                                    </tree>
+                                </field>
+                            </group>
                         </page>
                     </notebook>
                 </sheet>

@@ -47,13 +47,13 @@ class JewelryTicketLine(models.Model):
         net = (self.price_subtotal or 0.0) - (self.remise_amount or 0.0)
         if self.settlement_type == 'gold_credit' and self.metal_type_id:
             if self.line_type in ('achat', 'achat_casse'):
-                gold_creance = self.weight or 0.0
-            elif self.line_type == 'vente':
                 gold_dette = self.weight or 0.0
+            elif self.line_type == 'vente':
+                gold_creance = self.weight or 0.0
         elif self.settlement_type != 'gold_credit':
-            if self.line_type in ('vente', 'solde', 'service', 'fasonage'):
+            if self.line_type in ('achat', 'achat_casse'):
                 cash_delta = net
-            elif self.line_type in ('achat', 'achat_casse', 'verse'):
+            elif self.line_type in ('vente', 'service', 'fasonage'):
                 cash_delta = -net
         return {'cash_delta': cash_delta, 'gold_creance': gold_creance, 'gold_dette': gold_dette}
 

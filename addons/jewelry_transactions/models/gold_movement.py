@@ -18,6 +18,7 @@ class GoldMovement(models.Model):
         ('payment', 'Paiement'),
         ('deposit', 'Dépôt'),
         ('return', 'Rendu'),
+        ('settlement', 'Règlement'),
         ('adjustment', 'Ajustement'),
     ], string='Motif', required=True)
 
@@ -61,3 +62,11 @@ class GoldMovement(models.Model):
                 'Archivez-la (active=False) si elle est erronée.'
             ) % ', '.join(changes))
         return super().write(vals)
+
+    def unlink(self):
+        for record in self:
+            if record.purpose == 'settlement':
+                raise UserError(_(
+                    "Les mouvements d'or de type règlement ne peuvent pas être supprimés. "
+                    "Créez un règlement inverse si nécessaire."))
+        return super().unlink()

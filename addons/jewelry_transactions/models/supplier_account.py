@@ -1,4 +1,4 @@
-from odoo import models, fields, api
+from odoo import models, fields, api, _
 
 
 class SupplierAccount(models.Model):
@@ -28,12 +28,15 @@ class SupplierAccount(models.Model):
 
     purchase_order_ids = fields.One2many('purchase.order', 'supplier_account_id', string='Purchase Orders')
     gold_movement_ids = fields.One2many('gold.movement', 'supplier_account_id', string='Gold Movements')
+    cash_settlement_ids = fields.One2many(
+        'cash.register.line', 'supplier_account_id', string='Settlements',
+        domain=[('origin', '=', 'settlement')])
     ticket_ids = fields.One2many('jewelry.ticket', compute='_compute_ticket_ids', string='Tickets')
     ticket_count = fields.Integer(string='Ticket Count', compute='_compute_ticket_ids')
-    gold_balance_ids = fields.One2many(
-        'supplier.gold.balance',
-        compute='_compute_gold_balances',
-        string='Gold Balance')
+    cash_settlement_count = fields.Integer(string='Settlement Count', compute='_compute_cash_settlement_count')
+    gold_settlement_count = fields.Integer(
+        string='Gold Settlement Count',
+        compute='_compute_gold_settlement_count')
 
     @api.depends('partner_id', 'partner_id.ticket_ids')
     def _compute_ticket_ids(self):
@@ -41,6 +44,17 @@ class SupplierAccount(models.Model):
             tickets = account.partner_id.ticket_ids if account.partner_id else self.env['jewelry.ticket']
             account.ticket_ids = tickets
             account.ticket_count = len(tickets)
+
+    @api.depends('cash_settlement_ids')
+    def _compute_cash_settlement_count(self):
+        for account in self:
+            account.cash_settlement_count = len(account.cash_settlement_ids)
+
+    @api.depends('gold_movement_ids.purpose')
+    def _compute_gold_settlement_count(self):
+        for account in self:
+            account.gold_settlement_count = len(
+                account.gold_movement_ids.filtered(lambda g: g.purpose == 'settlement'))
 
     @api.depends('gold_movement_ids.active', 'gold_movement_ids.type', 'gold_movement_ids.weight',
                  'gold_movement_ids.purity', 'working_purity')
@@ -52,12 +66,12 @@ class SupplierAccount(models.Model):
             for gm in account.gold_movement_ids:
                 if gm.active and gm.weight and gm.purity:
                     converted = gm.weight * gm.purity / wp
-                    if gm.type == 'entree':
+                    if gm.type == 'sortie':
                         creance += converted
                     else:
                         dette += converted
                 elif gm.active and gm.weight:
-                    if gm.type == 'entree':
+                    if gm.type == 'sortie':
                         creance += gm.weight
                     else:
                         dette += gm.weight
@@ -65,62 +79,42 @@ class SupplierAccount(models.Model):
             account.gold_dette = dette
             account.gold_solde = creance - dette
 
-    @api.depends('gold_movement_ids.active', 'gold_movement_ids.type', 'gold_movement_ids.weight',
-                 'gold_movement_ids.purity', 'working_purity')
-    def _compute_gold_balances(self):
-        for account in self:
-            wp = account.working_purity or 1.0
-            creance = 0.0
-            dette = 0.0
-            for gm in account.gold_movement_ids:
-                if gm.active and gm.weight and gm.purity:
-                    converted = gm.weight * gm.purity / wp
-                    if gm.type == 'entree':
-                        creance += converted
-                    else:
-                        dette += converted
-                elif gm.active and gm.weight:
-                    if gm.type == 'entree':
-                        creance += gm.weight
-                    else:
-                        dette += gm.weight
-            if creance or dette:
-                account.gold_balance_ids = self.env['supplier.gold.balance'].new({
-                    'supplier_account_id': account.id,
-                    'working_purity': wp,
-                    'gold_creance': creance,
-                    'gold_dette': dette,
-                    'gold_solde': creance - dette,
-                })
-            else:
-                account.gold_balance_ids = self.env['supplier.gold.balance']
-
     @api.depends('partner_id', 'partner_id.ticket_ids.cash_line_ids.amount',
                  'partner_id.ticket_ids.cash_line_ids.type',
+                 'partner_id.ticket_ids.cash_line_ids.origin',
                  'partner_id.ticket_ids.ticket_line_ids.price_subtotal',
                  'partner_id.ticket_ids.ticket_line_ids.line_type',
                  'partner_id.ticket_ids.ticket_line_ids.settlement_type',
-                 'partner_id.ticket_ids.ticket_line_ids.remise_amount')
+                 'partner_id.ticket_ids.ticket_line_ids.remise_amount',
+                 'cash_settlement_ids.amount', 'cash_settlement_ids.type')
     def _compute_cash_ledger(self):
         for account in self:
             creance_total = 0.0
             dette_total = 0.0
+
             for ticket in account.ticket_ids:
+                ticket_payments = ticket.cash_line_ids.filtered(
+                    lambda l: l.origin != 'settlement')
+                entree = sum(ticket_payments.filtered(lambda l: l.type == 'entree').mapped('amount'))
+                sortie = sum(ticket_payments.filtered(lambda l: l.type == 'sortie').mapped('amount'))
                 if not ticket.is_supplier_ticket:
-                    entree = sum(ticket.cash_line_ids.filtered(lambda l: l.type == 'entree').mapped('amount'))
-                    sortie = sum(ticket.cash_line_ids.filtered(lambda l: l.type == 'sortie').mapped('amount'))
                     contribution = (ticket.balance or 0.0) - (entree - sortie)
                 else:
                     cash_balance = sum(
                         line._get_account_effects()['cash_delta']
                         for line in ticket.ticket_line_ids)
-                    entree = sum(ticket.cash_line_ids.filtered(lambda l: l.type == 'entree').mapped('amount'))
-                    sortie = sum(ticket.cash_line_ids.filtered(lambda l: l.type == 'sortie').mapped('amount'))
                     contribution = cash_balance - (entree - sortie)
                 if contribution > 0:
                     dette_total += contribution
                 else:
                     creance_total += abs(contribution)
+
+            for settlement in account.cash_settlement_ids:
+                if settlement.type == 'entree':
+                    creance_total = max(0.0, creance_total - settlement.amount)
+                else:
+                    dette_total = max(0.0, dette_total - settlement.amount)
+
             account.cash_creance = creance_total
             account.cash_dette = dette_total
             account.cash_solde = creance_total - dette_total
@@ -139,4 +133,39 @@ class SupplierAccount(models.Model):
             'domain': [('supplier_account_id', '=', self.id)],
             'context': {'default_supplier_account_id': self.id, 'create': False},
             'target': 'current',
+        }
+
+    def action_open_cash_settlements(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Cash Settlements'),
+            'res_model': 'cash.register.line',
+            'view_mode': 'tree,form',
+            'domain': [('supplier_account_id', '=', self.id), ('origin', '=', 'settlement')],
+            'context': {'default_supplier_account_id': self.id, 'create': False},
+            'target': 'current',
+        }
+
+    def action_open_gold_settlements(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Gold Settlements'),
+            'res_model': 'gold.movement',
+            'view_mode': 'tree,form',
+            'domain': [('supplier_account_id', '=', self.id), ('purpose', '=', 'settlement')],
+            'context': {'default_supplier_account_id': self.id, 'create': False},
+            'target': 'current',
+        }
+
+    def action_open_settlement(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Supplier Settlement'),
+            'res_model': 'supplier.settlement.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_supplier_account_id': self.id},
         }

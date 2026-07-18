@@ -30,4 +30,5 @@ access_cash_safe_user,cash.safe.user,model_cash_safe,base.group_user,1,0,0,0
 access_cash_safe_manager,cash.safe.manager,model_cash_safe,base.group_system,1,1,1,1
 access_cash_safe_movement_user,cash.safe.movement.user,model_cash_safe_movement,base.group_user,1,0,0,0
 access_cash_safe_movement_manager,cash.safe.movement.manager,model_cash_safe_movement,base.group_system,1,1,1,1
+access_supplier_settlement_wizard_user,supplier.settlement.wizard.user,model_supplier_settlement_wizard,base.group_user,1,1,1,1
 
